@@ -11,6 +11,11 @@ int main(int argc, char* argv[])
         exit(EXIT_FAILURE);
     }
 
+    if (!is_tll_file(argv[1]))
+    {
+        log_error("The file given is not a .tll file!");
+        exit(EXIT_FAILURE);
+    }
     const char* file_content = get_file_content(argv[1]);
 
     if (file_content == NULL)
