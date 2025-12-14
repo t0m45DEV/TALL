@@ -1,4 +1,4 @@
-# Tom Awesome Little Language Compiler
+# Tom Awesome Little Language Interpreter
 
 A little bytecode language, based on a LIFO stack, all in plain C. Well, this is technically only the compiler, but you could write anything out of it!
 
