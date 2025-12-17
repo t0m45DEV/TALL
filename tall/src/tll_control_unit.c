@@ -3,35 +3,28 @@
 #include "tll_string.h"
 
 #include <stdio.h>
-#include <string.h>
-
-#define NEW_LINE "\n"
 
 int process_code(char* code)
 {
-    char* line = strtok(code, NEW_LINE);
-    int line_cnt = 0;
+    tll_line_tracker_t line_tracker = init_line_tracker(code);
 
-    while (line != NULL)
+    while (next_line(&line_tracker) != NULL)
     {
-        const char* operation = fetch_op(line);
+        const char* operation = fetch_op(line_tracker.curr_line_content);
 
         if (operation == NULL)
         {
-            printf("There was an error parsing the line %i\n", line_cnt);
+            printf("There was an error parsing the line %i\n", line_tracker.curr_line_idx);
             return 1;
         }
         if (*operation == '\0')
         {
-            line = strtok(NULL, NEW_LINE);
-            line_cnt++;
             continue;
         }
-        printf("%i : %s\n", line_cnt, operation);
-
-        line = strtok(NULL, NEW_LINE);
-        line_cnt++;
+        printf("%02i : %s\n", line_tracker.curr_line_idx, operation);
     }
+    destroy_line_tracker(&line_tracker);
+
     return 0;
 }
 
@@ -52,5 +45,4 @@ int execute_op(const tll_op_t op)
 {
     return 0;
 }
-
 
