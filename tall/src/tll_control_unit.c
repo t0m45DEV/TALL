@@ -33,6 +33,7 @@ char* fetch_op(char* bytecode_line)
 {
     remove_comments(bytecode_line);
     remove_redundant_spaces(bytecode_line);
+    string_to_upper(bytecode_line);
 
     return bytecode_line;
 }

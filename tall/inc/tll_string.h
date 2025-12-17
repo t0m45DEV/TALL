@@ -17,3 +17,8 @@ void remove_comments(char* bytecode_line);
  */
 void remove_redundant_spaces(char* string);
 
+/**
+ * Turns every char in the string to UPPERCASE
+ */
+void string_to_upper(char* string);
+

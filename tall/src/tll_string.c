@@ -1,5 +1,6 @@
 #include "tll_string.h"
 
+#include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -52,5 +53,16 @@ void remove_redundant_spaces(char* string)
         last_char_not_space = (string[i] != CHAR_SPACE);
     }
     string[j] = CHAR_END;
+}
+
+void string_to_upper(char* string)
+{
+    char* pointer = string;
+
+    while (*pointer != CHAR_END)
+    {
+        *pointer = toupper(*pointer);
+        pointer++;
+    }
 }
 
