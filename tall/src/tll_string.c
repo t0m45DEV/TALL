@@ -74,6 +74,22 @@ void string_to_upper(char* string)
     }
 }
 
+int get_line_count(const char *string)
+{
+    int count = 0;
+    char* pointer = (char*) string;
+
+    while (*pointer != CHAR_END)
+    {
+        if (*pointer == CHAR_NEW_LINE)
+        {
+            count++;
+        }
+        pointer++;
+    }
+    return count;
+}
+
 char* next_token(char** string, char delimiter, char* token, int* found_cnt)
 {
     if (!string || !*string || **string == CHAR_END)
