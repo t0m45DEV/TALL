@@ -22,8 +22,10 @@ int get_size(const tll_dictionary_t* dict);
 
 /**
  * Adds the given item to the given dictionary at the key's position if there is nothing there already
+ *
+ * Returns 0 if the insertion was succesfull, returns 1 otherwise
  */
-void add_item(tll_dictionary_t* dict, const char* key, void* item);
+int add_item(tll_dictionary_t* dict, const char* key, void* item);
 
 /**
  * Returns the item at the key's position

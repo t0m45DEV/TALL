@@ -34,13 +34,17 @@ int get_size(const tll_dictionary_t *dict)
     return dict->size;
 }
 
-void add_item(tll_dictionary_t* dict, const char* key, void* item)
+int add_item(tll_dictionary_t* dict, const char* key, void* item)
 {
+    int status = 1;
+
     if (dict->elements[get_hash(key)] == NULL)
     {
         dict->elements[get_hash(key)] = item;
         dict->size += 1;
+        status = 0;
     }
+    return status;
 }
 
 void* get_item(const tll_dictionary_t* dict, const char* key)
