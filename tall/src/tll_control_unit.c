@@ -18,8 +18,14 @@ int process_code(char* code)
 
         if (operation == NULL)
         {
-            printf("There was is a syntax error in line %i\n", line_cnt);
+            printf("There was an error parsing the line %i\n", line_cnt);
             return 1;
+        }
+        if (*operation == '\0')
+        {
+            line = strtok(NULL, NEW_LINE);
+            line_cnt++;
+            continue;
         }
         printf("%i : %s\n", line_cnt, operation);
 
