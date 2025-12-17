@@ -19,6 +19,7 @@ typedef enum {
 } tll_operand_cnt_t;
 
 typedef struct {
+    const tll_op_code_t OP_CODE;
     const tll_operand_cnt_t OPERANDS_NEEDED;
     const char* NAME;
 } tll_op_info_t;
