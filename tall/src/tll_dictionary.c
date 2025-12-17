@@ -1,4 +1,5 @@
 #include "tll_dictionary.h"
+#include "tll_log.h"
 
 #include <stdlib.h>
 
@@ -7,18 +8,26 @@
  */
 int get_hash(const char* string)
 {
-    int hash = 0;
+    unsigned int hash = 0;
 
     for (int i = 0; string[i] != '\0'; i++)
     {
         hash = string[i] + (hash << 6) + (hash << 16) - hash;
     }
-    return (hash % DICT_MAX_ELEMENTS);
+    hash = hash % DICT_MAX_ELEMENTS; // Leave it at a valid range
+
+    return hash;
 }
 
 tll_dictionary_t* create_dictionary(void)
 {
     tll_dictionary_t* new_dict = (tll_dictionary_t*) malloc(sizeof(tll_dictionary_t));
+
+    if (new_dict == NULL)
+    {
+        log_error("The space for the dictionary could not be allocated");
+        return NULL;
+    }
 
     for (int i = 0; i < DICT_MAX_ELEMENTS; i++)
     {
