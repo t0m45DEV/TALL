@@ -118,7 +118,7 @@ char* next_token(char** string, char delimiter, char* token, int* found_cnt)
     else
     {
         // We get here if token_end points to a CHAR_END (end of string)
-        string = NULL;
+        *string = NULL;
     }
 
     return token;
