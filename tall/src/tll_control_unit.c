@@ -1,5 +1,6 @@
 #include "tll_control_unit.h"
 
+#include "tll_line_tracker.h"
 #include "tll_string.h"
 
 #include <stdio.h>
@@ -17,11 +18,11 @@ int process_code(char* code)
             printf("There was an error parsing the line %i\n", line_tracker.curr_line_idx);
             return 1;
         }
-        if (*operation == '\0')
+        else if (*operation == '\0')
         {
             continue;
         }
-        printf("%02i : %s\n", line_tracker.curr_line_idx, operation);
+        printf("%02i: %s\n", line_tracker.curr_line_idx, operation);
     }
     destroy_line_tracker(&line_tracker);
 
