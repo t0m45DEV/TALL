@@ -9,8 +9,8 @@
  * If the instruction given by OP_CODE does not have an operand, the value inside OPERAND should be ignored
  */
 typedef struct {
-    const TLL_OP_CODE OP_CODE; // The code of the operation, check TLL_OP_CODE for more info
-    const float OPERAND;       // The operand of the instruction, if the operation has an operand to start with
+    const tll_op_code_t OP_CODE; // The code of the operation, check tll_op_code_t for more info
+    const float OPERAND;         // The operand of the instruction, if the operation has an operand to start with
 } tll_op_t;
 
 /**
@@ -28,7 +28,7 @@ char* fetch_op(char* bytecode_line);
 /**
  * Converts the given instruction in format "INT OP", where INT is the operation and OP is the operand, into the struct tll_op_t
  */
-const tll_op_t decode_op(char* token);
+const tll_op_t decode_op(const char* line);
 
 /**
  * Does what the given operation tells it to do
