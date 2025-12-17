@@ -4,6 +4,14 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define CHAR_END      '\0'
+#define CHAR_SPACE    ' '
+#define CHAR_NEW_LINE '\n'
+
+#define STR_NEWLINE   "\n"
+
+#define COMMENT_START ';'
+
 void remove_comments(char* bytecode_line)
 {
     int i = 0;
@@ -64,5 +72,49 @@ void string_to_upper(char* string)
         *pointer = toupper(*pointer);
         pointer++;
     }
+}
+
+char* next_token(char** string, char delimiter, char* token, int* found_cnt)
+{
+    if (!string || !*string || **string == CHAR_END)
+    {
+        return NULL;
+    }
+
+    char* token_start = *string;
+    char* token_end = token_start;
+
+    while (*token_end != delimiter && *token_end != CHAR_END)
+    {
+        token_end++;
+    }
+
+    size_t token_length = token_end - token_start;
+    strncpy(token, token_start, token_length);
+    token[token_length] = CHAR_END;
+
+    if (*token_end == delimiter)
+    {
+        *string = token_end + 1;
+
+        if (found_cnt) { *found_cnt += 1; }
+    }
+    else
+    {
+        // We get here if token_end points to a CHAR_END (end of string)
+        string = NULL;
+    }
+
+    return token;
+}
+
+char* next_line(char** string, char* token, int* found_cnt)
+{
+    return next_token(string, CHAR_NEW_LINE, token, found_cnt);
+}
+
+char* next_word(char** string, char* token, int* found_cnt)
+{
+    return next_token(string, CHAR_SPACE, token, found_cnt);
 }
 

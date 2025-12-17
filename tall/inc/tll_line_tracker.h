@@ -23,6 +23,6 @@ void destroy_line_tracker(tll_line_tracker_t* line_tracker);
 /**
  * Gets the next line of the given string, and updates line_count to the line index corresponding to the result line
  */
-char* next_line(tll_line_tracker_t* line_tracker);
+char* advance_line_tracker(tll_line_tracker_t* line_tracker);
 
 #endif

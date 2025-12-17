@@ -1,14 +1,6 @@
 #ifndef _TLL_STRING
 #define _TLL_STRING
 
-#define CHAR_END      '\0'
-#define CHAR_SPACE    ' '
-#define CHAR_NEW_LINE '\n'
-
-#define STR_NEWLINE   "\n"
-
-#define COMMENT_START ';'
-
 /**
  * Removes from the given string all the things after a semicolon
  */
@@ -23,5 +15,21 @@ void remove_redundant_spaces(char* string);
  * Turns every char in the string to UPPERCASE
  */
 void string_to_upper(char* string);
+
+/**
+ *
+ */
+char* next_token(char** string, char delimiter, char* token, int* found_cnt);
+
+/**
+ *
+ */
+char* next_line(char** string, char* token, int* found_cnt);
+
+/**
+ *
+ */
+char* next_word(char** string, char* token, int* found_cnt);
+
 
 #endif
