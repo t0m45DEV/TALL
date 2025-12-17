@@ -4,16 +4,6 @@
 #include "tll_instructions.h"
 
 /**
- * Represents an operation, with an operation code and an operand
- *
- * If the instruction given by OP_CODE does not have an operand, the value inside OPERAND should be ignored
- */
-typedef struct {
-    const tll_op_code_t OP_CODE; // The code of the operation, check tll_op_code_t for more info
-    const float OPERAND;         // The operand of the instruction, if the operation has an operand to start with
-} tll_op_t;
-
-/**
  * Process the entire code, fetching and decoding every instruction
  *
  * Returns 0 if success processing the entire string, and returns 1 otherwise
