@@ -1,10 +1,13 @@
 #include "tll_log.h"
 #include "tll_file_manager.h"
+#include "tll_control_unit.h"
 
 #include <stdlib.h>
 
 int main(int argc, char* argv[])
 {
+    log_info("TALL Interpreter v0.2");
+
     if (argc < 2)
     {
         log_error("File name not given!");
@@ -23,10 +26,19 @@ int main(int argc, char* argv[])
         log_error("Getting the file content failed!");
         exit(EXIT_FAILURE);
     }
+    // The string will be modified, we need to copy it so later we can free it
+    char* code = (char*) file_content;
 
-    log_info("The file name is %s", argv[1]);
-    log_info("File content:\n%s", file_content);
+    int status = process_code(code);
+
+    if (status != 0)
+    {
+        log_error("There was an error parsing the file!");
+        exit(EXIT_FAILURE);
+    }
     delete_file_content(file_content);
+
+    log_info("Neat code");
     exit(EXIT_SUCCESS);
 }
 
