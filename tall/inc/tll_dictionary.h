@@ -23,24 +23,24 @@ int get_size(const tll_dictionary_t* dict);
 /**
  * Adds the given item to the given dictionary at the key's position if there is nothing there already
  */
-void add_item(tll_dictionary_t* dict, char* key, void* item);
+void add_item(tll_dictionary_t* dict, const char* key, void* item);
 
 /**
  * Returns the item at the key's position
  */
-void* get_item(const tll_dictionary_t* dict, char* key);
+void* get_item(const tll_dictionary_t* dict, const char* key);
 
 /**
  * Inserts the given item into the key's position, loosing the item that was before there
  *
  * @note If the key was never used before, this function does nothing
  */
-void replace_item(tll_dictionary_t* dict, char* key, void* new_item);
+void replace_item(tll_dictionary_t* dict, const char* key, void* new_item);
 
 /**
  * Deletes the item at the key's position, if the key was never used it does nothing
  */
-void delete_item(tll_dictionary_t* dict, char* key);
+void delete_item(tll_dictionary_t* dict, const char* key);
 
 /**
  * Frees all the memory used by the given dictionary

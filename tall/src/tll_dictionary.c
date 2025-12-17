@@ -5,7 +5,7 @@
 /**
  * Returns the corresponding hash to the given string, using the SDBM hashing algorithm
  */
-int get_hash(char* string)
+int get_hash(const char* string)
 {
     int hash = 0;
 
@@ -34,7 +34,7 @@ int get_size(const tll_dictionary_t *dict)
     return dict->size;
 }
 
-void add_item(tll_dictionary_t* dict, char* key, void* item)
+void add_item(tll_dictionary_t* dict, const char* key, void* item)
 {
     if (dict->elements[get_hash(key)] == NULL)
     {
@@ -43,12 +43,12 @@ void add_item(tll_dictionary_t* dict, char* key, void* item)
     }
 }
 
-void* get_item(const tll_dictionary_t* dict, char* key)
+void* get_item(const tll_dictionary_t* dict, const char* key)
 {
     return dict->elements[get_hash(key)];
 }
 
-void replace_item(tll_dictionary_t* dict, char* key, void* new_item)
+void replace_item(tll_dictionary_t* dict, const char* key, void* new_item)
 {
     if (dict->elements[get_hash(key)] != NULL)
     {
@@ -56,7 +56,7 @@ void replace_item(tll_dictionary_t* dict, char* key, void* new_item)
     }
 }
 
-void delete_item(tll_dictionary_t* dict, char* key)
+void delete_item(tll_dictionary_t* dict, const char* key)
 {
     if (dict->elements[get_hash(key)] != NULL)
     {
