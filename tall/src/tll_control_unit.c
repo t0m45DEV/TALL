@@ -1,5 +1,6 @@
 #include "tll_control_unit.h"
 
+#include "tll_instructions.h"
 #include "tll_line_tracker.h"
 #include "tll_string.h"
 
@@ -17,10 +18,6 @@ int process_code(char* code)
         {
             printf("There was an error parsing the line %i\n", line_tracker.curr_line_idx);
             return 1;
-        }
-        else if (*op_parsed == '\0')
-        {
-            continue;
         }
         printf("%02i: %s\n", line_tracker.curr_line_idx, op_parsed);
 
@@ -44,6 +41,10 @@ char* fetch_op(char* bytecode_line)
 
 const tll_op_t decode_op(const char* line)
 {
+    if (*line == '\0')
+    {
+        return (tll_op_t) {OP_PASS, 0};
+    }
     return (tll_op_t) {get_op_code(line), 0};
 }
 
