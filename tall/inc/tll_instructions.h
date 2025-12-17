@@ -2,15 +2,15 @@
 #define _TLL_INSTRUCTIONS
 
 typedef enum {
-    ERROR_OP = -1,
-    PASS,
-    PUSH,
-    POP,
-    ADD,
-    SUB,
-    SHOW,
+    OP_ERROR = -1,
+    OP_PASS,
+    OP_PUSH,
+    OP_POP,
+    OP_ADD,
+    OP_SUB,
+    OP_SHOW,
 
-    ALL_OP_CODES
+    OP_CODES_COUNT
 } tll_op_code_t;
 
 typedef enum {

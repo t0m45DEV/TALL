@@ -29,6 +29,6 @@ const tll_op_info_t OP_INFO[] = {
 
 tll_op_code_t get_op_code(const char* token)
 {
-    return ERROR_OP;
+    return OP_ERROR;
 }
 
