@@ -1,0 +1,6 @@
+PUSH 1
+PUSH 3
+ADD
+SHOW
+POP
+
