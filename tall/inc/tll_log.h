@@ -1,5 +1,5 @@
-#ifndef _H_LOG
-#define _H_LOG
+#ifndef _TLL_LOG
+#define _TLL_LOG
 
 /** @defgroup LogMacros Logging Macros
  *

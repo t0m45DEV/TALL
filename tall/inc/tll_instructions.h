@@ -1,3 +1,5 @@
+#ifndef _TLL_INSTRUCTIONS
+#define _TLL_INSTRUCTIONS
 
 typedef enum {
     ERROR_OP = -1,
@@ -8,3 +10,5 @@ typedef enum {
     SUB,
     SHOW
 } TLL_OP_CODE;
+
+#endif

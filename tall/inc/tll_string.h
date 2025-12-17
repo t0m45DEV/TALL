@@ -1,3 +1,5 @@
+#ifndef _TLL_STRING
+#define _TLL_STRING
 
 #define CHAR_END      '\0'
 #define CHAR_SPACE    ' '
@@ -22,3 +24,4 @@ void remove_redundant_spaces(char* string);
  */
 void string_to_upper(char* string);
 
+#endif

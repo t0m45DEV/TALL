@@ -1,3 +1,6 @@
+#ifndef _TLL_FILE_MANAGER
+#define _TLL_FILE_MANAGER
+
 #include <stdbool.h>
 
 /**
@@ -25,3 +28,4 @@ const char* get_file_content(const char* file_path);
  */
 void delete_file_content(const char* file_content);
 
+#endif

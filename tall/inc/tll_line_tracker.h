@@ -1,3 +1,5 @@
+#ifndef _TLL_LINE_TRACKER
+#define _TLL_LINE_TRACKER
 
 /**
  * A struct to hold the info of the line being read
@@ -23,3 +25,4 @@ void destroy_line_tracker(tll_line_tracker_t* line_tracker);
  */
 char* next_line(tll_line_tracker_t* line_tracker);
 
+#endif

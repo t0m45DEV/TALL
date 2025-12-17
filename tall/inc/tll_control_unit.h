@@ -1,3 +1,6 @@
+#ifndef _TLL_CONTROL_UNIT
+#define _TLL_CONTROL_UNIT
+
 #include "tll_instructions.h"
 
 /**
@@ -36,4 +39,4 @@ const tll_op_t decode_op(char* token);
  */
 int execute_op(const tll_op_t op);
 
-
+#endif
