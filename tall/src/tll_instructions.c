@@ -98,19 +98,26 @@ void print_op(const tll_op_t op)
     printf("OP_code: 0x%02x | ", op.OP_CODE);
     printf("INT: %4s | ", op.TEXT);
 
-    int first = 0;
-    int second = 0;
+    printf("First: ");
 
     if (op.OPERANDS[0] != NULL)
     {
-        first = atoi(op.OPERANDS[0]);
+        printf("%4i", atoi(op.OPERANDS[0]));
     }
-    printf("First: %2i | ", first);
+    else
+    {
+        printf("null");
+    }
+    printf(" | Second: ");
 
     if (op.OPERANDS[1] != NULL)
     {
-        second = atoi(op.OPERANDS[1]);
+        printf("%4i", atoi(op.OPERANDS[1]));
     }
-    printf("Second: %2i\n", second);
+    else
+    {
+        printf("null");
+    }
+    printf("\n");
 }
 
