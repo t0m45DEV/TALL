@@ -15,7 +15,8 @@ typedef enum {
 
 typedef enum {
     NO_OPERAND = 0,
-    ONE_OPERAND
+    ONE_OPERAND,
+    MAX_OPERANDS
 } tll_operand_cnt_t;
 
 /**
@@ -26,6 +27,7 @@ typedef enum {
 typedef struct {
     const tll_op_code_t OP_CODE;
     const tll_operand_cnt_t OPERANDS_NEEDED;
+    const char* OPERANDS[MAX_OPERANDS];
     const char* TEXT;
 } tll_op_t;
 
@@ -47,5 +49,10 @@ void destroy_instructions_set(void);
  * @note The token is asumed with the form of "INSTRUCTION\0"
  */
 tll_op_t get_op_code(const char* token);
+
+/**
+ * Prints out into STDOUT the given operation in a readable format
+ */
+void print_op(const tll_op_t op);
 
 #endif

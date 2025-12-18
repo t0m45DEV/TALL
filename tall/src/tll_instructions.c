@@ -4,6 +4,7 @@
 #include "tll_log.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 tll_dictionary_t* instructions_by_text;
 
@@ -11,31 +12,37 @@ const tll_op_t OP_INFO[] = {
     {
         OP_PASS,
         NO_OPERAND,
+        {},
         "PASS"
     },
     {
         OP_PUSH,
         ONE_OPERAND,
+        {},
         "PUSH"
     },
     {
         OP_POP,
         NO_OPERAND,
+        {},
         "POP"
     },
     {
         OP_ADD,
         NO_OPERAND,
+        {},
         "ADD"
     },
     {
         OP_SUB,
         NO_OPERAND,
+        {},
         "SUB"
     },
     {
         OP_SHOW,
         NO_OPERAND,
+        {},
         "SHOW"
     },
 };
@@ -56,7 +63,6 @@ int init_instructions_set(void)
         log_info("Adding element %i with key %s", i, OP_INFO[i].TEXT);
 
         int status = add_item(instructions_by_text, OP_INFO[i].TEXT, (void*) &OP_INFO[i]);
-        log_info("Status %i", status);
 
         if (status != 0)
         {
@@ -82,8 +88,29 @@ tll_op_t get_op_code(const char* token)
 
     if (op_info == NULL)
     {
-        return (tll_op_t) {OP_ERROR, NO_OPERAND, token};
+        return (tll_op_t) {OP_ERROR, NO_OPERAND, {}, token};
     }
     return *op_info;
+}
+
+void print_op(const tll_op_t op)
+{
+    printf("OP_code: 0x%02x | ", op.OP_CODE);
+    printf("INT: %4s | ", op.TEXT);
+
+    int first = 0;
+    int second = 0;
+
+    if (op.OPERANDS[0] != NULL)
+    {
+        first = atoi(op.OPERANDS[0]);
+    }
+    printf("First: %2i | ", first);
+
+    if (op.OPERANDS[1] != NULL)
+    {
+        second = atoi(op.OPERANDS[1]);
+    }
+    printf("Second: %2i\n", second);
 }
 
