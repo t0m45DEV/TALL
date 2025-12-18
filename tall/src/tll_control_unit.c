@@ -67,11 +67,10 @@ const tll_op_t decode_op(const char* line)
         log_error("Invalid syntax!");
         return (tll_op_t) {OP_ERROR, NO_OPERAND, {}, line};
     }
-    next_word(&pointer, word, NULL);
 
     for (int i = 0; i < op.OPERANDS_NEEDED; i++)
     {
-        if (*word == '\0')
+        if (next_word(&pointer, word, NULL) == NULL)
         {
             free(word);
             log_error("To few arguments for an operation!");
@@ -81,10 +80,9 @@ const tll_op_t decode_op(const char* line)
         strncpy(operand, word, strlen(word));
 
         op.OPERANDS[i] = operand;
-        next_word(&pointer, word, NULL);
     }
 
-    if (pointer != NULL)
+    if (next_word(&pointer, word, NULL) != NULL)
     {
         free(word);
         log_error("Too many arguments for an operation!");
