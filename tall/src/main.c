@@ -26,10 +26,7 @@ int main(int argc, char* argv[])
         log_error("Getting the file content failed!\n");
         exit(EXIT_FAILURE);
     }
-    // The string will be modified, we need to copy it so later we can free it
-    char* code = (char*) file_content;
-
-    int status = process_code(code);
+    int status = process_code((char*) file_content);
 
     if (status != 0)
     {
