@@ -37,7 +37,7 @@ const char* get_file_content(const char* file_path)
 
     if (file == NULL)
     {
-        log_error("There was a error opening %s", file_path);
+        log_error("There was a error opening %s\n", file_path);
         return NULL;
     }
     fseek(file, 0, SEEK_END);
@@ -49,7 +49,7 @@ const char* get_file_content(const char* file_path)
 
     if (content == NULL)
     {
-        log_error("There was an error allocating the buffer for %s", file_path);
+        log_error("There was an error allocating the buffer for %s\n", file_path);
         return NULL;
     }
 
@@ -57,7 +57,7 @@ const char* get_file_content(const char* file_path)
 
     if (read_size == 0)
     {
-        log_error("There was an error reading %s", file_path);
+        log_error("There was an error reading %s\n", file_path);
         free(content);
         return NULL;
     }

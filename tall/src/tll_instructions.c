@@ -49,37 +49,35 @@ const tll_op_t OP_INFO[] = {
 
 int init_instructions_set(void)
 {
-    log_info("Setting up instruction set...");
+    log_info("Setting up instruction set...\n");
     instructions_by_text = create_dictionary();
 
     if (!instructions_by_text)
     {
-        log_error("Dictionary for instructions set failed!");
+        log_error("Dictionary for instructions set failed!\n");
         return 1;
     }
 
     for (tll_op_code_t i = 0; i < OP_CODES_COUNT; i++)
     {
-        log_info("Adding element %i with key %s", i, OP_INFO[i].TEXT);
-
         int status = add_item(instructions_by_text, OP_INFO[i].TEXT, (void*) &OP_INFO[i]);
 
         if (status != 0)
         {
-            log_error("There is hashing collision between %s and %s",
+            log_error("There is hashing collision between %s and %s\n",
                       OP_INFO[i].TEXT,
                       ((tll_op_t*) get_item(instructions_by_text, OP_INFO[i].TEXT))->TEXT);
             return 1;
         }
     }
-    log_info("Instruction set initialized");
+    log_info("Instruction set initialized\n");
     return 0;
 }
 
 void destroy_instructions_set(void)
 {
     destroy_dictionary(instructions_by_text);
-    log_info("Instruction set destroyed");
+    log_info("Instruction set destroyed\n");
 }
 
 tll_op_t get_op_code(const char* token)

@@ -15,7 +15,7 @@ int process_code(char* code)
 
     if (instruction_set_status != 0)
     {
-        log_error("There was an error setting up the instruction set!");
+        log_error("There was an error setting up the instruction set!\n");
         destroy_instructions_set();
         return 1;
     }
@@ -27,7 +27,7 @@ int process_code(char* code)
 
         if (op_parsed == NULL)
         {
-            printf("There was an error parsing the line %i\n", line_tracker.curr_line_idx);
+            log_error("There was an error parsing the line %i\n", line_tracker.curr_line_idx);
             return 1;
         }
         const tll_op_t op_token = decode_op(op_parsed);
@@ -64,7 +64,7 @@ const tll_op_t decode_op(const char* line)
     if (op.OP_CODE == OP_ERROR)
     {
         free(word);
-        log_error("Invalid syntax!");
+        log_error("Invalid syntax!\n");
         return (tll_op_t) {OP_ERROR, NO_OPERAND, {}, line};
     }
 
@@ -73,7 +73,7 @@ const tll_op_t decode_op(const char* line)
         if (next_word(&pointer, word, NULL) == NULL)
         {
             free(word);
-            log_error("To few arguments for an operation!");
+            log_error("To few arguments for an operation!\n");
             return (tll_op_t) {OP_ERROR, ONE_OPERAND, {}, line};
         }
         char* operand = malloc(strlen(word) * sizeof(char));
@@ -85,7 +85,7 @@ const tll_op_t decode_op(const char* line)
     if (next_word(&pointer, word, NULL) != NULL)
     {
         free(word);
-        log_error("Too many arguments for an operation!");
+        log_error("Too many arguments for an operation!\n");
         return (tll_op_t) {OP_ERROR, ONE_OPERAND, {}, line};
     }
 

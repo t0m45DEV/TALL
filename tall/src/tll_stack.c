@@ -14,7 +14,7 @@ int stack_push(float element)
 {
     if (stack_head >= STACK_LIMIT)
     {
-        log_error("Stack size exceeded!");
+        log_error("Stack size exceeded!\n");
         return 1;
     }
     stack[stack_head] = element;
@@ -26,7 +26,7 @@ int stack_pop(float* element)
 {
     if (stack_head == 0)
     {
-        log_error("Stack empty!");
+        log_error("Stack empty!\n");
         return 1;
     }
     stack_head--;
@@ -38,7 +38,7 @@ int stack_peek(float* element, int i)
 {
     if (i < 0 || stack_head < i)
     {
-        log_error("Index %i out of stack range!", i);
+        log_error("Index %i out of stack range!\n", i);
         return 1;
     }
     *element = stack[i];

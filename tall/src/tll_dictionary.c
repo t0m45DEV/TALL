@@ -25,7 +25,7 @@ tll_dictionary_t* create_dictionary(void)
 
     if (new_dict == NULL)
     {
-        log_error("The space for the dictionary could not be allocated");
+        log_error("The space for the dictionary could not be allocated\n");
         return NULL;
     }
 

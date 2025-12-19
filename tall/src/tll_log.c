@@ -36,7 +36,7 @@ void print_message(const message_info info, const char* message, va_list arg)
     printf("%s%s" ANSI_COLOR_RESET, info.color, info.message_name);
     printf(DATA_COLOR "%s:%i: " ANSI_COLOR_RESET, info.file_name, info.line);
     vprintf(message, arg);
-    printf("\n" ANSI_COLOR_RESET);
+    printf(ANSI_COLOR_RESET);
 }
 
 void log_message(const log_levels_t log_level, const char* file_name, const int line, const char* message, ...)
