@@ -1,11 +1,9 @@
 #include "tll_grammar_checker.h"
 
-#include "tll_instructions.h"
 #include "tll_line_tracker.h"
 #include "tll_log.h"
 #include "tll_string.h"
 
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -19,7 +17,7 @@ char* parse_line(char* line);
  */
 const tll_op_t decode_line(const char* line);
 
-int check_grammar(char* code)
+int check_grammar(char* code, const tll_op_t* bytecode[])
 {
     int error_count = 0;
     int instruction_set_status = init_instructions_set();
@@ -47,8 +45,7 @@ int check_grammar(char* code)
         {
             error_count++;
         }
-        printf("%2i | ", line_tracker.curr_line_idx);
-        print_op(op_token);
+        bytecode[line_tracker.curr_line_idx - 1] = copy_op(op_token);
     }
     destroy_line_tracker(&line_tracker);
     destroy_instructions_set();
