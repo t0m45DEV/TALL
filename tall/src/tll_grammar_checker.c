@@ -9,6 +9,16 @@
 #include <string.h>
 #include <stdlib.h>
 
+/**
+ * Given a line of code, returns the equivalent instruction parsed a new string (without comments, spaces, etc)
+ */
+char* parse_line(char* line);
+
+/**
+ * Converts the given instruction in format "INT OP", where INT is the operation and OP is the operand, into the struct tll_op_t
+ */
+const tll_op_t decode_line(const char* line);
+
 int check_grammar(char* code)
 {
     int error_count = 0;
@@ -24,14 +34,14 @@ int check_grammar(char* code)
 
     while (advance_line_tracker(&line_tracker) != NULL)
     {
-        const char* op_parsed = fetch_op(line_tracker.curr_line_content);
+        const char* op_parsed = parse_line(line_tracker.curr_line_content);
 
         if (op_parsed == NULL)
         {
             log_error("There was an error parsing the line %i\n", line_tracker.curr_line_idx);
             return 1;
         }
-        const tll_op_t op_token = decode_op(op_parsed);
+        const tll_op_t op_token = decode_line(op_parsed);
 
         if (op_token.OP_CODE == OP_ERROR)
         {
@@ -46,16 +56,16 @@ int check_grammar(char* code)
     return error_count;
 }
 
-char* fetch_op(char* bytecode_line)
+char* parse_line(char* line)
 {
-    remove_comments(bytecode_line);
-    remove_redundant_spaces(bytecode_line);
-    string_to_upper(bytecode_line);
+    remove_comments(line);
+    remove_redundant_spaces(line);
+    string_to_upper(line);
 
-    return bytecode_line;
+    return line;
 }
 
-const tll_op_t decode_op(const char* line)
+const tll_op_t decode_line(const char* line)
 {
     if (*line == '\0')
     {
