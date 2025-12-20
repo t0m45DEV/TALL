@@ -4,11 +4,11 @@
 #include "tll_instructions.h"
 
 /**
- * Process the entire code, fetching and decoding every instruction
+ * Checks the grammar for every line on the given code, fetching and decoding every instruction, and saves it into the given list
  *
- * Returns 0 if success processing the entire string, and returns 1 otherwise
+ * Returns the count of errors found, or -1 if the function could not start the checking on the file
  */
-int process_code(char* code);
+int check_grammar(char* code);
 
 /**
  * Given a line of code, returns the equivalent instruction parsed a new string (without comments, spaces, etc)
@@ -19,14 +19,5 @@ char* fetch_op(char* bytecode_line);
  * Converts the given instruction in format "INT OP", where INT is the operation and OP is the operand, into the struct tll_op_t
  */
 const tll_op_t decode_op(const char* line);
-
-/**
- * Does what the given operation tells it to do
- *
- * Returns 0 if the action of the operation could be made
- *
- * Returns 1 if the OP_CODE of the given operation is ERROR_OP, or if the action given by OP_CODE could not be made
- */
-int execute_op(const tll_op_t op);
 
 #endif

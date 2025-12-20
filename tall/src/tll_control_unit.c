@@ -9,15 +9,16 @@
 #include <string.h>
 #include <stdlib.h>
 
-int process_code(char* code)
+int check_grammar(char* code)
 {
+    int error_count = 0;
     int instruction_set_status = init_instructions_set();
 
     if (instruction_set_status != 0)
     {
         log_error("There was an error setting up the instruction set!\n");
         destroy_instructions_set();
-        return 1;
+        return -1;
     }
     tll_line_tracker_t line_tracker = init_line_tracker(code);
 
@@ -31,13 +32,18 @@ int process_code(char* code)
             return 1;
         }
         const tll_op_t op_token = decode_op(op_parsed);
+
+        if (op_token.OP_CODE == OP_ERROR)
+        {
+            error_count++;
+        }
         printf("%2i | ", line_tracker.curr_line_idx);
         print_op(op_token);
     }
     destroy_line_tracker(&line_tracker);
     destroy_instructions_set();
 
-    return 0;
+    return error_count;
 }
 
 char* fetch_op(char* bytecode_line)
@@ -91,10 +97,5 @@ const tll_op_t decode_op(const char* line)
 
     free(word);
     return op;
-}
-
-int execute_op(const tll_op_t op)
-{
-    return 0;
 }
 

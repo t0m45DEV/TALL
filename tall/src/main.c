@@ -26,15 +26,26 @@ int main(int argc, char* argv[])
         log_error("Getting the file content failed!\n");
         exit(EXIT_FAILURE);
     }
-    int status = process_code((char*) file_content);
+    int error_count = check_grammar((char*) file_content);
 
-    if (status != 0)
-    {
-        log_error("There was an error parsing the file!\n");
-        exit(EXIT_FAILURE);
-    }
     delete_file_content(file_content);
 
+    if (error_count != 0)
+    {
+        if (error_count == -1)
+        {
+            log_error("There was an error in the grammar checking!\n");
+        }
+        else if (error_count == 1)
+        {
+            log_error("The file has %i error!\n", error_count);
+        }
+        else
+        {
+            log_error("The file has %i errors!\n", error_count);
+        }
+        exit(EXIT_FAILURE);
+    }
     log_info("Neat code\n");
     exit(EXIT_SUCCESS);
 }
