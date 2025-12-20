@@ -8,35 +8,46 @@
 float stack[STACK_LIMIT];
 
 // First FREE position in the stack
-int stack_head = 0;
+int head_pointer = 0;
 
 int stack_push(float element)
 {
-    if (stack_head >= STACK_LIMIT)
+    if (head_pointer >= STACK_LIMIT)
     {
         log_error("Stack size exceeded!\n");
         return 1;
     }
-    stack[stack_head] = element;
-    stack_head++;
+    stack[head_pointer] = element;
+    head_pointer++;
     return 0;
 }
 
 int stack_pop(float* element)
 {
-    if (stack_head == 0)
+    if (head_pointer == 0)
     {
         log_error("Stack empty!\n");
         return 1;
     }
-    stack_head--;
-    *element = stack[stack_head];
+    head_pointer--;
+    *element = stack[head_pointer];
+    return 0;
+}
+
+int stack_head(float* element)
+{
+    if (head_pointer == 0)
+    {
+        log_error("Tried to get the head of an empty stack!\n");
+        return 1;
+    }
+    *element = stack[head_pointer - 1];
     return 0;
 }
 
 int stack_peek(float* element, int i)
 {
-    if (i < 0 || stack_head < i)
+    if (i < 0 || head_pointer < i)
     {
         log_error("Index %i out of stack range!\n", i);
         return 1;
@@ -47,11 +58,11 @@ int stack_peek(float* element, int i)
 
 int stack_size(void)
 {
-    return stack_head;
+    return head_pointer;
 }
 
 void stack_clear(void)
 {
-    stack_head = 0;
+    head_pointer = 0;
 }
 

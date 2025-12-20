@@ -16,6 +16,13 @@ int stack_push(float element);
 int stack_pop(float* element);
 
 /**
+ * Saves the number at the head of the stack into the given element, without deleting it from the stack
+ *
+ * Returns 0 if stack is not empty at the moment of the call, and 1 otherwise
+ */
+int stack_head(float* element);
+
+/**
  * Saves the number at the i-th position in the stack into the given pointer
  *
  * Returns 0 if i is on range, and 1 otherwise
