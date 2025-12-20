@@ -3,6 +3,7 @@
 #include "tll_dictionary.h"
 #include "tll_log.h"
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -117,5 +118,14 @@ void print_op(const tll_op_t op)
         printf("null");
     }
     printf("\n");
+}
+
+const tll_op_t* copy_op(const tll_op_t op)
+{
+    tll_op_t* copy = (tll_op_t*) malloc(sizeof(tll_op_t));
+
+    memcpy(copy, &op, sizeof(tll_op_t));
+
+    return copy;
 }
 

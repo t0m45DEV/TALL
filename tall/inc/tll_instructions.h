@@ -55,4 +55,11 @@ tll_op_t get_op_code(const char* token);
  */
 void print_op(const tll_op_t op);
 
+/**
+ * Returns a new operation with the same information as the one given
+ *
+ * @note The caller MUST free the memory allocated for the copy
+ */
+const tll_op_t* copy_op(const tll_op_t op);
+
 #endif
