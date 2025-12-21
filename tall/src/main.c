@@ -3,6 +3,7 @@
 #include "tll_file_manager.h"
 #include "tll_grammar_checker.h"
 #include "tll_string.h"
+#include "tll_execution.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -29,7 +30,8 @@ int main(int argc, char* argv[])
         log_error("Getting the file content failed!\n");
         exit(EXIT_FAILURE);
     }
-    const tll_op_t* bytecode[get_line_count(file_content)];
+    int line_count = get_line_count(file_content);
+    const tll_op_t* bytecode[line_count];
 
     int error_count = check_grammar((char*) file_content, bytecode);
 
@@ -51,10 +53,17 @@ int main(int argc, char* argv[])
         }
         exit(EXIT_FAILURE);
     }
+    int status = execute(bytecode, line_count);
 
-    for (int i = 0; i < get_line_count(file_content); i++)
+    for (int i = 0; i < line_count; i++)
     {
         free((void*) bytecode[i]);
+    }
+
+    if (status != 0)
+    {
+        log_error("There was an error executing the code!\n");
+        exit(EXIT_FAILURE);
     }
     log_info("Neat code\n");
     exit(EXIT_SUCCESS);
