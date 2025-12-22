@@ -2,14 +2,28 @@
 #define _TLL_INSTRUCTIONS
 
 typedef enum {
+    // Invalid instruction, means an error of some sort
     OP_ERROR = -1,
+
+    // Empty instruction, does nothing
     OP_PASS,
+
+    // Stack managment instructions
     OP_PUSH,
     OP_POP,
+    OP_PEEK,
+    OP_CLEAR,
+
+    // Print out info to the console instructions
+    OP_SHOWF, // For floats
+    OP_SHOWI, // For integers
+    OP_SHOWC, // For chars
+
+    // Arithmetic instructions
     OP_ADD,
     OP_SUB,
-    OP_SHOW,
 
+    // Total instructions count
     OP_CODES_COUNT
 } tll_op_code_t;
 

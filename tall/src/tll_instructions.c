@@ -28,6 +28,36 @@ const tll_op_t OP_INFO[] = {
         {},
         "POP"
     },
+        {
+        OP_PEEK,
+        ONE_OPERAND,
+        {},
+        "PEEK"
+    },
+    {
+        OP_CLEAR,
+        NO_OPERAND,
+        {},
+        "CLEAR"
+    },
+    {
+        OP_SHOWF,
+        NO_OPERAND,
+        {},
+        "SHOWF"
+    },
+    {
+        OP_SHOWI,
+        NO_OPERAND,
+        {},
+        "SHOWI"
+    },
+    {
+        OP_SHOWC,
+        NO_OPERAND,
+        {},
+        "SHOWC"
+    },
     {
         OP_ADD,
         NO_OPERAND,
@@ -39,12 +69,6 @@ const tll_op_t OP_INFO[] = {
         NO_OPERAND,
         {},
         "SUB"
-    },
-    {
-        OP_SHOW,
-        NO_OPERAND,
-        {},
-        "SHOW"
     },
 };
 

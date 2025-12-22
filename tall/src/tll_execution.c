@@ -40,6 +40,27 @@ int execute(const tll_op_t* bytecode[], int size)
             case OP_POP:
                 stack_pop(&a);
                 break;
+            case OP_PEEK:
+                stack_peek(&a, atoi(curr_int.OPERANDS[0]));
+                stack_push(a);
+                break;
+            case OP_CLEAR:
+                stack_clear();
+                break;
+
+            case OP_SHOWF:
+                stack_head(&a);
+                printf("%f", a);
+                break;
+            case OP_SHOWI:
+                stack_head(&a);
+                printf("%i", (int) a);
+                break;
+            case OP_SHOWC:
+                stack_head(&a);
+                printf("%c", (char) a);
+                break;
+
             case OP_ADD:
                 stack_pop(&a);
                 stack_pop(&b);
@@ -49,10 +70,6 @@ int execute(const tll_op_t* bytecode[], int size)
                 stack_pop(&a);
                 stack_pop(&b);
                 stack_push(a - b);
-                break;
-            case OP_SHOW:
-                stack_head(&a);
-                printf("%f", a);
                 break;
         }
     }
