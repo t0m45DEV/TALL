@@ -1,6 +1,8 @@
-PUSH 1
-PUSH 3
-ADD
-SHOW
-POP
-
+PUSH 5     ; stack = []
+PUSH 3     ; stack = [5]
+ADD        ; stack = [3, 5]
+SHOWI      ; stack = [8]
+PUSH 10    ; stack = ['\n', 8] (In ASCII, the newline code is 10)
+SHOWC      ; stack = ['\n', 8]
+POP        ; stack = [8]
+POP        ; stack = []
