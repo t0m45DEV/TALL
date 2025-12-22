@@ -1,7 +1,7 @@
 #ifndef _TLL_DICT
 #define _TLL_DICT
 
-#define DICT_MAX_ELEMENTS 103
+#define DICT_MAX_ELEMENTS 1009 // It's good for this to be a prime number, a big prime number
 
 typedef struct {
     void* elements[DICT_MAX_ELEMENTS];
