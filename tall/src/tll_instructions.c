@@ -70,6 +70,24 @@ const tll_op_t OP_INFO[] = {
         {},
         "SUB"
     },
+    {
+        OP_MUL,
+        NO_OPERAND,
+        {},
+        "MUL"
+    },
+    {
+        OP_DIV,
+        NO_OPERAND,
+        {},
+        "DIV"
+    },
+    {
+        OP_MOD,
+        NO_OPERAND,
+        {},
+        "MOD"
+    },
 };
 
 int init_instructions_set(void)

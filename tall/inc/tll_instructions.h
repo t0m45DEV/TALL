@@ -22,6 +22,9 @@ typedef enum {
     // Arithmetic instructions
     OP_ADD,
     OP_SUB,
+    OP_MUL,
+    OP_DIV,
+    OP_MOD,
 
     // Total instructions count
     OP_CODES_COUNT

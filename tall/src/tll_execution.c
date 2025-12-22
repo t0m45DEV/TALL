@@ -71,6 +71,21 @@ int execute(const tll_op_t* bytecode[], int size)
                 stack_pop(&b);
                 stack_push(a - b);
                 break;
+            case OP_MUL:
+                stack_pop(&a);
+                stack_pop(&b);
+                stack_push(a * b);
+                break;
+            case OP_DIV:
+                stack_pop(&a);
+                stack_pop(&b);
+                stack_push(a / b);
+                break;
+            case OP_MOD:
+                stack_pop(&a);
+                stack_pop(&b);
+                stack_push((int) a % (int) b);
+                break;
         }
     }
     log_info("Bytecode executed succesfully\n");
