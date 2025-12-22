@@ -1,7 +1,7 @@
 #ifndef _TLL_DICT
 #define _TLL_DICT
 
-#define DICT_MAX_ELEMENTS 101
+#define DICT_MAX_ELEMENTS 103
 
 typedef struct {
     void* elements[DICT_MAX_ELEMENTS];
