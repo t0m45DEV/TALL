@@ -1,0 +1,10 @@
+PUSH 10
+JZERO 10
+    SHOWI
+    PUSH 10
+    SHOWC
+    POP
+    PUSH 1
+    SUB
+    JMP 2
+POP
