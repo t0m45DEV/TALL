@@ -34,6 +34,7 @@ int execute(const tll_op_t* bytecode[], int size)
 
             case OP_PASS:
                 break;
+
             case OP_PUSH:
                 stack_push(atof(curr_int.OPERANDS[0]));
                 break;
@@ -85,6 +86,12 @@ int execute(const tll_op_t* bytecode[], int size)
                 stack_pop(&a);
                 stack_pop(&b);
                 stack_push((int) a % (int) b);
+                break;
+
+            case OP_JMP:
+                // The operand will come in the form of a line number, not an array index, so we offset it by 1
+                ip = atoi(curr_int.OPERANDS[0]) - 1;
+                ip--; // To skip the increment part of the for loop
                 break;
         }
     }

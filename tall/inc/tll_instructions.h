@@ -26,6 +26,9 @@ typedef enum {
     OP_DIV,
     OP_MOD,
 
+    // Control flow instructions
+    OP_JMP,
+
     // Total instructions count
     OP_CODES_COUNT
 } tll_op_code_t;

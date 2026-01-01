@@ -88,6 +88,12 @@ const tll_op_t OP_INFO[] = {
         {},
         "MOD"
     },
+    {
+        OP_JMP,
+        ONE_OPERAND,
+        {},
+        "JMP"
+    },
 };
 
 int init_instructions_set(void)
