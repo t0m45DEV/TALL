@@ -70,7 +70,7 @@ int execute(const tll_op_t* bytecode[], int size)
             case OP_SUB:
                 stack_pop(&a);
                 stack_pop(&b);
-                stack_push(a - b);
+                stack_push(b - a);
                 break;
             case OP_MUL:
                 stack_pop(&a);
