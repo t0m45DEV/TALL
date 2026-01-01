@@ -28,6 +28,7 @@ typedef enum {
 
     // Control flow instructions
     OP_JMP,
+    OP_JZERO,
 
     // Total instructions count
     OP_CODES_COUNT

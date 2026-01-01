@@ -94,6 +94,12 @@ const tll_op_t OP_INFO[] = {
         {},
         "JMP"
     },
+    {
+        OP_JZERO,
+        ONE_OPERAND,
+        {},
+        "JZERO"
+    }
 };
 
 int init_instructions_set(void)

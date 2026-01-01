@@ -93,6 +93,15 @@ int execute(const tll_op_t* bytecode[], int size)
                 ip = atoi(curr_int.OPERANDS[0]) - 1;
                 ip--; // To skip the increment part of the for loop
                 break;
+            case OP_JZERO:
+                stack_head(&a);
+
+                if (a == 0)
+                {
+                    ip = atoi(curr_int.OPERANDS[0]) - 1;
+                    ip--;
+                }
+                break;
         }
     }
     log_info("Bytecode executed succesfully\n");
