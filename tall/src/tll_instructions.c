@@ -7,9 +7,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-tll_dictionary_t* instructions_by_text;
+static tll_dictionary_t* instructions_by_text;
 
-const tll_op_t OP_INFO[] = {
+static const tll_op_t OP_INFO[] = {
     {
         OP_PASS,
         NO_OPERAND,

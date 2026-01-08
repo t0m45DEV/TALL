@@ -30,7 +30,7 @@ typedef struct {
     const char* message_name;
 } message_info;
 
-void print_message(const message_info info, const char* message, va_list arg)
+static void print_message(const message_info info, const char* message, va_list arg)
 {
     printf(DATA_COLOR "[ %02d:%02d:%02d ] ", info.hour, info.min, info.sec);
     printf("%s%s" ANSI_COLOR_RESET, info.color, info.message_name);

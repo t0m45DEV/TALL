@@ -6,7 +6,7 @@
 /**
  * Returns the corresponding hash to the given string, using the SDBM hashing algorithm
  */
-int get_hash(const char* string)
+static int get_hash(const char* string)
 {
     unsigned int hash = 0;
 

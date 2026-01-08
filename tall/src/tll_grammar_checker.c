@@ -10,12 +10,12 @@
 /**
  * Given a line of code, returns the equivalent instruction parsed a new string (without comments, spaces, etc)
  */
-char* parse_line(char* line);
+static char* parse_line(char* line);
 
 /**
  * Converts the given instruction in format "INT OP", where INT is the operation and OP is the operand, into the struct tll_op_t
  */
-const tll_op_t decode_line(const char* line);
+static const tll_op_t decode_line(const char* line);
 
 int check_grammar(char* code, const tll_op_t* bytecode[])
 {
@@ -53,7 +53,7 @@ int check_grammar(char* code, const tll_op_t* bytecode[])
     return error_count;
 }
 
-char* parse_line(char* line)
+static char* parse_line(char* line)
 {
     remove_comments(line);
     remove_redundant_spaces(line);
@@ -62,7 +62,7 @@ char* parse_line(char* line)
     return line;
 }
 
-const tll_op_t decode_line(const char* line)
+static const tll_op_t decode_line(const char* line)
 {
     if (*line == '\0')
     {

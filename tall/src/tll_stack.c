@@ -5,10 +5,10 @@
 #define STACK_LIMIT 10000
 
 // The stack of the interpreter, literally a big array of floats
-float stack[STACK_LIMIT];
+static float stack[STACK_LIMIT];
 
 // First FREE position in the stack
-int head_pointer = 0;
+static int head_pointer = 0;
 
 int stack_push(float element)
 {
