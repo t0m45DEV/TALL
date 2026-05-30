@@ -19,8 +19,6 @@ If you want to make the executable locally so you can inspect it or play around,
 ```
 make
 ```
-```
-```
 
 This will compile the compiler for TALL in a local `bin` folder.
 
