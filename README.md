@@ -29,7 +29,7 @@ Create a `.tll` file, and follow the syntax rules, which I will write some day. 
 Once you have your pretty `.tll` file, you just compile it using the executable inside the `bin` folder, like so:
 
 ```
-./bin/tall my_awesome_file.tll
+tall my_awesome_file.tll
 ```
 
 ## License
