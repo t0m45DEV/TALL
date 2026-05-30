@@ -8,28 +8,30 @@ OUTPUT_DIR = bin
 
 SRC_FILES = $(SRC_DIR)/*.c
 
-OUTPUT_RELEASE = $(OUTPUT_DIR)/tall
-OUTPUT_DEBUG = $(OUTPUT_RELEASE)_debug
+PROGRAM = tall
+
+OUTPUT = $(OUTPUT_DIR)/$(PROGRAM)
 
 CC = gcc
 CFLAGS = -Wall -Werror -I$(INC_DIR)
-DEBUGFLAGS = $(CFLAGS) -g -DVERBOSE
 
-all : $(OUTPUT_RELEASE) $(OUTPUT_DEBUG)
+DEBUGGER = gdb
 
-$(OUTPUT_RELEASE) : $(SRC_FILES)
+$(OUTPUT) : $(SRC_FILES)
 	mkdir -p $(OUTPUT_DIR)
 	$(CC) $^ $(CFLAGS) -o $@
 
-$(OUTPUT_DEBUG) : $(SRC_FILES)
+debug :
 	mkdir -p $(OUTPUT_DIR)
-	$(CC) $^ $(DEBUGFLAGS) -o $@
+	$(CC) $(SRC_FILES) $(CFLAGS) -g -o $(OUTPUT)
+	$(DEBUGGER) $(OUTPUT)
 
-install : $(OUTPUT_RELEASE)
-	cp ./bin/tall /usr/bin/tall
+install : $(OUTPUT)
+	cp $(OUTPUT) /usr/bin/$(PROGRAM)
 
 uninstall :
-	rm -f /usr/bin/tall
+	rm /usr/bin/$(PROGRAM)
 
 clean:
 	rm -f $(OUTPUT_DIR)/*
+
