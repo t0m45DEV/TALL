@@ -3,6 +3,7 @@
 #include "tll_code_chunk.h"
 #include "tll_debug.h"
 #include "tll_value.h"
+#include "tll_memory.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -11,7 +12,10 @@ tll_vm VM;
 
 static void reset_stack(void)
 {
-    VM.stack_top = VM.stack;
+    FREE_ARRAY(tll_value, VM.stack, VM.stack_capacity);
+    VM.stack_capacity = 0;
+    VM.stack = NULL;
+    VM.stack_top = NULL;
 }
 
 static tll_interpret_result run_VM_code(void)
@@ -100,6 +104,14 @@ tll_interpret_result interpret_code(tll_code_chunk* code_chunk)
 
 void push(tll_value value)
 {
+    if (VM.stack_top - VM.stack >= VM.stack_capacity)
+    {
+        int top_offset = VM.stack_top - VM.stack;
+        int old_capacity = VM.stack_capacity;
+        VM.stack_capacity = GROW_CAPACITY(old_capacity);
+        VM.stack = GROW_ARRAY(tll_value, VM.stack, old_capacity, VM.stack_capacity);
+        VM.stack_top = VM.stack + top_offset;
+    }
     *VM.stack_top = value;
     VM.stack_top++;
 }

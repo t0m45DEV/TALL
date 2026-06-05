@@ -4,15 +4,14 @@
 #include "tll_code_chunk.h"
 #include "tll_value.h"
 
-#define STACK_MAX (256 * 256)
-
 /**
  * The C representation for the TALL VM.
  */
 typedef struct {
     tll_code_chunk* code_chunk;
     uint8_t* ip;
-    tll_value stack[STACK_MAX];
+    int stack_capacity;
+    tll_value* stack;
     tll_value* stack_top;
 } tll_vm;
 
