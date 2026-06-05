@@ -11,9 +11,9 @@ int main(int argc, char* argv[])
 
     int constant = add_constant(&chunk, (tll_value) 1.2);
 
-    write_code_chunk(&chunk, OP_CONSTANT);
-    write_code_chunk(&chunk, constant);
-    write_code_chunk(&chunk, OP_RETURN);
+    write_code_chunk(&chunk, OP_CONSTANT, 123);
+    write_code_chunk(&chunk, constant, 123);
+    write_code_chunk(&chunk, OP_RETURN, 123);
 
     disassemble_code_chunk(&chunk, "Test chunk");
 

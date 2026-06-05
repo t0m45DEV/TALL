@@ -36,6 +36,14 @@ int disassemble_instruction(tll_code_chunk* code_chunk, int offset)
 {
     printf("%04d ", offset);
 
+    if (offset > 0 && code_chunk->lines[offset] == code_chunk->lines[offset - 1])
+    {
+        printf("   | ");
+    }
+    else
+    {
+        printf("%4d ", code_chunk->lines[offset]);
+    }
     uint8_t instruction = code_chunk->code[offset];
 
     switch (instruction)
