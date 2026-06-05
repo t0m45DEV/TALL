@@ -4,6 +4,7 @@
 #include "tll_debug.h"
 #include "tll_value.h"
 #include "tll_memory.h"
+#include "tll_compiler.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -18,6 +19,7 @@ static void reset_stack(void)
     VM.stack_top = NULL;
 }
 
+/**
 static tll_interpret_result run_VM_code(void)
 {
     #define READ_BYTE() (*VM.ip++)
@@ -84,6 +86,7 @@ static tll_interpret_result run_VM_code(void)
     #undef READ_CONSTANT
     #undef READ_BYTE
 }
+*/
 
 void init_VM(void)
 {
@@ -95,11 +98,10 @@ void free_VM(void)
 
 }
 
-tll_interpret_result interpret_code(tll_code_chunk* code_chunk)
+tll_interpret_result interpret_code(const char* source_code)
 {
-    VM.code_chunk = code_chunk;
-    VM.ip = VM.code_chunk->code;
-    return run_VM_code();
+    compile_code(source_code);
+    return TLL_INTERPRET_OK;
 }
 
 void push(tll_value value)

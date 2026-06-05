@@ -34,7 +34,7 @@ void free_VM(void);
 /**
  * Compiles and executes the given code_chunk and returns it's result in the form of an enum.
  */
-tll_interpret_result interpret_code(tll_code_chunk* code_chunk);
+tll_interpret_result interpret_code(const char* source_code);
 
 /**
  * Saves the given value to the TALL VM stack.
