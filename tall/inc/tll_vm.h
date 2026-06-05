@@ -15,6 +15,9 @@ typedef struct {
     tll_value* stack_top;
 } tll_vm;
 
+/**
+ * The possible results for the TALL VM.
+ */
 typedef enum {
     TLL_INTERPRET_OK,
     TLL_INTERPRET_COMPILE_ERROR,
