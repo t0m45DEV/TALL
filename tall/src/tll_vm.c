@@ -35,10 +35,36 @@ static tll_interpret_result run_VM_code(void)
 
         uint8_t instruction;
 
+        tll_value a, b; // For the binary operations
+
         switch (instruction = READ_BYTE())
         {
             case OP_CONSTANT:
                 push(READ_CONSTANT());
+                break;
+
+            case OP_ADD:
+                b = pop();
+                a = pop();
+                push(a + b);
+                break;
+
+            case OP_SUBSTRACT:
+                b = pop();
+                a = pop();
+                push(a - b);
+                break;
+
+            case OP_MULTIPLY:
+                b = pop();
+                a = pop();
+                push(a * b);
+                break;
+
+            case OP_DIVIDE:
+                b = pop();
+                a = pop();
+                push(a / b);
                 break;
 
             case OP_NEGATE:
