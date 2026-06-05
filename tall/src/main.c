@@ -1,11 +1,14 @@
 #include "tll_code_chunk.h"
 #include "tll_debug.h"
 #include "tll_value.h"
+#include "tll_vm.h"
 
 #include <stdlib.h>
 
 int main(int argc, char* argv[])
 {
+    init_VM();
+
     tll_code_chunk chunk;
     init_code_chunk(&chunk);
 
@@ -15,9 +18,10 @@ int main(int argc, char* argv[])
     write_code_chunk(&chunk, constant, 123);
     write_code_chunk(&chunk, OP_RETURN, 123);
 
-    disassemble_code_chunk(&chunk, "Test chunk");
-
+    interpret_code(&chunk);
     free_code_chunk(&chunk);
 
+    free_VM();
     exit(EXIT_SUCCESS);
 }
+
