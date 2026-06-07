@@ -19,7 +19,6 @@ static void reset_stack(void)
     VM.stack_top = NULL;
 }
 
-/**
 static tll_interpret_result run_VM_code(void)
 {
     #define READ_BYTE() (*VM.ip++)
@@ -86,7 +85,6 @@ static tll_interpret_result run_VM_code(void)
     #undef READ_CONSTANT
     #undef READ_BYTE
 }
-*/
 
 void init_VM(void)
 {
@@ -100,8 +98,21 @@ void free_VM(void)
 
 tll_interpret_result interpret_code(const char* source_code)
 {
-    compile_code(source_code);
-    return TLL_INTERPRET_OK;
+    tll_code_chunk code_chunk;
+    init_code_chunk(&code_chunk);
+
+    if (!compile_code(source_code, &code_chunk))
+    {
+        free_code_chunk(&code_chunk);
+        return TLL_INTERPRET_COMPILE_ERROR;
+    }
+    VM.code_chunk = &code_chunk;
+    VM.ip = VM.code_chunk->code;
+
+    tll_interpret_result result = run_VM_code();
+
+    free_code_chunk(&code_chunk);
+    return result;
 }
 
 void push(tll_value value)
