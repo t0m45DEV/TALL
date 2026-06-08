@@ -1,9 +1,10 @@
 #include "tll_vm.h"
 
+#include "tll_common.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 static void repl(void)
 {
@@ -28,6 +29,7 @@ static char* read_file(const char* file_path)
 
     if (file == NULL)
     {
+        free_VM();
         fprintf(stderr, "Could not open file \"%s\".\n", file_path);
         exit(74);
     }
@@ -39,6 +41,7 @@ static char* read_file(const char* file_path)
 
     if (buffer == NULL)
     {
+        free_VM();
         fprintf(stderr, "Not enough memory to read \"%s\".\n", file_path);
         exit(74);
     }
@@ -46,6 +49,7 @@ static char* read_file(const char* file_path)
 
     if (bytes_read < file_size)
     {
+        free_VM();
         fprintf(stderr, "Could not read file \"%s\".\n", file_path);
         exit(74);
     }
