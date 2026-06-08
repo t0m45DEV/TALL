@@ -69,6 +69,28 @@ static void run_file(const char* file_path)
     if (result == TLL_INTERPRET_RUNTIME_ERROR) exit(70);
 }
 
+const char* get_file_extension(const char* file_path)
+{
+    const char* file_dot = strchr(file_path, '.');
+
+    if (!file_dot)
+    {
+        return NULL;
+    }
+    return file_dot + 1;
+}
+
+bool is_tll_file(const char* file_path)
+{
+    const char* extension = get_file_extension(file_path);
+
+    if (!extension)
+    {
+        return false;
+    }
+    return (strcmp(extension, "tll") == 0);
+}
+
 int main(int argc, const char* argv[])
 {
     init_VM();
@@ -79,6 +101,12 @@ int main(int argc, const char* argv[])
     }
     else if (argc == 2)
     {
+        if (!is_tll_file(argv[1]))
+        {
+            free_VM();
+            fprintf(stderr, "File %s has not '.tll' extension.\n", argv[1]);
+            exit(EXIT_FAILURE);
+        }
         run_file(argv[1]);
     }
     else
