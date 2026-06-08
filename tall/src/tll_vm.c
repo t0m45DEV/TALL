@@ -22,7 +22,8 @@ static void reset_stack(void)
 static tll_interpret_result run_VM_code(void)
 {
     #define READ_BYTE() (*VM.ip++)
-    #define READ_CONSTANT() (VM.code_chunk->constants.values[READ_BYTE()])
+    #define READ_SHORT() ((uint8_t) ((READ_BYTE() << 8) | READ_BYTE()))
+    #define READ_CONSTANT() (VM.code_chunk->constants.values[READ_SHORT()])
 
     while (true)
     {
@@ -83,6 +84,7 @@ static tll_interpret_result run_VM_code(void)
         }
     }
     #undef READ_CONSTANT
+    #undef READ_SHORT
     #undef READ_BYTE
 }
 

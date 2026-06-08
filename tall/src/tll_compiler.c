@@ -4,6 +4,7 @@
 #include "tll_common.h"
 #include "tll_scanner.h"
 #include "tll_value.h"
+#include <stdint.h>
 
 #ifdef DEBUG_PRINT_CODE
 #include "tll_debug.h"
@@ -197,20 +198,23 @@ static void emit_bytes(uint8_t byte_1, uint8_t byte_2)
     emit_byte(byte_2);
 }
 
-static uint8_t make_constant(tll_value value)
+static uint16_t make_constant(tll_value value)
 {
     int constant = add_constant(current_code_chunk(), value);
-    if (constant > UINT8_MAX)
+    if (constant > UINT16_MAX)
     {
         error("Too many constant in one code chunk.");
         return 0;
     }
-    return (uint8_t) constant;
+    return (uint16_t) constant;
 }
 
 static void emit_constant(tll_value value)
 {
-    emit_bytes(OP_CONSTANT, make_constant(value));
+    emit_byte(OP_CONSTANT);
+    uint16_t const_index = make_constant(value);
+
+    emit_bytes((uint8_t) (const_index >> 8), (uint8_t) (const_index & 0xFF));
 }
 
 static void number(void)

@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <sys/types.h>
 
 static int simple_instruction(const char* op_name, int offset)
 {
@@ -14,11 +15,15 @@ static int simple_instruction(const char* op_name, int offset)
 
 static int constant_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset)
 {
-    uint8_t constant = code_chunk->code[offset + 1];
-    printf("%-16s %4d '", op_name, constant);
-    print_value(code_chunk->constants.values[constant]);
+    uint8_t index_upper = code_chunk->code[offset + 1];
+    uint8_t index_lower = code_chunk->code[offset + 2];
+
+    uint16_t index = (index_upper << 8) | index_lower;
+
+    printf("%-16s %4d '", op_name, index);
+    print_value(code_chunk->constants.values[index]);
     printf("'\n");
-    return offset + 2;
+    return offset + 3;
 }
 
 void disassemble_code_chunk(tll_code_chunk* code_chunk, const char* chunk_name)
