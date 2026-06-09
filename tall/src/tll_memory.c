@@ -1,5 +1,6 @@
 #include "tll_memory.h"
 
+#include <sysexits.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -15,7 +16,7 @@ void* reallocate(void* pointer, size_t old_capacity, size_t new_capacity)
     if (result == NULL)
     {
         printf("[FATAL ERROR] Tried to allocate %lu bytes of memory and failed.\n", new_capacity);
-        exit(EXIT_FAILURE);
+        exit(EX_OSERR);
     }
     return result;
 }

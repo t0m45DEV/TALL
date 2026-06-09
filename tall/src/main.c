@@ -3,6 +3,7 @@
 #include "tll_common.h"
 #include "tll_file_manager.h"
 
+#include <sysexits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -31,24 +32,26 @@ static void run_file(const char* file_path)
     {
         free_VM();
         fprintf(stderr, "Not enough memory to read \"%s\".\n", file_path);
-        exit(74);
+        exit(EX_OSERR);
     }
 
     if (!read_file(file_path, source_code))
     {
         free_VM();
-        exit(74);
+        exit(EX_IOERR);
     }
     tll_interpret_result result = interpret_code(source_code);
     free(source_code);
 
     if (result == TLL_INTERPRET_COMPILE_ERROR)
     {
-        exit(65);
+        free_VM();
+        exit(EX_DATAERR);
     }
     if (result == TLL_INTERPRET_RUNTIME_ERROR)
     {
-        exit(70);
+        free_VM();
+        exit(EX_SOFTWARE);
     }
 }
 
@@ -66,16 +69,17 @@ int main(int argc, const char* argv[])
         {
             free_VM();
             fprintf(stderr, "File %s has not \".tll\" extension.\n", argv[1]);
-            exit(EXIT_FAILURE);
+            exit(EX_DATAERR);
         }
         run_file(argv[1]);
     }
     else
     {
+        free_VM();
         fprintf(stderr, "Usage: %s [path]\n", argv[0]);
-        exit(64);
+        exit(EX_USAGE);
     }
     free_VM();
-    exit(EXIT_SUCCESS);
+    exit(EX_OK);
 }
 
