@@ -15,7 +15,7 @@ bool is_tll_file(const char* file_path);
 size_t file_size(const char* file_path);
 
 /**
- * Saves the content of the given file in the given buffer.
+ * Saves the content of the given file in the given buffer. Buffer MUST have the required size for the file contents, see file_size.
  *
  * Returns 0 if the read was OK, returns 1 otherwise.
  */
