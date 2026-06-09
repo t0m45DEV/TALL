@@ -65,7 +65,7 @@ int main(int argc, const char* argv[])
         if (!is_tll_file(argv[1]))
         {
             free_VM();
-            fprintf(stderr, "File %s has not '.tll' extension.\n", argv[1]);
+            fprintf(stderr, "File %s has not \".tll\" extension.\n", argv[1]);
             exit(EXIT_FAILURE);
         }
         run_file(argv[1]);
