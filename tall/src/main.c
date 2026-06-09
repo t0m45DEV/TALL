@@ -1,10 +1,10 @@
 #include "tll_vm.h"
 
 #include "tll_common.h"
+#include "tll_file_manager.h"
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 static void repl(void)
 {
@@ -23,72 +23,33 @@ static void repl(void)
     }
 }
 
-static char* read_file(const char* file_path)
+static void run_file(const char* file_path)
 {
-    FILE* file = fopen(file_path, "rb");
+    char* source_code = (char*) malloc(file_size(file_path) + 1);
 
-    if (file == NULL)
-    {
-        free_VM();
-        fprintf(stderr, "Could not open file \"%s\".\n", file_path);
-        exit(74);
-    }
-    fseek(file, 0L, SEEK_END);
-    size_t file_size = ftell(file);
-    rewind(file);
-
-    char* buffer = (char*)malloc(file_size + 1);
-
-    if (buffer == NULL)
+    if (source_code == NULL)
     {
         free_VM();
         fprintf(stderr, "Not enough memory to read \"%s\".\n", file_path);
         exit(74);
     }
-    size_t bytes_read = fread(buffer, sizeof(char), file_size, file);
 
-    if (bytes_read < file_size)
+    if (!read_file(file_path, source_code))
     {
         free_VM();
-        fprintf(stderr, "Could not read file \"%s\".\n", file_path);
         exit(74);
     }
-    buffer[bytes_read] = '\0';
-
-    fclose(file);
-    return buffer;
-}
-
-static void run_file(const char* file_path)
-{
-    char* source_code = read_file(file_path);
     tll_interpret_result result = interpret_code(source_code);
     free(source_code);
 
-    if (result == TLL_INTERPRET_COMPILE_ERROR) exit(65);
-    if (result == TLL_INTERPRET_RUNTIME_ERROR) exit(70);
-}
-
-const char* get_file_extension(const char* file_path)
-{
-    const char* file_dot = strchr(file_path, '.');
-
-    if (!file_dot)
+    if (result == TLL_INTERPRET_COMPILE_ERROR)
     {
-        return NULL;
+        exit(65);
     }
-    return file_dot + 1;
-}
-
-bool is_tll_file(const char* file_path)
-{
-    const char* extension = get_file_extension(file_path);
-
-    if (!extension)
+    if (result == TLL_INTERPRET_RUNTIME_ERROR)
     {
-        return false;
+        exit(70);
     }
-    return (strcmp(extension, "tll") == 0);
 }
 
 int main(int argc, const char* argv[])
