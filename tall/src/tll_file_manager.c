@@ -43,6 +43,7 @@ int read_file(const char* file_path, char* buffer)
 
     if (file == NULL)
     {
+        fclose(file);
         fprintf(stderr, "Could not open file \"%s\".\n", file_path);
         return 1;
     }
@@ -52,6 +53,7 @@ int read_file(const char* file_path, char* buffer)
 
     if (bytes_read < f_size)
     {
+        fclose(file);
         fprintf(stderr, "Could not read file \"%s\".\n", file_path);
         return 1;
     }
