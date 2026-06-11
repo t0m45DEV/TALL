@@ -30,6 +30,7 @@ static void run_file(const char* file_path)
 
     if (source_code == NULL)
     {
+        free(source_code);
         free_VM();
         fprintf(stderr, "Not enough memory to read \"%s\".\n", file_path);
         exit(EX_OSERR);
@@ -37,6 +38,7 @@ static void run_file(const char* file_path)
 
     if (!read_file(file_path, source_code))
     {
+        free(source_code);
         free_VM();
         exit(EX_IOERR);
     }
