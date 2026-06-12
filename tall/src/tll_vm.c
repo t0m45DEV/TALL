@@ -95,7 +95,7 @@ void init_VM(void)
 
 void free_VM(void)
 {
-
+    reset_stack();
 }
 
 tll_interpret_result interpret_code(const char* source_code)
