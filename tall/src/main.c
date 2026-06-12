@@ -7,6 +7,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * Boots up the interactive interpreter for TALL.
+ */
+static void repl(void);
+
+/**
+ * Compiles to TALL bytecode and runs through the TALL VM the contents of the given file.
+ */
+static void run_file(const char* file_path);
+
+int main(int argc, const char* argv[])
+{
+    init_VM();
+
+    if (argc == 1)
+    {
+        repl();
+    }
+    else if (argc == 2)
+    {
+        if (!is_tll_file(argv[1]))
+        {
+            free_VM();
+            fprintf(stderr, "File %s has not \".tll\" extension.\n", argv[1]);
+            exit(EX_DATAERR);
+        }
+        run_file(argv[1]);
+    }
+    else
+    {
+        free_VM();
+        fprintf(stderr, "Usage: %s [path]\n", argv[0]);
+        exit(EX_USAGE);
+    }
+    free_VM();
+    exit(EX_OK);
+}
+
 static void repl(void)
 {
     char line[1024];
@@ -26,7 +64,14 @@ static void repl(void)
 
 static void run_file(const char* file_path)
 {
-    char* source_code = (char*) malloc(file_size(file_path) + 1);
+    int f_size = file_size(file_path);
+
+    if (f_size == -1)
+    {
+        free_VM();
+        exit(EX_IOERR);
+    }
+    char* source_code = (char*) malloc(f_size + 1);
 
     if (source_code == NULL)
     {
@@ -55,33 +100,5 @@ static void run_file(const char* file_path)
         free_VM();
         exit(EX_SOFTWARE);
     }
-}
-
-int main(int argc, const char* argv[])
-{
-    init_VM();
-
-    if (argc == 1)
-    {
-        repl();
-    }
-    else if (argc == 2)
-    {
-        if (!is_tll_file(argv[1]))
-        {
-            free_VM();
-            fprintf(stderr, "File %s has not \".tll\" extension.\n", argv[1]);
-            exit(EX_DATAERR);
-        }
-        run_file(argv[1]);
-    }
-    else
-    {
-        free_VM();
-        fprintf(stderr, "Usage: %s [path]\n", argv[0]);
-        exit(EX_USAGE);
-    }
-    free_VM();
-    exit(EX_OK);
 }
 
