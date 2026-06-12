@@ -19,6 +19,7 @@ DEBUGGER = gdb
 
 MEM_CHECKER = valgrind
 MEM_CHECKER_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes -s
+MEM_CHECK_FILE ?= tests/test.tll
 
 TESTS_DIR = tests
 TESTS = $(shell find $(TESTS_DIR)/ -name "*.tll")
@@ -33,7 +34,7 @@ debug :
 	$(DEBUGGER) $(OUTPUT)
 
 mem_check : $(OUTPUT)
-	$(MEM_CHECKER) $(MEM_CHECKER_FLAGS) $(OUTPUT) test/test.tll
+	$(MEM_CHECKER) $(MEM_CHECKER_FLAGS) $(OUTPUT) $(MEM_CHECK_FILE)
 
 test : $(OUTPUT) $(TESTS_DIR)
 	@pass=0; fail=0; \
