@@ -30,6 +30,11 @@ size_t file_size(const char* file_path)
 {
     FILE* file = fopen(file_path, "rb");
 
+    if (file == NULL)
+    {
+        fprintf(stderr, "Could not open file \"%s\".\n", file_path);
+        return -1;
+    }
     fseek(file, 0L, SEEK_END);
     size_t file_size = ftell(file);
     fclose(file);
@@ -43,7 +48,6 @@ int read_file(const char* file_path, char* buffer)
 
     if (file == NULL)
     {
-        fclose(file);
         fprintf(stderr, "Could not open file \"%s\".\n", file_path);
         return 1;
     }
