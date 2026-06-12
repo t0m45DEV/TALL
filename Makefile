@@ -17,6 +17,9 @@ CFLAGS = -Wall -Werror -I$(INC_DIR)
 
 DEBUGGER = gdb
 
+MEM_CHECKER = valgrind
+MEM_CHECKER_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes -s
+
 $(OUTPUT) : $(SRC_FILES)
 	mkdir -p $(OUTPUT_DIR)
 	$(CC) $^ $(CFLAGS) -o $@
@@ -25,6 +28,9 @@ debug :
 	mkdir -p $(OUTPUT_DIR)
 	$(CC) $(SRC_FILES) $(CFLAGS) -g -o $(OUTPUT)
 	$(DEBUGGER) $(OUTPUT)
+
+mem_check : $(OUTPUT)
+	$(MEM_CHECKER) $(MEM_CHECKER_FLAGS) $(OUTPUT) test/test.tll
 
 install : $(OUTPUT)
 	cp $(OUTPUT) /usr/bin/$(PROGRAM)
