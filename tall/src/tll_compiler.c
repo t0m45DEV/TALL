@@ -14,8 +14,8 @@
 #include <stdio.h>
 
 typedef struct {
-    tll_token current;
-    tll_token previous;
+    tll_token* current;
+    tll_token* previous;
     bool had_error;
     bool panic_mode;
 } tll_parser;
@@ -126,17 +126,17 @@ static void error_at(tll_token* token, const char* message)
 
 static void error(const char* message)
 {
-    error_at(&parser.previous, message);
+    error_at(parser.previous, message);
 }
 
 static void error_at_current(const char* message)
 {
-    error_at(&parser.current, message);
+    error_at(parser.current, message);
 }
 
 static void emit_byte(uint8_t byte)
 {
-    write_code_chunk(current_code_chunk(), byte, parser.previous.line);
+    write_code_chunk(current_code_chunk(), byte, parser.previous->line);
 }
 
 /**
@@ -148,13 +148,13 @@ static void advance_parser(void)
 
     while (true)
     {
-        parser.current = scan_token();
+        parser.current++;
 
-        if (parser.current.type != TOKEN_ERROR)
+        if (parser.current->type != TOKEN_ERROR)
         {
             break;
         }
-        error_at_current(parser.current.start);
+        error_at_current(parser.current->start);
     }
 }
 
@@ -166,7 +166,7 @@ static void advance_parser(void)
  */
 static void consume_token(tll_token_type type, const char* message)
 {
-    if (parser.current.type == type)
+    if (parser.current->type == type)
     {
         advance_parser();
     }
@@ -219,7 +219,7 @@ static void emit_constant(tll_value value)
 
 static void number(void)
 {
-    double value = strtod(parser.previous.start, NULL);
+    double value = strtod(parser.previous->start, NULL);
     emit_constant(value);
 }
 
@@ -232,7 +232,7 @@ static void parse_precedence(tll_precedence precedence)
 {
     advance_parser();
 
-    tll_parse_func prefix_rule = get_parse_rule(parser.previous.type)->prefix;
+    tll_parse_func prefix_rule = get_parse_rule(parser.previous->type)->prefix;
 
     if (prefix_rule == NULL)
     {
@@ -241,10 +241,10 @@ static void parse_precedence(tll_precedence precedence)
     }
     prefix_rule();
 
-    while (precedence <= get_parse_rule(parser.current.type)->precedence)
+    while (precedence <= get_parse_rule(parser.current->type)->precedence)
     {
         advance_parser();
-        tll_parse_func infix_rule = get_parse_rule(parser.previous.type)->infix;
+        tll_parse_func infix_rule = get_parse_rule(parser.previous->type)->infix;
         infix_rule();
     }
 }
@@ -263,7 +263,7 @@ static void grouping(void)
 
 static void unary(void)
 {
-    tll_token_type operator_type = parser.previous.type;
+    tll_token_type operator_type = parser.previous->type;
 
     // Compile the operand.
     parse_precedence(PREC_UNARY);
@@ -282,7 +282,7 @@ static void unary(void)
 
 static void binary(void)
 {
-    tll_token_type operator_type = parser.previous.type;
+    tll_token_type operator_type = parser.previous->type;
     tll_parse_rule* rule = get_parse_rule(operator_type);
 
     parse_precedence((tll_precedence) (rule->precedence + 1));
@@ -311,14 +311,16 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
 {
     init_scanner(source_code);
     compiling_code_chunk = code_chunk;
+    parser.current = scan_source_code(source_code);
     parser.had_error = false;
     parser.panic_mode = false;
 
-    advance_parser();
+    //advance_parser();
     expression();
-    consume_token(TOKEN_EOF, "Expect end of expression");
+    consume_token(TOKEN_EOF, "Expect end of file.");
 
     end_compiler();
+    free_scanner();
     return !parser.had_error;
 }
 

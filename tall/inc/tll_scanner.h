@@ -42,8 +42,13 @@ typedef struct {
 void init_scanner(const char* source_code);
 
 /**
- * Returns the next token on the scanner.
+ * Frees the memory used by the scanner.
  */
-tll_token scan_token(void);
+void free_scanner(void);
+
+/**
+ * Returns the given source_code in the form of a collection of TALL tokens, the last one is a TOKEN_EOF.
+ */
+tll_token* scan_source_code(const char* source_code);
 
 #endif
