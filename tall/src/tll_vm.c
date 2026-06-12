@@ -9,7 +9,23 @@
 #include <stdio.h>
 #include <stdint.h>
 
+// The TALL VM.
 tll_vm VM;
+
+/**
+ * Returns the current byte being seen by the VM, and advances it immediately.
+ */
+inline static uint8_t read_byte(void);
+
+/**
+ * Returns the current two bytes being seen by the VM in the form of a 16 bits integer, and advances the VM immediately.
+ */
+inline static uint16_t read_short(void);
+
+/**
+ * Reads the short currently being seen by the VM, advances the VM immediately, and then returns the constant from the constant pool at that short position.
+ */
+inline static tll_value read_constant(void);
 
 static void reset_stack(void)
 {
@@ -21,10 +37,6 @@ static void reset_stack(void)
 
 static tll_interpret_result run_VM_code(void)
 {
-    #define READ_BYTE() (*VM.ip++)
-    #define READ_SHORT() ((uint8_t) ((READ_BYTE() << 8) | READ_BYTE()))
-    #define READ_CONSTANT() (VM.code_chunk->constants.values[READ_SHORT()])
-
     while (true)
     {
         #ifdef TLL_DEBUG_TRACE_EXECUTION
@@ -43,10 +55,10 @@ static tll_interpret_result run_VM_code(void)
 
         tll_value a, b; // For the binary operations
 
-        switch (instruction = READ_BYTE())
+        switch (instruction = read_byte())
         {
             case OP_CONSTANT:
-                push(READ_CONSTANT());
+                push(read_constant());
                 break;
 
             case OP_ADD:
@@ -83,9 +95,6 @@ static tll_interpret_result run_VM_code(void)
                 return TLL_INTERPRET_OK;
         }
     }
-    #undef READ_CONSTANT
-    #undef READ_SHORT
-    #undef READ_BYTE
 }
 
 void init_VM(void)
@@ -135,5 +144,22 @@ tll_value pop(void)
 {
     VM.stack_top--;
     return *VM.stack_top;
+}
+
+inline static uint8_t read_byte(void)
+{
+    return *VM.ip++;
+}
+
+inline static uint16_t read_short(void)
+{
+    uint8_t high = read_byte();
+    uint8_t low = read_byte();
+    return (uint16_t) ((high << 8) | low);
+}
+
+inline static tll_value read_constant(void)
+{
+    return VM.code_chunk->constants.values[read_short()];
 }
 
