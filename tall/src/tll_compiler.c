@@ -10,86 +10,7 @@
 #include "tll_debug.h"
 #endif
 
-#include <stdlib.h>
 #include <stdio.h>
-
-typedef struct {
-    tll_token* current;
-    tll_token* previous;
-    bool had_error;
-    bool panic_mode;
-} tll_parser;
-
-typedef enum {
-    PREC_NONE,
-    PREC_ASSIGNMENT,  // =
-    PREC_OR,          // or
-    PREC_AND,         // and
-    PREC_EQUALITY,    // == !=
-    PREC_COMPARISON,  // < > <= >=
-    PREC_TERM,        // + -
-    PREC_FACTOR,      // * /
-    PREC_UNARY,       // ! -
-    PREC_CALL,        // . ()
-    PREC_PRIMARY
-} tll_precedence;
-
-typedef void (*tll_parse_func)(void);
-
-typedef struct {
-    tll_parse_func prefix;
-    tll_parse_func infix;
-    tll_precedence precedence;
-} tll_parse_rule;
-
-static void number(void);
-static void grouping(void);
-static void unary(void);
-static void binary(void);
-
-tll_parse_rule parse_rules[] = {
-    [TOKEN_LEFT_PAREN]    = {grouping, NULL,   PREC_NONE},
-    [TOKEN_RIGHT_PAREN]   = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_LEFT_BRACE]    = {NULL,     NULL,   PREC_NONE}, 
-    [TOKEN_RIGHT_BRACE]   = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_COMMA]         = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_DOT]           = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_MINUS]         = {unary,    binary, PREC_TERM},
-    [TOKEN_PLUS]          = {NULL,     binary, PREC_TERM},
-    [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
-    [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
-    [TOKEN_BANG]          = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_BANG_EQUAL]    = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_EQUAL_EQUAL]   = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_GREATER]       = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_GREATER_EQUAL] = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_LESS]          = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_LESS_EQUAL]    = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_IDENTIFIER]    = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_STRING]        = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
-    [TOKEN_AND]           = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_CLASS]         = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_FALSE]         = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_FOR]           = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_FUN]           = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_IF]            = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_NIL]           = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_OR]            = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_RETURN]        = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_SUPER]         = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_THIS]          = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_TRUE]          = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_VAR]           = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_WHILE]         = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_ERROR]         = {NULL,     NULL,   PREC_NONE},
-    [TOKEN_EOF]           = {NULL,     NULL,   PREC_NONE},
-};
-
-tll_parser parser;
 
 tll_code_chunk* compiling_code_chunk;
 
@@ -98,104 +19,20 @@ static tll_code_chunk* current_code_chunk(void)
     return compiling_code_chunk;
 }
 
-static void error_at(tll_token* token, const char* message)
+static void emit_byte(uint8_t byte, int line)
 {
-    if (parser.panic_mode)
-    {
-        // Avoid error cascades.
-        return;
-    }
-    parser.panic_mode = true;
-    fprintf(stderr, "[line %d] Error", token->line);
-
-    if (token->type == TOKEN_EOF)
-    {
-        fprintf(stderr, " at end");
-    }
-    else if (token->type == TOKEN_ERROR)
-    {
-        // Do nothing.
-    }
-    else
-    {
-        fprintf(stderr, " at '%.*s'", token->length, token->start);
-    }
-    fprintf(stderr, ": %s\n", message);
-    parser.had_error = true;
+    write_code_chunk(current_code_chunk(), byte, line);
 }
 
-static void error(const char* message)
+static void emit_return(int line)
 {
-    error_at(parser.previous, message);
+    emit_byte(OP_RETURN, line);
 }
 
-static void error_at_current(const char* message)
+static void emit_bytes(uint8_t byte_1, uint8_t byte_2, int line)
 {
-    error_at(parser.current, message);
-}
-
-static void emit_byte(uint8_t byte)
-{
-    write_code_chunk(current_code_chunk(), byte, parser.previous->line);
-}
-
-/**
- * Moves the parser to the next token, if an error is detected it repors it.
- */
-static void advance_parser(void)
-{
-    parser.previous = parser.current;
-
-    while (true)
-    {
-        parser.current++;
-
-        if (parser.current->type != TOKEN_ERROR)
-        {
-            break;
-        }
-        error_at_current(parser.current->start);
-    }
-}
-
-/**
- * Checks if the current token being seen by the parser has the same type as the given one.
- *
- * If true advances the parser to the next token.
- * If false an error with the given message is reported.
- */
-static void consume_token(tll_token_type type, const char* message)
-{
-    if (parser.current->type == type)
-    {
-        advance_parser();
-    }
-    else
-    {
-        error_at_current(message);
-    }
-}
-
-static void emit_return(void)
-{
-    emit_byte(OP_RETURN);
-}
-
-static void end_compiler(void)
-{
-    emit_return();
-    #ifdef DEBUG_PRINT_CODE
-    if (!parser.had_error)
-    {
-        disassemble_code_chunk(current_code_chunk(), "code");
-    }
-    #endif
-}
-
-static void emit_bytes(uint8_t byte_1, uint8_t byte_2)
-{
-    emit_byte(byte_1);
-    emit_byte(byte_2);
+    emit_byte(byte_1, line);
+    emit_byte(byte_2, line);
 }
 
 static uint16_t make_constant(tll_value value)
@@ -203,129 +40,91 @@ static uint16_t make_constant(tll_value value)
     int constant = add_constant(current_code_chunk(), value);
     if (constant > UINT16_MAX)
     {
-        error("Too many constant in one code chunk.");
+        printf("[FATAL ERROR] Too many constant in one code chunk.\n");
         return 0;
     }
     return (uint16_t) constant;
 }
 
-static void emit_constant(tll_value value)
+static void emit_constant(tll_value value, int line)
 {
-    emit_byte(OP_CONSTANT);
+    emit_byte(OP_CONSTANT, line);
     uint16_t const_index = make_constant(value);
 
-    emit_bytes((uint8_t) (const_index >> 8), (uint8_t) (const_index & 0xFF));
+    emit_bytes((uint8_t) (const_index >> 8), (uint8_t) (const_index & 0xFF), line);
 }
 
-static void number(void)
+static void compile_AST_node(tll_AST* node)
 {
-    double value = strtod(parser.previous->start, NULL);
-    emit_constant(value);
-}
-
-static tll_parse_rule* get_parse_rule(tll_token_type type)
-{
-    return &parse_rules[type];
-}
-
-static void parse_precedence(tll_precedence precedence)
-{
-    advance_parser();
-
-    tll_parse_func prefix_rule = get_parse_rule(parser.previous->type)->prefix;
-
-    if (prefix_rule == NULL)
+    switch (node->type)
     {
-        error("Expect expression.");
-        return;
-    }
-    prefix_rule();
+        case AST_LITERAL:
+            emit_constant(node->as.literal.value, node->line);
+            break;
 
-    while (precedence <= get_parse_rule(parser.current->type)->precedence)
-    {
-        advance_parser();
-        tll_parse_func infix_rule = get_parse_rule(parser.previous->type)->infix;
-        infix_rule();
-    }
-}
+        case AST_UNARY:
+            compile_AST_node(node->as.unary.operand);
 
-static void expression(void)
-{
-    parse_precedence(PREC_ASSIGNMENT);
-}
+            switch (node->as.unary.op)
+            {
+                case TOKEN_MINUS:
+                    emit_byte(OP_NEGATE, node->line);
+                    break;
+                default:
+                    break; // Unreachable.
+            }
+            break;
 
+        case AST_GROUPING:
+            compile_AST_node(node->as.grouping.expression);
+            break;
 
-static void grouping(void)
-{
-    expression();
-    consume_token(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
-}
+        case AST_BINARY:
+            compile_AST_node(node->as.binary.left);
+            compile_AST_node(node->as.binary.right);
 
-static void unary(void)
-{
-    tll_token_type operator_type = parser.previous->type;
-
-    // Compile the operand.
-    parse_precedence(PREC_UNARY);
-
-    // Emit the operator instruction.
-    switch (operator_type)
-    {
-        case TOKEN_MINUS:
-            emit_byte(OP_NEGATE);
+            switch (node->as.binary.op)
+            {
+                case TOKEN_PLUS:
+                    emit_byte(OP_ADD, node->line);
+                    break;
+                case TOKEN_MINUS:
+                    emit_byte(OP_SUBSTRACT, node->line);
+                    break;
+                case TOKEN_STAR:
+                    emit_byte(OP_MULTIPLY, node->line);
+                    break;
+                case TOKEN_SLASH:
+                    emit_byte(OP_DIVIDE, node->line);
+                    break;
+            }
             break;
 
         default:
             return; // Unreachable.
-    }
-}
-
-static void binary(void)
-{
-    tll_token_type operator_type = parser.previous->type;
-    tll_parse_rule* rule = get_parse_rule(operator_type);
-
-    parse_precedence((tll_precedence) (rule->precedence + 1));
-
-    switch (operator_type)
-    {
-        case TOKEN_PLUS:
-            emit_byte(OP_ADD);
-            break;
-        case TOKEN_MINUS:
-            emit_byte(OP_SUBSTRACT);
-            break;
-        case TOKEN_STAR:
-            emit_byte(OP_MULTIPLY);
-            break;
-        case TOKEN_SLASH:
-            emit_byte(OP_DIVIDE);
-            break;
-        default:
-            return; // Unreachable.
-
     }
 }
 
 bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
 {
-    init_scanner(source_code);
     compiling_code_chunk = code_chunk;
-    parser.current = scan_source_code(source_code);
-    parser.had_error = false;
-    parser.panic_mode = false;
+    tll_AST* AST = create_AST(scan_source_code(source_code));
 
-    tll_AST* AST = create_AST(parser.current);
-    print_AST(AST, "Expression AST");
+    #ifdef DEBUG_PRINT_CODE
+        print_AST(AST, "AST");
+    #endif
 
-    //advance_parser();
-    expression();
-    consume_token(TOKEN_EOF, "Expect end of file.");
+    compile_AST_node(AST);
+    emit_return(2);
 
     free_AST(AST);
-
-    end_compiler();
     free_scanner();
-    return !parser.had_error;
+
+    #ifdef DEBUG_PRINT_CODE
+        disassemble_code_chunk(code_chunk, "code");
+    #endif
+
+    // TODO: Error checking
+    return true;
 }
 
