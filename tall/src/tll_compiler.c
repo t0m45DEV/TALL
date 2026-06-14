@@ -14,27 +14,42 @@
 
 tll_code_chunk* compiling_code_chunk;
 
+/**
+ * Returns the code chunk now being compiled.
+ */
 static tll_code_chunk* current_code_chunk(void)
 {
     return compiling_code_chunk;
 }
 
+/**
+ * Saves to the current code chunk the given byte, and saves it the given line number.
+ */
 static void emit_byte(uint8_t byte, int line)
 {
     write_code_chunk(current_code_chunk(), byte, line);
 }
 
+/**
+ * Saves at the current code chunk an OP_RETURN.
+ */
 static void emit_return(int line)
 {
     emit_byte(OP_RETURN, line);
 }
 
+/**
+ * Saves two bytes, in the order they are given into the current code chunk.
+ */
 static void emit_bytes(uint8_t byte_1, uint8_t byte_2, int line)
 {
     emit_byte(byte_1, line);
     emit_byte(byte_2, line);
 }
 
+/**
+ * Returns the constants pool index for a given value.
+ */
 static uint16_t make_constant(tll_value value)
 {
     int constant = add_constant(current_code_chunk(), value);
@@ -46,6 +61,9 @@ static uint16_t make_constant(tll_value value)
     return (uint16_t) constant;
 }
 
+/**
+ * Saves a OP_CONSTANT with the constants pool index for the given value and saves it the given line info.
+ */
 static void emit_constant(tll_value value, int line)
 {
     emit_byte(OP_CONSTANT, line);
@@ -54,6 +72,9 @@ static void emit_constant(tll_value value, int line)
     emit_bytes((uint8_t) (const_index >> 8), (uint8_t) (const_index & 0xFF), line);
 }
 
+/**
+ * Travels recursively through the given AST and saves bytecode to the current code chunk (see current_code_chunk).
+ */
 static void compile_AST_node(tll_AST* node)
 {
     switch (node->type)
