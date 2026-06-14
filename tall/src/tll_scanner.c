@@ -24,6 +24,11 @@ typedef struct {
 tll_scanner scanner;
 
 /**
+ * Initialize the scanner for the lexical analisis.
+ */
+static void init_scanner(const char* source_code);
+
+/**
  * Returns the next token on the scanner.
  */
 static tll_token scan_token(void);
@@ -112,16 +117,6 @@ static tll_token string(void);
  */
 static tll_token identifier(void);
 
-void init_scanner(const char* source_code)
-{
-    scanner.start = source_code;
-    scanner.current = source_code;
-    scanner.line = 1;
-    scanner.tokens.count = 0;
-    scanner.tokens.capacity = 0;
-    scanner.tokens.list = NULL;
-}
-
 void free_scanner(void)
 {
     FREE_ARRAY(tll_token, scanner.tokens.list, scanner.tokens.capacity);
@@ -158,6 +153,16 @@ tll_token* scan_source_code(const char* source_code)
     scanner.tokens.count++;
 
     return scanner.tokens.list;
+}
+
+static void init_scanner(const char* source_code)
+{
+    scanner.start = source_code;
+    scanner.current = source_code;
+    scanner.line = 1;
+    scanner.tokens.count = 0;
+    scanner.tokens.capacity = 0;
+    scanner.tokens.list = NULL;
 }
 
 static tll_token scan_token(void)

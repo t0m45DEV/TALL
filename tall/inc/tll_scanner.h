@@ -37,11 +37,6 @@ typedef struct {
 } tll_token;
 
 /**
- * Initialize the scanner for the lexical analisis.
- */
-void init_scanner(const char* source_code);
-
-/**
  * Frees the memory used by the scanner.
  */
 void free_scanner(void);
