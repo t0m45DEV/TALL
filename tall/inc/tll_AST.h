@@ -14,6 +14,7 @@ typedef enum {
 
 typedef struct tll_AST {
     tll_AST_type type;
+    int line;
     union {
         struct {
             tll_value value;

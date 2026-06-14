@@ -218,10 +218,12 @@ static tll_AST* AST_term(void)
         AST_advance();
 
         tll_token_type op = AST_parser.previous->type;
+        int line = AST_parser.previous->line;
         tll_AST* right = AST_factor();
 
         tll_AST* node = alloc_node();
         node->type = AST_BINARY;
+        node->line = line;
 
         node->as.binary.op = op;
         node->as.binary.left = left;
@@ -241,10 +243,12 @@ static tll_AST* AST_factor(void)
         AST_advance();
 
         tll_token_type op = AST_parser.previous->type;
+        int line = AST_parser.previous->line;
         tll_AST* right = AST_unary();
 
         tll_AST* node = alloc_node();
         node->type = AST_BINARY;
+        node->line = line;
 
         node->as.binary.op = op;
         node->as.binary.left = left;
@@ -262,10 +266,12 @@ static tll_AST* AST_unary(void)
         AST_advance();
 
         tll_token_type op = AST_parser.previous->type;
+        int line = AST_parser.previous->line;
         tll_AST* operand = AST_unary();
 
         tll_AST* node = alloc_node();
         node->type = AST_UNARY;
+        node->line = line;
 
         node->as.unary.op = op;
         node->as.unary.operand = operand;
@@ -282,6 +288,7 @@ static tll_AST* AST_primary(void)
     {
         tll_AST* node = alloc_node();
         node->type = AST_LITERAL;
+        node->line = AST_parser.previous->line;
         node->as.literal.value = strtod(AST_parser.previous->start, NULL);
         return node;
     }
@@ -289,6 +296,7 @@ static tll_AST* AST_primary(void)
     // Grouping
     if (AST_match(TOKEN_LEFT_PAREN))
     {
+        int line = AST_parser.previous->line;
         tll_AST* expr = AST_expression();
 
         if (!AST_match(TOKEN_RIGHT_PAREN))
@@ -298,6 +306,7 @@ static tll_AST* AST_primary(void)
         }
         tll_AST* node = alloc_node();
         node->type = AST_GROUPING;
+        node->line = line;
         node->as.grouping.expression = expr;
 
         return node;
