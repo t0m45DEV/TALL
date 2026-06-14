@@ -1,10 +1,10 @@
 #include "tll_compiler.h"
 
+#include "tll_AST.h"
 #include "tll_code_chunk.h"
 #include "tll_common.h"
 #include "tll_scanner.h"
 #include "tll_value.h"
-#include <stdint.h>
 
 #ifdef DEBUG_PRINT_CODE
 #include "tll_debug.h"
@@ -315,9 +315,14 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
     parser.had_error = false;
     parser.panic_mode = false;
 
+    tll_AST* AST = create_AST(parser.current);
+    print_AST(AST, "Expression AST");
+
     //advance_parser();
     expression();
     consume_token(TOKEN_EOF, "Expect end of file.");
+
+    free_AST(AST);
 
     end_compiler();
     free_scanner();
