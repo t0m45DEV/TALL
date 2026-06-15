@@ -29,6 +29,6 @@ void free_arena(tll_memory_arena* arena);
  *
  * If there is no more space, it creates a new arena next to the given one, and returns the pointer to the new arena.
  */
-tll_memory_arena* add_to_arena(tll_memory_arena* arena, void* element, size_t size);
+tll_memory_arena* add_to_arena(tll_memory_arena* arena, const void* element, size_t size);
 
 #endif
