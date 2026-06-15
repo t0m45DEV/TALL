@@ -116,11 +116,11 @@ static tll_interpret_result run_VM_code(void)
             disassemble_instruction(VM.code_chunk, (int) (VM.ip - VM.code_chunk->code));
         #endif
 
-        uint8_t instruction;
+        uint8_t instruction = read_byte();
 
         tll_value a, b; // For the binary operations
 
-        switch (instruction = read_byte())
+        switch (instruction)
         {
             case OP_CONSTANT:
                 push(read_constant());
