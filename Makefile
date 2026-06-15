@@ -13,13 +13,16 @@ PROGRAM = tall
 OUTPUT = $(OUTPUT_DIR)/$(PROGRAM)
 
 CC = gcc
-CFLAGS = -Wall -Werror -I$(INC_DIR)
+CFLAGS = -Wall -Werror -Wextra -Wshadow -I$(INC_DIR)
 
 DEBUGGER = gdb
 
 MEM_CHECKER = valgrind
 MEM_CHECKER_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes -s
 MEM_CHECK_FILE ?= tests/test.tll
+
+STATIC_CHECKER = cppcheck
+STATIC_CHECKER_FLAGS = --enable=all --suppress=missingIncludeSystem -I $(INC_DIR)
 
 TESTS_DIR = tests
 TESTS = $(shell find $(TESTS_DIR)/ -name "*.tll")
@@ -49,6 +52,9 @@ test : $(OUTPUT) $(TESTS_DIR)
 	done; \
 	echo ""; \
 	echo "Results: $$pass passed, $$fail failed."
+
+analyze:
+	$(STATIC_CHECKER) $(STATIC_CHECKER_FLAGS) $(SRC_DIR)
 
 install : $(OUTPUT)
 	cp $(OUTPUT) /usr/bin/$(PROGRAM)
