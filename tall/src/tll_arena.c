@@ -32,7 +32,7 @@ void free_arena(tll_memory_arena* arena)
         current->available = NULL;
         current->space = reallocate(current->space, ARENA_SIZE, 0);
 
-        current = reallocate(current, sizeof(tll_memory_arena), 0);
+        reallocate(current, sizeof(tll_memory_arena), 0);
         current = next;
     }
 }
