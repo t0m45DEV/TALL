@@ -45,7 +45,7 @@ tll_AST* create_AST(tll_token* tokens);
 /**
  * Frees the memory used by the AST.
  */
-void free_AST(tll_AST* AST);
+void end_AST(void);
 
 /**
  * Prints out in a "nice" way the given AST.

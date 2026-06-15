@@ -3,6 +3,7 @@
 #include "tll_memory.h"
 #include "tll_arena.h"
 #include "tll_scanner.h"
+#include "tll_value.h"
 
 #include <stdlib.h>
 
@@ -84,7 +85,7 @@ tll_AST* create_AST(tll_token* tokens)
     return AST_expression();
 }
 
-void free_AST(tll_AST* AST)
+void end_AST(void)
 {
     free_arena(first_arena);
     first_arena = NULL;
@@ -123,7 +124,24 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
     switch (AST->type)
     {
         case AST_LITERAL:
-            printf("LITERAL (%f)\n", AST->as.literal.value);
+            printf("LITERAL (");
+
+            switch (AST->as.literal.value.type)
+            {
+                case VAL_NULL:
+                    break;
+                case VAL_BOOL:
+                    printf("bool ");
+                    break;
+                case VAL_INT:
+                    printf("int ");
+                    break;
+                case VAL_FLOAT:
+                    printf("float ");
+                    break;
+            }
+            print_value(AST->as.literal.value);
+            printf(")\n");
             break;
 
         case AST_UNARY:
@@ -284,12 +302,20 @@ static tll_AST* AST_unary(void)
 static tll_AST* AST_primary(void)
 {
     // Number literals
-    if (AST_match(TOKEN_NUMBER))
+    if (AST_match(TOKEN_FLOAT_NUM))
     {
         tll_AST* node = alloc_node();
         node->type = AST_LITERAL;
         node->line = AST_parser.previous->line;
-        node->as.literal.value = strtod(AST_parser.previous->start, NULL);
+        node->as.literal.value = FLOAT_VAL(strtod(AST_parser.previous->start, NULL));
+        return node;
+    }
+    else if (AST_match(TOKEN_INT_NUM))
+    {
+        tll_AST* node = alloc_node();
+        node->type = AST_LITERAL;
+        node->line = AST_parser.previous->line;
+        node->as.literal.value = INT_VAL(atoi(AST_parser.previous->start));
         return node;
     }
 

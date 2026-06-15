@@ -398,6 +398,8 @@ static tll_token error_token(const char* message)
 
 static tll_token number(void)
 {
+    tll_token_type type = TOKEN_INT_NUM;
+
     while (is_digit(peek()))
     {
         advance();
@@ -406,13 +408,14 @@ static tll_token number(void)
     {
         // Consume the '.'
         advance();
+        type = TOKEN_FLOAT_NUM;
 
         while (is_digit(peek()))
         {
             advance();
         }
     }
-    return make_token(TOKEN_NUMBER);
+    return make_token(type);
 }
 
 static tll_token string(void)

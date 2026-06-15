@@ -30,6 +30,30 @@ void write_value_array(tll_value_array *value_array, tll_value value)
 
 void print_value(tll_value value)
 {
-    printf("%g", value);
+    switch (value.type)
+    {
+        case VAL_NULL:
+            printf("null");
+            break;
+
+        case VAL_BOOL:
+            if (AS_BOOL(value))
+            {
+                printf("true");
+            }
+            else
+            {
+                printf("false");
+            }
+            break;
+
+        case VAL_INT:
+            printf("%i", AS_INT(value));
+            break;
+
+        case VAL_FLOAT:
+            printf("%g", AS_FLOAT(value));
+            break;
+    }
 }
 

@@ -138,7 +138,7 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
     compile_AST_node(AST);
     emit_return(2);
 
-    free_AST(AST);
+    end_AST();
     free_scanner();
 
     #ifdef DEBUG_PRINT_CODE

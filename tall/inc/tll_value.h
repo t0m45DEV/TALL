@@ -3,10 +3,43 @@
 
 #include "tll_common.h"
 
+#define BOOL_VAL(value)   ((tll_value) {VAL_BOOL,  {.tll_bool  = value}})
+#define NULL_VAL          ((tll_value) {VAL_NULL,  {.tll_int   = 0}})
+#define INT_VAL(value)    ((tll_value) {VAL_INT,   {.tll_int   = value}})
+#define FLOAT_VAL(value)  ((tll_value) {VAL_FLOAT, {.tll_float = value}})
+
+#define AS_BOOL(value)  ((value).as.tll_bool)
+#define AS_INT(value)   ((value).as.tll_int)
+#define AS_FLOAT(value) ((value).as.tll_float)
+
+#define IS_BOOL(value)  ((value).type == VAL_BOOL)
+#define IS_NULL(value)  ((value).type == VAL_NULL)
+#define IS_INT(value)   ((value).type == VAL_INT)
+#define IS_FLOAT(value) ((value).type == VAL_FLOAT)
+
+#define IS_NUMBER(value) ((value).type == VAL_INT || (value).type == VAL_FLOAT)
+
+/**
+ * The posible types for the data on TALL.
+ */
+typedef enum {
+    VAL_NULL,
+    VAL_BOOL,
+    VAL_INT,
+    VAL_FLOAT,
+} tll_value_type;
+
 /**
  * This the representation in C for a TALL value.
  */
-typedef double tll_value;
+typedef struct {
+    tll_value_type type;
+    union {
+        bool tll_bool;
+        int tll_int;
+        double tll_float;
+    } as;
+} tll_value;
 
 /**
  * A collection of TALL values, in the form of a dynamic array.
