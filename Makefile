@@ -19,7 +19,7 @@ DEBUGGER = gdb
 
 MEM_CHECKER = valgrind
 MEM_CHECKER_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes -s
-MEM_CHECK_FILE ?= tests/test.tll
+MEM_CHECK_FILE ?= tests/ints.tll
 
 STATIC_CHECKER = clang-tidy
 STATIC_CHECKER_FLAGS = --checks="-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-clang-analyzer-valist.Uninitialized"
