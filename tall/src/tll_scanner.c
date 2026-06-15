@@ -322,7 +322,7 @@ static tll_token_type identifier_type(void)
         case 'i':
             return check_keyword(1, 1, "f", TOKEN_IF);
         case 'n':
-            return check_keyword(1, 2, "il", TOKEN_NIL);
+            return check_keyword(1, 3, "ull", TOKEN_NIL);
         case 'o':
             return check_keyword(1, 1, "r", TOKEN_OR);
         case 'r':
