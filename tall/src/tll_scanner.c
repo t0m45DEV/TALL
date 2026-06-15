@@ -36,27 +36,27 @@ static tll_token scan_token(void);
 /**
  * Returns true if the scanner is currently at the end of the file.
  */
-inline static bool is_at_end(void);
+static inline bool is_at_end(void);
 
 /**
  * Returns true if the given character is a digit.
  */
-inline static bool is_digit(char c);
+static inline bool is_digit(char c);
 
 /**
  * Returns true if the given character is a letter a '_'.
  */
-inline static bool is_alpha(char c);
+static inline bool is_alpha(char c);
 
 /**
  * Returns the character being read at the current lexeme, and advances the scanner to the next character.
  */
-inline static char advance(void);
+static inline char advance(void);
 
 /**
  * Returns the character being read at the current lexeme.
  */
-inline static char peek(void);
+static inline char peek(void);
 
 /**
  * Returns the next character of the one being read at the current lexeme, is a "look ahead" function.
@@ -224,28 +224,28 @@ static tll_token scan_token(void)
     return error_token("Unexpected character.");
 }
 
-inline static bool is_at_end(void)
+static inline bool is_at_end(void)
 {
     return (*scanner.current == '\0');
 }
 
-inline static bool is_digit(char c)
+static inline bool is_digit(char c)
 {
     return c >= '0' && c <= '9';
 }
 
-inline static bool is_alpha(char c)
+static inline bool is_alpha(char c)
 {
     return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_');
 }
 
-inline static char advance(void)
+static inline char advance(void)
 {
     scanner.current++;
     return scanner.current[-1];
 }
 
-inline static char peek(void)
+static inline char peek(void)
 {
     return *scanner.current;
 }

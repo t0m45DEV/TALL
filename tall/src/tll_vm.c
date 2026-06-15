@@ -21,22 +21,22 @@ static tll_interpret_result run_VM_code(void);
 /**
  * Returns the current byte being seen by the VM, and advances it immediately.
  */
-inline static uint8_t read_byte(void);
+static inline uint8_t read_byte(void);
 
 /**
  * Returns the current two bytes being seen by the VM in the form of a 16 bits integer, and advances the VM immediately.
  */
-inline static uint16_t read_short(void);
+static inline uint16_t read_short(void);
 
 /**
  * Reads the short currently being seen by the VM, advances the VM immediately, and then returns the constant from the constant pool at that short position.
  */
-inline static tll_value read_constant(void);
+static inline tll_value read_constant(void);
 
 /**
  * Returns the value at distance from the current top of the VM stack.
  */
-inline static tll_value peek(int distance);
+static inline tll_value peek(int distance);
 
 /**
  * Given a message, it prints out an error with the location of the detected bug.
@@ -395,24 +395,24 @@ static tll_interpret_result run_VM_code(void)
     }
 }
 
-inline static uint8_t read_byte(void)
+static inline uint8_t read_byte(void)
 {
     return *VM.ip++;
 }
 
-inline static uint16_t read_short(void)
+static inline uint16_t read_short(void)
 {
     uint8_t high = read_byte();
     uint8_t low = read_byte();
     return (uint16_t) ((high << 8) | low);
 }
 
-inline static tll_value read_constant(void)
+static inline tll_value read_constant(void)
 {
     return VM.code_chunk->constants.values[read_short()];
 }
 
-inline static tll_value peek(int distance)
+static inline tll_value peek(int distance)
 {
     return VM.stack_top[-1 - distance];
 }

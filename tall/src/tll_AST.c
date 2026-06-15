@@ -44,7 +44,7 @@ static void AST_advance(void);
 /**
  * Returns true if the current token being parsed has the same type as the given one.
  */
-inline static bool AST_check(tll_token_type type);
+static inline bool AST_check(tll_token_type type);
 
 /**
  * Returns true if the current token being parsed has the same type as the given one, and if that's the case advances the AST.
@@ -299,7 +299,7 @@ static void AST_advance(void)
     AST_parser.current++;
 }
 
-inline static bool AST_check(tll_token_type type)
+static inline bool AST_check(tll_token_type type)
 {
     return AST_parser.current->type == type;
 }
