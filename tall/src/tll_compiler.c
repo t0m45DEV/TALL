@@ -174,17 +174,25 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
         print_AST(AST, "AST");
     #endif
 
-    compile_AST_node(AST);
-    emit_return(2);
+    bool parsing_error = has_error(AST);
 
+    if (!parsing_error)
+    {
+        compile_AST_node(AST);
+        emit_return(2);
+
+        #ifdef DEBUG_PRINT_CODE
+            disassemble_code_chunk(code_chunk, "code");
+        #endif
+    }
+    else
+    {
+        fprintf(stderr, "%s\n", get_error(AST)->as.error.message);
+    }
     end_AST();
     free_scanner();
 
-    #ifdef DEBUG_PRINT_CODE
-        disassemble_code_chunk(code_chunk, "code");
-    #endif
-
     // TODO: Error checking
-    return true;
+    return !parsing_error;
 }
 

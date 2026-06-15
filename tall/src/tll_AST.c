@@ -110,6 +110,72 @@ void print_AST(const tll_AST* AST, const char* name)
     print_AST_recursive(AST, "", true);
 }
 
+bool has_error(const tll_AST* AST)
+{
+    bool res = false;
+
+    switch (AST->type)
+    {
+        case AST_ERROR:
+            res = true;
+            break;
+
+        case AST_LITERAL:
+            break;
+
+        case AST_UNARY:
+            res = has_error(AST->as.unary.operand);
+            break;
+
+        case AST_GROUPING:
+            res = has_error(AST->as.grouping.expression);
+            break;
+
+        case AST_BINARY:
+            res = has_error(AST->as.binary.left) || has_error(AST->as.binary.right);
+            break;
+    }
+    return res;
+}
+
+tll_AST* get_error(tll_AST* AST)
+{
+    tll_AST* temp;
+    tll_AST* res = NULL;
+
+    switch (AST->type)
+    {
+        case AST_ERROR:
+            res = AST;
+            break;
+
+        case AST_LITERAL:
+            break;
+
+        case AST_UNARY:
+            res = get_error(AST->as.unary.operand);
+            break;
+
+        case AST_GROUPING:
+            res = get_error(AST->as.grouping.expression);
+            break;
+
+        case AST_BINARY:
+            temp = get_error(AST->as.binary.left);
+
+            if (temp == NULL)
+            {
+                res = get_error(AST->as.binary.right);
+            }
+            else
+            {
+                res = temp;
+            }
+            break;
+    }
+    return res;
+}
+
 static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_last)
 {
     printf("%s", prefix);
@@ -135,6 +201,10 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
 
     switch (AST->type)
     {
+        case AST_ERROR:
+            printf("ERROR: %s\n", AST->as.error.message);
+            break;
+
         case AST_LITERAL:
             printf("LITERAL (");
             print_type(AST->as.literal.value);
@@ -426,19 +496,26 @@ static tll_AST* AST_primary(void)
         int line = AST_parser.previous->line;
         tll_AST* expr = AST_expression();
 
+        tll_AST* node = alloc_node();
+
         if (!AST_match(TOKEN_RIGHT_PAREN))
         {
-            fprintf(stderr, "Expected ')' after expression.\n");
-            return NULL;
+            node->type = AST_ERROR;
+            node->line = line;
+            node->as.error.message = "Expected ')' after expression.";
+            return node;
         }
-        tll_AST* node = alloc_node();
         node->type = AST_GROUPING;
         node->line = line;
         node->as.grouping.expression = expr;
 
         return node;
     }
-    fprintf(stderr, "Expected expression.\n");
-    return NULL;
+    tll_AST* node = alloc_node();
+
+    node->type = AST_ERROR;
+    node->line = AST_parser.previous->line;
+    node->as.error.message = "Expected expression.";
+    return node;
 }
 

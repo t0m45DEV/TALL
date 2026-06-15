@@ -4,8 +4,10 @@
 #include "tll_value.h"
 #include "tll_scanner.h"
 #include <stdint.h>
+#include <threads.h>
 
 typedef enum {
+    AST_ERROR,
     AST_LITERAL,
     AST_UNARY,
     AST_BINARY,
@@ -16,6 +18,10 @@ typedef struct tll_AST {
     tll_AST_type type;
     int line;
     union {
+        struct {
+            const char* message;
+        } error;
+
         struct {
             tll_value value;
         } literal;
@@ -51,5 +57,17 @@ void end_AST(void);
  * Prints out in a "nice" way the given AST.
  */
 void print_AST(const tll_AST* AST, const char* name);
+
+/**
+ * Returns true if there is an AST_ERROR node inside the given AST.
+ */
+bool has_error(const tll_AST* AST);
+
+/**
+ * Returns the first node with type AST_ERROR it founds.
+ *
+ * Returns NULL otherwise.
+ */
+tll_AST* get_error(tll_AST* AST);
 
 #endif
