@@ -28,6 +28,23 @@ void write_value_array(tll_value_array *value_array, tll_value value)
     value_array->count++;
 }
 
+bool are_equals(tll_value value1, tll_value value2)
+{
+    if (IS_BOOL(value1) && IS_BOOL(value2))
+    {
+        return AS_BOOL(value1) == AS_BOOL(value2);
+    }
+    else if (IS_INT(value1) && IS_INT(value2))
+    {
+        return AS_INT(value1) == AS_INT(value2);
+    }
+    else if (IS_FLOAT(value1) && IS_FLOAT(value2))
+    {
+        return AS_FLOAT(value1) == AS_FLOAT(value2);
+    }
+    return false; // Unreachable.
+}
+
 void print_value(tll_value value)
 {
     switch (value.type)

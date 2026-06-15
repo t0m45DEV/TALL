@@ -66,6 +66,11 @@ void free_value_array(tll_value_array* value_array);
 void write_value_array(tll_value_array* value_array, tll_value value);
 
 /**
+ * Returns true if the two given values are equal.
+ */
+bool are_equals(tll_value value1, tll_value value2);
+
+/**
  * Prints out to the standard output the given value.
  */
 void print_value(tll_value value);
