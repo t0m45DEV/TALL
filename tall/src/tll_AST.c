@@ -320,6 +320,33 @@ static tll_AST* AST_primary(void)
         node->as.literal.value = INT_VAL(atoi(AST_parser.previous->start));
         return node;
     }
+    // Boolean
+    if (AST_match(TOKEN_TRUE) || AST_match(TOKEN_FALSE))
+    {
+        tll_AST* node = alloc_node();
+        node->type = AST_LITERAL;
+        node->line = AST_parser.previous->line;
+
+        if (*AST_parser.previous->start == 't')
+        {
+            node->as.literal.value = BOOL_VAL(true);
+        }
+        else
+        {
+            node->as.literal.value = BOOL_VAL(false);
+        }
+        return node;
+    }
+
+    // Null
+    if (AST_match(TOKEN_NIL))
+    {
+        tll_AST* node = alloc_node();
+        node->type = AST_LITERAL;
+        node->line = AST_parser.previous->line;
+        node->as.literal.value = NULL_VAL;
+        return node;
+    }
 
     // Grouping
     if (AST_match(TOKEN_LEFT_PAREN))
