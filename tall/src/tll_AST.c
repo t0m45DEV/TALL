@@ -57,6 +57,16 @@ static bool AST_match(tll_token_type type);
 static tll_AST* AST_expression(void);
 
 /**
+ * Parse the current token as a equality check (==, !=)
+ */
+static tll_AST* AST_equality(void);
+
+/**
+ * Parse the current token as a logical comparison (<=, >=)
+ */
+static tll_AST* AST_comparison(void);
+
+/**
  * Parse the current token as either a sum or a substraction.
  */
 static tll_AST* AST_term(void);
@@ -182,6 +192,24 @@ static void print_AST_operation(tll_token_type operation)
         case TOKEN_BANG:
             printf("!");
             break;
+        case TOKEN_EQUAL_EQUAL:
+            printf("==");
+            break;
+        case TOKEN_BANG_EQUAL:
+            printf("!=");
+            break;
+        case TOKEN_GREATER:
+            printf(">");
+            break;
+        case TOKEN_GREATER_EQUAL:
+            printf(">=");
+            break;
+        case TOKEN_LESS:
+            printf("<");
+            break;
+        case TOKEN_LESS_EQUAL:
+            printf("<=");
+            break;
         default:
             printf("?");
             break;
@@ -220,7 +248,57 @@ static bool AST_match(tll_token_type type)
 
 static tll_AST* AST_expression(void)
 {
-    return AST_term();
+    return AST_equality();
+}
+
+static tll_AST* AST_equality(void)
+{
+    tll_AST* left = AST_comparison();
+
+    while (AST_check(TOKEN_EQUAL_EQUAL) || AST_check(TOKEN_BANG_EQUAL))
+    {
+        AST_advance();
+
+        tll_token_type op = AST_parser.previous->type;
+        int line = AST_parser.previous->line;
+        tll_AST* right = AST_comparison();
+
+        tll_AST* node = alloc_node();
+        node->type = AST_BINARY;
+        node->line = line;
+
+        node->as.binary.op = op;
+        node->as.binary.left = left;
+        node->as.binary.right = right;
+
+        left = node;
+    }
+    return left;
+}
+
+static tll_AST* AST_comparison(void)
+{
+    tll_AST* left = AST_term();
+
+    while (AST_check(TOKEN_GREATER) || AST_check(TOKEN_GREATER_EQUAL) || AST_check(TOKEN_LESS) || AST_check(TOKEN_LESS_EQUAL))
+    {
+        AST_advance();
+
+        tll_token_type op = AST_parser.previous->type;
+        int line = AST_parser.previous->line;
+        tll_AST* right = AST_term();
+
+        tll_AST* node = alloc_node();
+        node->type = AST_BINARY;
+        node->line = line;
+
+        node->as.binary.op = op;
+        node->as.binary.left = left;
+        node->as.binary.right = right;
+
+        left = node;
+    }
+    return left;
 }
 
 static tll_AST* AST_term(void)

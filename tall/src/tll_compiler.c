@@ -139,6 +139,24 @@ static void compile_AST_node(tll_AST* node)
                 case TOKEN_SLASH:
                     emit_byte(OP_DIVIDE, node->line);
                     break;
+                case TOKEN_EQUAL_EQUAL:
+                    emit_byte(OP_EQUAL, node->line);
+                    break;
+                case TOKEN_BANG_EQUAL:
+                    emit_byte(OP_NOT_EQUAL, node->line);
+                    break;
+                case TOKEN_GREATER:
+                    emit_byte(OP_GREATER, node->line);
+                    break;
+                case TOKEN_GREATER_EQUAL:
+                    emit_byte(OP_GREATER_EQUAL, node->line);
+                    break;
+                case TOKEN_LESS:
+                    emit_byte(OP_LESS, node->line);
+                    break;
+                case TOKEN_LESS_EQUAL:
+                    emit_byte(OP_LESS_EQUAL, node->line);
+                    break;
             }
             break;
 

@@ -138,6 +138,130 @@ static tll_interpret_result run_VM_code(void)
                 push(BOOL_VAL(false));
                 break;
 
+            case OP_EQUAL:
+
+                if (peek(0).type != peek(1).type)
+                {
+                    runtime_error("Operands must have the same type to be compared.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                b = pop();
+                a = pop();
+                push(BOOL_VAL(are_equals(a, b)));
+                break;
+
+            case OP_NOT_EQUAL:
+
+                if (peek(0).type != peek(1).type)
+                {
+                    runtime_error("Operands must have the same type to be compared.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                b = pop();
+                a = pop();
+                push(BOOL_VAL(!are_equals(a, b)));
+                break;
+
+            case OP_GREATER:
+
+                if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
+                {
+                    runtime_error("Operands must have the same type to be compared.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                b = pop();
+                a = pop();
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(BOOL_VAL(AS_INT(a) > AS_INT(b)));
+                }
+                else if (IS_FLOAT(a) && IS_FLOAT(b))
+                {
+                    push(BOOL_VAL(AS_FLOAT(a) > AS_FLOAT(b)));
+                }
+                else
+                {
+                    runtime_error("Operands must be the same numerical type.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+
+            case OP_GREATER_EQUAL:
+
+                if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
+                {
+                    runtime_error("Operands must have the same type to be compared.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                b = pop();
+                a = pop();
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(BOOL_VAL(AS_INT(a) >= AS_INT(b)));
+                }
+                else if (IS_FLOAT(a) && IS_FLOAT(b))
+                {
+                    push(BOOL_VAL(AS_FLOAT(a) >= AS_FLOAT(b)));
+                }
+                else
+                {
+                    runtime_error("Operands must be the same numerical type.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+
+            case OP_LESS:
+
+                if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
+                {
+                    runtime_error("Operands must have the same type to be compared.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                b = pop();
+                a = pop();
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(BOOL_VAL(AS_INT(a) < AS_INT(b)));
+                }
+                else if (IS_FLOAT(a) && IS_FLOAT(b))
+                {
+                    push(BOOL_VAL(AS_FLOAT(a) < AS_FLOAT(b)));
+                }
+                else
+                {
+                    runtime_error("Operands must be the same numerical type.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+
+            case OP_LESS_EQUAL:
+
+                if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
+                {
+                    runtime_error("Operands must have the same type to be compared.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                b = pop();
+                a = pop();
+
+                if (IS_INT(a) && IS_INT(b))
+                {
+                    push(BOOL_VAL(AS_INT(a) <= AS_INT(b)));
+                }
+                else if (IS_FLOAT(a) && IS_FLOAT(b))
+                {
+                    push(BOOL_VAL(AS_FLOAT(a) <= AS_FLOAT(b)));
+                }
+                else
+                {
+                    runtime_error("Operands must be the same numerical type.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+
             case OP_ADD:
 
                 if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
