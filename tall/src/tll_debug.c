@@ -63,6 +63,12 @@ int disassemble_instruction(tll_code_chunk* code_chunk, int offset)
     {
         case OP_CONSTANT:
             return constant_instruction("OP_CONSTANT", code_chunk, offset);
+        case OP_NULL:
+            return simple_instruction("OP_NULL", offset);
+        case OP_TRUE:
+            return simple_instruction("OP_TRUE", offset);
+        case OP_FALSE:
+            return simple_instruction("OP_FALSE", offset);
         case OP_ADD:
             return simple_instruction("OP_ADD", offset);
         case OP_SUBSTRACT:

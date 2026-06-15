@@ -126,6 +126,18 @@ static tll_interpret_result run_VM_code(void)
                 push(read_constant());
                 break;
 
+            case OP_NULL:
+                push(NULL_VAL);
+                break;
+
+            case OP_TRUE:
+                push(BOOL_VAL(true));
+                break;
+
+            case OP_FALSE:
+                push(BOOL_VAL(false));
+                break;
+
             case OP_ADD:
 
                 if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))

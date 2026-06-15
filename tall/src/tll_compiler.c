@@ -66,10 +66,28 @@ static uint16_t make_constant(tll_value value)
  */
 static void emit_constant(tll_value value, int line)
 {
-    emit_byte(OP_CONSTANT, line);
-    uint16_t const_index = make_constant(value);
+    if (IS_NUMBER(value))
+    {
+        emit_byte(OP_CONSTANT, line);
+        uint16_t const_index = make_constant(value);
 
-    emit_bytes((uint8_t) (const_index >> 8), (uint8_t) (const_index & 0xFF), line);
+        emit_bytes((uint8_t) (const_index >> 8), (uint8_t) (const_index & 0xFF), line);
+    }
+    else
+    {
+        if (IS_NULL(value))
+        {
+            emit_byte(OP_NULL, line);
+        }
+        else if (AS_BOOL(value))
+        {
+            emit_byte(OP_TRUE, line);
+        }
+        else
+        {
+            emit_byte(OP_FALSE, line);
+        }
+    }
 }
 
 /**
