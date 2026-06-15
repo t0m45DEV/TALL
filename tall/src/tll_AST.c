@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 
+#define EMPTY_NODE ((tll_AST) {AST_UNARY, -1, {.unary.op=0, .unary.operand=0}})
+
 tll_memory_arena* first_arena;
 tll_memory_arena* current_arena;
 
@@ -194,7 +196,7 @@ static void print_AST_operation(tll_token_type operation)
 
 static tll_AST* alloc_node(void)
 {
-    tll_AST empty;
+    tll_AST empty = EMPTY_NODE;
     current_arena = add_to_arena(current_arena, &empty, sizeof(tll_AST));
     return (tll_AST*) (current_arena->available - sizeof(tll_AST));
 }
