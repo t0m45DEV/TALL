@@ -21,7 +21,15 @@ static int constant_instruction(const char* op_name, tll_code_chunk* code_chunk,
     uint16_t index = (index_upper << 8) | index_lower;
 
     printf("%-16s %4d '", op_name, index);
-    print_value(code_chunk->constants.values[index]);
+
+    tll_value value = code_chunk->constants.values[index];
+    print_type(value);
+
+    if (!IS_NULL(value))
+    {
+        printf(" ");
+        print_value(code_chunk->constants.values[index]);
+    }
     printf("'\n");
     return offset + 3;
 }

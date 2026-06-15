@@ -57,3 +57,25 @@ void print_value(tll_value value)
     }
 }
 
+void print_type(tll_value value)
+{
+    switch (value.type)
+    {
+        case VAL_NULL:
+            printf("null");
+            break;
+
+        case VAL_BOOL:
+            printf("bool");
+            break;
+
+        case VAL_INT:
+            printf("int");
+            break;
+
+        case VAL_FLOAT:
+            printf("float");
+            break;
+    }
+}
+

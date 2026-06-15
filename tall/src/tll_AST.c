@@ -127,22 +127,13 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
     {
         case AST_LITERAL:
             printf("LITERAL (");
+            print_type(AST->as.literal.value);
 
-            switch (AST->as.literal.value.type)
+            if (!IS_NULL(AST->as.literal.value))
             {
-                case VAL_NULL:
-                    break;
-                case VAL_BOOL:
-                    printf("bool ");
-                    break;
-                case VAL_INT:
-                    printf("int ");
-                    break;
-                case VAL_FLOAT:
-                    printf("float ");
-                    break;
+                printf(" ");
+                print_value(AST->as.literal.value);
             }
-            print_value(AST->as.literal.value);
             printf(")\n");
             break;
 

@@ -70,4 +70,9 @@ void write_value_array(tll_value_array* value_array, tll_value value);
  */
 void print_value(tll_value value);
 
+/**
+ * Prints out to the standard output the type of the given value.
+ */
+void print_type(tll_value value);
+
 #endif
