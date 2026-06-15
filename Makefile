@@ -21,8 +21,8 @@ MEM_CHECKER = valgrind
 MEM_CHECKER_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes -s
 MEM_CHECK_FILE ?= tests/test.tll
 
-STATIC_CHECKER = cppcheck
-STATIC_CHECKER_FLAGS = --enable=all --suppress=missingIncludeSystem -I $(INC_DIR)
+STATIC_CHECKER = clang-tidy
+STATIC_CHECKER_FLAGS = --checks="-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling"
 
 TESTS_DIR = tests
 TESTS = $(shell find $(TESTS_DIR)/ -name "*.tll")
@@ -54,7 +54,7 @@ test : $(OUTPUT) $(TESTS_DIR)
 	echo "Results: $$pass passed, $$fail failed."
 
 analyze:
-	$(STATIC_CHECKER) $(STATIC_CHECKER_FLAGS) $(SRC_DIR)
+	$(STATIC_CHECKER) $(STATIC_CHECKER_FLAGS) $(SRC_FILES)
 
 install : $(OUTPUT)
 	cp $(OUTPUT) /usr/bin/$(PROGRAM)
