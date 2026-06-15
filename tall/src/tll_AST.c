@@ -451,7 +451,7 @@ static tll_AST* AST_primary(void)
         tll_AST* node = alloc_node();
         node->type = AST_LITERAL;
         node->line = AST_parser.previous->line;
-        node->as.literal.value = FLOAT_VAL(strtod(AST_parser.previous->start, NULL));
+        node->as.literal.value = AS_TLL_FLOAT(strtod(AST_parser.previous->start, NULL));
         return node;
     }
     else if (AST_match(TOKEN_INT_NUM))
@@ -459,7 +459,7 @@ static tll_AST* AST_primary(void)
         tll_AST* node = alloc_node();
         node->type = AST_LITERAL;
         node->line = AST_parser.previous->line;
-        node->as.literal.value = INT_VAL(atoi(AST_parser.previous->start));
+        node->as.literal.value = AS_TLL_INT(atoi(AST_parser.previous->start));
         return node;
     }
     // Boolean
@@ -471,11 +471,11 @@ static tll_AST* AST_primary(void)
 
         if (*AST_parser.previous->start == 't')
         {
-            node->as.literal.value = BOOL_VAL(true);
+            node->as.literal.value = AS_TLL_BOOL(true);
         }
         else
         {
-            node->as.literal.value = BOOL_VAL(false);
+            node->as.literal.value = AS_TLL_BOOL(false);
         }
         return node;
     }
@@ -486,7 +486,7 @@ static tll_AST* AST_primary(void)
         tll_AST* node = alloc_node();
         node->type = AST_LITERAL;
         node->line = AST_parser.previous->line;
-        node->as.literal.value = NULL_VAL;
+        node->as.literal.value = AS_TLL_NULL;
         return node;
     }
 

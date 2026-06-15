@@ -3,14 +3,14 @@
 
 #include "tll_common.h"
 
-#define BOOL_VAL(value)   ((tll_value) {VAL_BOOL,  {.tll_bool  = value}})
-#define NULL_VAL          ((tll_value) {VAL_NULL,  {.tll_int   = 0}})
-#define INT_VAL(value)    ((tll_value) {VAL_INT,   {.tll_int   = value}})
-#define FLOAT_VAL(value)  ((tll_value) {VAL_FLOAT, {.tll_float = value}})
+#define AS_TLL_BOOL(value)   ((tll_value) {VAL_BOOL,  {.tll_bool  = value}})
+#define AS_TLL_NULL          ((tll_value) {VAL_NULL,  {.tll_int   = 0}})
+#define AS_TLL_INT(value)    ((tll_value) {VAL_INT,   {.tll_int   = value}})
+#define AS_TLL_FLOAT(value)  ((tll_value) {VAL_FLOAT, {.tll_float = value}})
 
-#define AS_BOOL(value)  ((value).as.tll_bool)
-#define AS_INT(value)   ((value).as.tll_int)
-#define AS_FLOAT(value) ((value).as.tll_float)
+#define AS_C_BOOL(value)  ((value).as.tll_bool)
+#define AS_C_INT(value)   ((value).as.tll_int)
+#define AS_C_FLOAT(value) ((value).as.tll_float)
 
 #define IS_BOOL(value)  ((value).type == VAL_BOOL)
 #define IS_NULL(value)  ((value).type == VAL_NULL)

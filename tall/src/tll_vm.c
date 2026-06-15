@@ -127,15 +127,15 @@ static tll_interpret_result run_VM_code(void)
                 break;
 
             case OP_NULL:
-                push(NULL_VAL);
+                push(AS_TLL_NULL);
                 break;
 
             case OP_TRUE:
-                push(BOOL_VAL(true));
+                push(AS_TLL_BOOL(true));
                 break;
 
             case OP_FALSE:
-                push(BOOL_VAL(false));
+                push(AS_TLL_BOOL(false));
                 break;
 
             case OP_EQUAL:
@@ -147,7 +147,7 @@ static tll_interpret_result run_VM_code(void)
                 }
                 b = pop();
                 a = pop();
-                push(BOOL_VAL(are_equals(a, b)));
+                push(AS_TLL_BOOL(are_equals(a, b)));
                 break;
 
             case OP_NOT_EQUAL:
@@ -159,7 +159,7 @@ static tll_interpret_result run_VM_code(void)
                 }
                 b = pop();
                 a = pop();
-                push(BOOL_VAL(!are_equals(a, b)));
+                push(AS_TLL_BOOL(!are_equals(a, b)));
                 break;
 
             case OP_GREATER:
@@ -174,11 +174,11 @@ static tll_interpret_result run_VM_code(void)
 
                 if (IS_INT(a) && IS_INT(b))
                 {
-                    push(BOOL_VAL(AS_INT(a) > AS_INT(b)));
+                    push(AS_TLL_BOOL(AS_C_INT(a) > AS_C_INT(b)));
                 }
                 else if (IS_FLOAT(a) && IS_FLOAT(b))
                 {
-                    push(BOOL_VAL(AS_FLOAT(a) > AS_FLOAT(b)));
+                    push(AS_TLL_BOOL(AS_C_FLOAT(a) > AS_C_FLOAT(b)));
                 }
                 else
                 {
@@ -199,11 +199,11 @@ static tll_interpret_result run_VM_code(void)
 
                 if (IS_INT(a) && IS_INT(b))
                 {
-                    push(BOOL_VAL(AS_INT(a) >= AS_INT(b)));
+                    push(AS_TLL_BOOL(AS_C_INT(a) >= AS_C_INT(b)));
                 }
                 else if (IS_FLOAT(a) && IS_FLOAT(b))
                 {
-                    push(BOOL_VAL(AS_FLOAT(a) >= AS_FLOAT(b)));
+                    push(AS_TLL_BOOL(AS_C_FLOAT(a) >= AS_C_FLOAT(b)));
                 }
                 else
                 {
@@ -224,11 +224,11 @@ static tll_interpret_result run_VM_code(void)
 
                 if (IS_INT(a) && IS_INT(b))
                 {
-                    push(BOOL_VAL(AS_INT(a) < AS_INT(b)));
+                    push(AS_TLL_BOOL(AS_C_INT(a) < AS_C_INT(b)));
                 }
                 else if (IS_FLOAT(a) && IS_FLOAT(b))
                 {
-                    push(BOOL_VAL(AS_FLOAT(a) < AS_FLOAT(b)));
+                    push(AS_TLL_BOOL(AS_C_FLOAT(a) < AS_C_FLOAT(b)));
                 }
                 else
                 {
@@ -249,11 +249,11 @@ static tll_interpret_result run_VM_code(void)
 
                 if (IS_INT(a) && IS_INT(b))
                 {
-                    push(BOOL_VAL(AS_INT(a) <= AS_INT(b)));
+                    push(AS_TLL_BOOL(AS_C_INT(a) <= AS_C_INT(b)));
                 }
                 else if (IS_FLOAT(a) && IS_FLOAT(b))
                 {
-                    push(BOOL_VAL(AS_FLOAT(a) <= AS_FLOAT(b)));
+                    push(AS_TLL_BOOL(AS_C_FLOAT(a) <= AS_C_FLOAT(b)));
                 }
                 else
                 {
@@ -274,11 +274,11 @@ static tll_interpret_result run_VM_code(void)
 
                 if (IS_INT(b) && IS_INT(a))
                 {
-                    push(INT_VAL(AS_INT(a) + AS_INT(b)));
+                    push(AS_TLL_INT(AS_C_INT(a) + AS_C_INT(b)));
                 }
                 else if (IS_FLOAT(b) && IS_FLOAT(a))
                 {
-                    push(FLOAT_VAL(AS_FLOAT(a) + AS_FLOAT(b)));
+                    push(AS_TLL_FLOAT(AS_C_FLOAT(a) + AS_C_FLOAT(b)));
                 }
                 else
                 {
@@ -299,11 +299,11 @@ static tll_interpret_result run_VM_code(void)
 
                 if (IS_INT(b) && IS_INT(a))
                 {
-                    push(INT_VAL(AS_INT(a) - AS_INT(b)));
+                    push(AS_TLL_INT(AS_C_INT(a) - AS_C_INT(b)));
                 }
                 else if (IS_FLOAT(b) && IS_FLOAT(a))
                 {
-                    push(FLOAT_VAL(AS_FLOAT(a) - AS_FLOAT(b)));
+                    push(AS_TLL_FLOAT(AS_C_FLOAT(a) - AS_C_FLOAT(b)));
                 }
                 else
                 {
@@ -324,11 +324,11 @@ static tll_interpret_result run_VM_code(void)
 
                 if (IS_INT(b) && IS_INT(a))
                 {
-                    push(INT_VAL(AS_INT(a) * AS_INT(b)));
+                    push(AS_TLL_INT(AS_C_INT(a) * AS_C_INT(b)));
                 }
                 else if (IS_FLOAT(b) && IS_FLOAT(a))
                 {
-                    push(FLOAT_VAL(AS_FLOAT(a) * AS_FLOAT(b)));
+                    push(AS_TLL_FLOAT(AS_C_FLOAT(a) * AS_C_FLOAT(b)));
                 }
                 else
                 {
@@ -349,11 +349,11 @@ static tll_interpret_result run_VM_code(void)
 
                 if (IS_INT(b) && IS_INT(a))
                 {
-                    push(INT_VAL((int) (AS_INT(a) / AS_INT(b))));
+                    push(AS_TLL_INT((int) (AS_C_INT(a) / AS_C_INT(b))));
                 }
                 else if (IS_FLOAT(b) && IS_FLOAT(a))
                 {
-                    push(FLOAT_VAL(AS_FLOAT(a) / AS_FLOAT(b)));
+                    push(AS_TLL_FLOAT(AS_C_FLOAT(a) / AS_C_FLOAT(b)));
                 }
                 else
                 {
@@ -368,7 +368,7 @@ static tll_interpret_result run_VM_code(void)
                     runtime_error("Operand must be a boolean.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                push(BOOL_VAL(!AS_BOOL(pop())));
+                push(AS_TLL_BOOL(!AS_C_BOOL(pop())));
                 break;
 
             case OP_NEGATE:
@@ -379,11 +379,11 @@ static tll_interpret_result run_VM_code(void)
                 }
                 if (IS_INT(peek(0)))
                 {
-                    push(INT_VAL(-AS_INT(pop())));
+                    push(AS_TLL_INT(-AS_C_INT(pop())));
                 }
                 else if (IS_FLOAT(peek(0)))
                 {
-                    push(FLOAT_VAL(-AS_FLOAT(pop())));
+                    push(AS_TLL_FLOAT(-AS_C_FLOAT(pop())));
                 }
                 break;
 

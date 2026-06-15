@@ -79,7 +79,7 @@ static void emit_constant(tll_value value, int line)
         {
             emit_byte(OP_NULL, line);
         }
-        else if (AS_BOOL(value))
+        else if (AS_C_BOOL(value))
         {
             emit_byte(OP_TRUE, line);
         }

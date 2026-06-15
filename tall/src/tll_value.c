@@ -32,15 +32,15 @@ bool are_equals(tll_value value1, tll_value value2)
 {
     if (IS_BOOL(value1) && IS_BOOL(value2))
     {
-        return AS_BOOL(value1) == AS_BOOL(value2);
+        return AS_C_BOOL(value1) == AS_C_BOOL(value2);
     }
     else if (IS_INT(value1) && IS_INT(value2))
     {
-        return AS_INT(value1) == AS_INT(value2);
+        return AS_C_INT(value1) == AS_C_INT(value2);
     }
     else if (IS_FLOAT(value1) && IS_FLOAT(value2))
     {
-        return AS_FLOAT(value1) == AS_FLOAT(value2);
+        return AS_C_FLOAT(value1) == AS_C_FLOAT(value2);
     }
     return false; // Unreachable.
 }
@@ -54,7 +54,7 @@ void print_value(tll_value value)
             break;
 
         case VAL_BOOL:
-            if (AS_BOOL(value))
+            if (AS_C_BOOL(value))
             {
                 printf("true");
             }
@@ -65,11 +65,11 @@ void print_value(tll_value value)
             break;
 
         case VAL_INT:
-            printf("%i", AS_INT(value));
+            printf("%i", AS_C_INT(value));
             break;
 
         case VAL_FLOAT:
-            printf("%g", AS_FLOAT(value));
+            printf("%g", AS_C_FLOAT(value));
             break;
     }
 }
