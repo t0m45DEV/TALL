@@ -226,6 +226,15 @@ static tll_interpret_result run_VM_code(void)
                 }
                 break;
 
+            case OP_NOT:
+                if (!IS_BOOL(peek(0)))
+                {
+                    runtime_error("Operand must be a boolean.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                push(BOOL_VAL(!AS_BOOL(pop())));
+                break;
+
             case OP_NEGATE:
                 if (!IS_NUMBER(peek(0)))
                 {

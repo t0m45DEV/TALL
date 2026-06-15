@@ -88,6 +88,9 @@ static void compile_AST_node(tll_AST* node)
 
             switch (node->as.unary.op)
             {
+                case TOKEN_BANG:
+                    emit_byte(OP_NOT, node->line);
+                    break;
                 case TOKEN_MINUS:
                     emit_byte(OP_NEGATE, node->line);
                     break;

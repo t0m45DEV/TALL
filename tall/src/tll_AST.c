@@ -179,6 +179,9 @@ static void print_AST_operation(tll_token_type operation)
         case TOKEN_SLASH:
             printf("/");
             break;
+        case TOKEN_BANG:
+            printf("!");
+            break;
         default:
             printf("?");
             break;
@@ -272,7 +275,7 @@ static tll_AST* AST_factor(void)
 
 static tll_AST* AST_unary(void)
 {
-    if (AST_check(TOKEN_MINUS))
+    if (AST_check(TOKEN_MINUS) || AST_check(TOKEN_BANG))
     {
         AST_advance();
 
