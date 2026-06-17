@@ -9,10 +9,10 @@
 
 tll_memory_arena* create_arena(void)
 {
-    tll_memory_arena* arena = reallocate(NULL, 0, sizeof(tll_memory_arena));
+    tll_memory_arena* arena = ALLOCATE_POINTER(tll_memory_arena);
 
     arena->next = NULL;
-    arena->space = reallocate(NULL, 0, ARENA_SIZE);
+    arena->space = ALLOCATE_ARRAY(uint8_t, ARENA_SIZE);
     arena->available = arena->space;
     arena->capacity = arena->space + ARENA_SIZE;
 
@@ -30,9 +30,9 @@ void free_arena(tll_memory_arena* arena)
         current->capacity = 0;
         current->next = NULL;
         current->available = NULL;
-        current->space = reallocate(current->space, ARENA_SIZE, 0);
+        current->space = FREE_ARRAY(uint8_t, current->space, ARENA_SIZE);
 
-        reallocate(current, sizeof(tll_memory_arena), 0);
+        FREE_POINTER(tll_memory_arena, current);
         current = next;
     }
 }
