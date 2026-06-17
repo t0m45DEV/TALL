@@ -2,6 +2,7 @@
 
 #include "tll_common.h"
 #include "tll_file_manager.h"
+#include "tll_memory.h"
 
 #include <sysexits.h>
 #include <stdio.h>
@@ -64,18 +65,18 @@ static void repl(void)
 
 static void run_file(const char* file_path)
 {
-    int f_size = file_size(file_path);
+    int f_size = file_size(file_path) + 1; // Last one byte for \0 terminator.
 
     if (f_size == -1)
     {
         free_VM();
         exit(EX_IOERR);
     }
-    char* source_code = (char*) malloc(f_size + 1);
+    char* source_code = ALLOCATE_ARRAY(char, f_size);
 
     if (source_code == NULL)
     {
-        free(source_code);
+        FREE_ARRAY(char, source_code, f_size);
         free_VM();
         fprintf(stderr, "Not enough memory to read \"%s\".\n", file_path);
         exit(EX_OSERR);
@@ -83,12 +84,12 @@ static void run_file(const char* file_path)
 
     if (!read_file(file_path, source_code))
     {
-        free(source_code);
+        FREE_ARRAY(char, source_code, f_size);
         free_VM();
         exit(EX_IOERR);
     }
     tll_interpret_result result = interpret_code(source_code);
-    free(source_code);
+    FREE_ARRAY(char, source_code, f_size);
 
     if (result == TLL_INTERPRET_COMPILE_ERROR)
     {

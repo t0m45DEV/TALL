@@ -19,6 +19,11 @@
 #define FREE_ARRAY(type, pointer, old_capacity) (reallocate(pointer, sizeof(type) * (old_capacity), 0))
 
 /**
+ * Returns a type pointer to a memory chunk of size count.
+ */
+#define ALLOCATE_ARRAY(type, count) ((type*) reallocate(NULL, 0, sizeof(type) * count))
+
+/**
  * The function in charge of managing all the memory use of TALL.
  *
  * If old_capacity is 0, and new_capacity is not 0, then it returns a new allocated block of memory.
