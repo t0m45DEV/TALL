@@ -24,6 +24,16 @@
 #define ALLOCATE_ARRAY(type, count) ((type*) reallocate(NULL, 0, sizeof(type) * count))
 
 /**
+ * Returns a type pointer to a memory location big enough to locate one instance of the given type.
+ */
+#define ALLOCATE_POINTER(type) ((type*) reallocate(NULL, 0, sizeof(type)))
+
+/**
+ * Frees the memory used by the given pointer.
+ */
+#define FREE_POINTER(type, pointer) (reallocate(pointer, sizeof(type), 0))
+
+/**
  * The function in charge of managing all the memory use of TALL.
  *
  * If old_capacity is 0, and new_capacity is not 0, then it returns a new allocated block of memory.
