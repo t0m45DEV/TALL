@@ -18,6 +18,7 @@ CFLAGS = -Wall -Werror -Wextra -Wshadow -fanalyzer -I$(INC_DIR)
 DEBUGGER = gdb
 
 CPROFILER = gprof
+PROFILER_EXE = $(OUTPUT)_profile
 PROFILER_OUTPUT = profile_report.txt
 
 MEM_CHECKER = valgrind
@@ -42,9 +43,9 @@ debug : $(SRC_FILES)
 
 profiler: $(SRC_FILES)
 	mkdir -p $(OUTPUT_DIR)
-	$(CC) $^ $(CFLAGS) -pg -o $(OUTPUT)
-	$(OUTPUT) $(CHECK_FILE)
-	$(CPROFILER) $(OUTPUT) gmon.out > $(PROFILER_OUTPUT)
+	$(CC) $^ $(CFLAGS) -pg -o $(PROFILER_EXE)
+	$(PROFILER_EXE) $(CHECK_FILE)
+	$(CPROFILER) $(PROFILER_EXE) gmon.out > $(PROFILER_OUTPUT)
 	cat $(PROFILER_OUTPUT)
 	rm $(PROFILER_OUTPUT) gmon.out
 
