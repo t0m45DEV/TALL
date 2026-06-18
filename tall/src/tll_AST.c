@@ -4,6 +4,7 @@
 #include "tll_arena.h"
 #include "tll_scanner.h"
 #include "tll_value.h"
+#include "tll_object.h"
 
 #include <stdlib.h>
 
@@ -462,6 +463,16 @@ static tll_AST* AST_primary(void)
         node->as.literal.value = AS_TLL_INT(atoi(AST_parser.previous->start));
         return node;
     }
+
+    if (AST_match(TOKEN_STRING))
+    {
+        tll_AST* node = alloc_node();
+        node->type = AST_LITERAL;
+        node->line = AST_parser.previous->line;
+        node->as.literal.value = AS_TLL_OBJ(copy_string(AST_parser.previous->start + 1, AST_parser.previous->length - 2));
+        return node;
+    }
+
     // Boolean
     if (AST_match(TOKEN_TRUE) || AST_match(TOKEN_FALSE))
     {

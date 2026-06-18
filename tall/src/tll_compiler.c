@@ -5,6 +5,7 @@
 #include "tll_common.h"
 #include "tll_scanner.h"
 #include "tll_value.h"
+#include "tll_object.h"
 
 #ifdef DEBUG_PRINT_CODE
 #include "tll_debug.h"
@@ -17,39 +18,90 @@ tll_code_chunk* compiling_code_chunk;
 /**
  * Returns the code chunk now being compiled.
  */
-static tll_code_chunk* current_code_chunk(void)
-{
-    return compiling_code_chunk;
-}
+static inline tll_code_chunk* current_code_chunk(void);
 
 /**
  * Saves to the current code chunk the given byte, and saves it the given line number.
  */
-static void emit_byte(uint8_t byte, int line)
-{
-    write_code_chunk(current_code_chunk(), byte, line);
-}
+static inline void emit_byte(uint8_t byte, int line);
 
 /**
  * Saves at the current code chunk an OP_RETURN.
  */
-static void emit_return(int line)
-{
-    emit_byte(OP_RETURN, line);
-}
+static inline void emit_return(int line);
 
 /**
  * Saves two bytes, in the order they are given into the current code chunk.
  */
-static void emit_bytes(uint8_t byte_1, uint8_t byte_2, int line)
+static inline void emit_bytes(uint8_t byte_1, uint8_t byte_2, int line);
+
+/**
+ * Returns the constants pool index for a given value.
+ */
+static uint16_t make_constant(tll_value value);
+
+/**
+ * Saves a OP_CONSTANT with the constants pool index for the given value and saves it the given line info.
+ */
+static void emit_constant(tll_value value, int line);
+
+/**
+ * Travels recursively through the given AST and saves bytecode to the current code chunk (see current_code_chunk).
+ */
+static void compile_AST_node(tll_AST* node);
+
+bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
+{
+    compiling_code_chunk = code_chunk;
+    tll_AST* AST = create_AST(scan_source_code(source_code));
+
+    #ifdef DEBUG_PRINT_CODE
+        print_AST(AST, "AST");
+    #endif
+
+    bool parsing_error = has_error(AST);
+
+    if (!parsing_error)
+    {
+        compile_AST_node(AST);
+        emit_return(2);
+
+        #ifdef DEBUG_PRINT_CODE
+            disassemble_code_chunk(code_chunk, "code");
+        #endif
+    }
+    else
+    {
+        fprintf(stderr, "%s\n", get_error(AST)->as.error.message);
+    }
+    end_AST();
+    free_scanner();
+
+    // TODO: Error checking
+    return !parsing_error;
+}
+
+static inline tll_code_chunk* current_code_chunk(void)
+{
+    return compiling_code_chunk;
+}
+
+static inline void emit_byte(uint8_t byte, int line)
+{
+    write_code_chunk(current_code_chunk(), byte, line);
+}
+
+static inline void emit_return(int line)
+{
+    emit_byte(OP_RETURN, line);
+}
+
+static inline void emit_bytes(uint8_t byte_1, uint8_t byte_2, int line)
 {
     emit_byte(byte_1, line);
     emit_byte(byte_2, line);
 }
 
-/**
- * Returns the constants pool index for a given value.
- */
 static uint16_t make_constant(tll_value value)
 {
     int constant = add_constant(current_code_chunk(), value);
@@ -61,12 +113,9 @@ static uint16_t make_constant(tll_value value)
     return (uint16_t) constant;
 }
 
-/**
- * Saves a OP_CONSTANT with the constants pool index for the given value and saves it the given line info.
- */
 static void emit_constant(tll_value value, int line)
 {
-    if (IS_NUMBER(value))
+    if (IS_NUMBER(value) || IS_STRING(value))
     {
         emit_byte(OP_CONSTANT, line);
         uint16_t const_index = make_constant(value);
@@ -90,9 +139,6 @@ static void emit_constant(tll_value value, int line)
     }
 }
 
-/**
- * Travels recursively through the given AST and saves bytecode to the current code chunk (see current_code_chunk).
- */
 static void compile_AST_node(tll_AST* node)
 {
     switch (node->type)
@@ -163,36 +209,5 @@ static void compile_AST_node(tll_AST* node)
         default:
             return; // Unreachable.
     }
-}
-
-bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
-{
-    compiling_code_chunk = code_chunk;
-    tll_AST* AST = create_AST(scan_source_code(source_code));
-
-    #ifdef DEBUG_PRINT_CODE
-        print_AST(AST, "AST");
-    #endif
-
-    bool parsing_error = has_error(AST);
-
-    if (!parsing_error)
-    {
-        compile_AST_node(AST);
-        emit_return(2);
-
-        #ifdef DEBUG_PRINT_CODE
-            disassemble_code_chunk(code_chunk, "code");
-        #endif
-    }
-    else
-    {
-        fprintf(stderr, "%s\n", get_error(AST)->as.error.message);
-    }
-    end_AST();
-    free_scanner();
-
-    // TODO: Error checking
-    return !parsing_error;
 }
 

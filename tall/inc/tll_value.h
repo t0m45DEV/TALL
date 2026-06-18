@@ -7,17 +7,23 @@
 #define AS_TLL_NULL          ((tll_value) {VAL_NULL,  {.tll_int   = 0}})
 #define AS_TLL_INT(value)    ((tll_value) {VAL_INT,   {.tll_int   = value}})
 #define AS_TLL_FLOAT(value)  ((tll_value) {VAL_FLOAT, {.tll_float = value}})
+#define AS_TLL_OBJ(object)   ((tll_value) {VAL_OBJ,   {.obj = (tll_obj*) object}})
 
 #define AS_C_BOOL(value)  ((value).as.tll_bool)
 #define AS_C_INT(value)   ((value).as.tll_int)
 #define AS_C_FLOAT(value) ((value).as.tll_float)
+#define AS_C_OBJ(value)   ((value).as.obj)
 
 #define IS_BOOL(value)  ((value).type == VAL_BOOL)
 #define IS_NULL(value)  ((value).type == VAL_NULL)
 #define IS_INT(value)   ((value).type == VAL_INT)
 #define IS_FLOAT(value) ((value).type == VAL_FLOAT)
+#define IS_OBJ(value)   ((value).type == VAL_OBJ)
 
 #define IS_NUMBER(value) ((value).type == VAL_INT || (value).type == VAL_FLOAT)
+
+typedef struct tll_obj tll_obj;
+typedef struct tll_string tll_string;
 
 /**
  * The posible types for the data on TALL.
@@ -27,6 +33,7 @@ typedef enum {
     VAL_BOOL,
     VAL_INT,
     VAL_FLOAT,
+    VAL_OBJ
 } tll_value_type;
 
 /**
@@ -38,6 +45,7 @@ typedef struct {
         bool tll_bool;
         int tll_int;
         double tll_float;
+        tll_obj* obj;
     } as;
 } tll_value;
 

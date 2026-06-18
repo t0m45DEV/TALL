@@ -3,9 +3,11 @@
 #include "tll_code_chunk.h"
 #include "tll_debug.h"
 #include "tll_value.h"
+#include "tll_object.h"
 #include "tll_memory.h"
 #include "tll_compiler.h"
 
+#include <string.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
@@ -39,6 +41,11 @@ static inline tll_value read_constant(void);
 static inline tll_value peek(int distance);
 
 /**
+ * Pops the two values at the top of the stack and, assumming they are strings, it push back up the concatenation.
+ */
+static void concatenate(void);
+
+/**
  * Given a message, it prints out an error with the location of the detected bug.
  */
 static void runtime_error(const char* format, ...);
@@ -53,11 +60,13 @@ static void reset_stack(void)
 
 void init_VM(void)
 {
+    init_object_pool();
     reset_stack();
 }
 
 void free_VM(void)
 {
+    free_object_pool();
     reset_stack();
 }
 
@@ -264,10 +273,23 @@ static tll_interpret_result run_VM_code(void)
 
             case OP_ADD:
 
+                if (IS_STRING(peek(0)) && IS_STRING(peek(1)))
+                {
+                    concatenate();
+                    break;
+                }
                 if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
                 {
-                    runtime_error("Operands must be either 'int' or 'float'.");
-                    return TLL_INTERPRET_RUNTIME_ERROR;
+                    if (!IS_STRING(peek(0)) && !IS_STRING(peek(1)))
+                    {
+                        runtime_error("Operands must be either 'int', 'float' or 'string'.");
+                        return TLL_INTERPRET_RUNTIME_ERROR;
+                    }
+                    else
+                    {
+                        runtime_error("Concatenation works when both operands are 'string'.");
+                        return TLL_INTERPRET_RUNTIME_ERROR;
+                    }
                 }
                 b = pop();
                 a = pop();
@@ -415,6 +437,21 @@ static inline tll_value read_constant(void)
 static inline tll_value peek(int distance)
 {
     return VM.stack_top[-1 - distance];
+}
+
+static void concatenate(void)
+{
+    tll_string* b = AS_TLL_STRING(pop());
+    tll_string* a = AS_TLL_STRING(pop());
+
+    int length = a->length + b->length;
+    char* chars = ALLOCATE_ARRAY(char, length + 1);
+    memcpy(chars, a->chars, a->length);
+    memcpy(chars + a->length, b->chars, b->length);
+    chars[length] = '\0';
+
+    tll_string* result = take_string(chars, length);
+    push(AS_TLL_OBJ(result));
 }
 
 static void runtime_error(const char* format, ...)

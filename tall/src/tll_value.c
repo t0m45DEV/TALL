@@ -1,7 +1,11 @@
 #include "tll_value.h"
+
 #include "tll_memory.h"
+#include "tll_object.h"
+#include "tll_object.h"
 
 #include <stdio.h>
+#include <string.h>
 
 void init_value_array(tll_value_array* value_array)
 {
@@ -42,6 +46,23 @@ bool are_equals(tll_value value1, tll_value value2)
     {
         return AS_C_FLOAT(value1) == AS_C_FLOAT(value2);
     }
+    else if (IS_OBJ(value1) && IS_OBJ(value2))
+    {
+        if (IS_STRING(value1) && IS_STRING(value2))
+        {
+            tll_string* a_str = AS_TLL_STRING(value1);
+            tll_string* b_str = AS_TLL_STRING(value2);
+
+            if (a_str->length == b_str->length)
+            {
+                return memcmp(a_str->chars, b_str->chars, a_str->length) == 0;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
     return false; // Unreachable.
 }
 
@@ -71,6 +92,10 @@ void print_value(tll_value value)
         case VAL_FLOAT:
             printf("%g", AS_C_FLOAT(value));
             break;
+
+        case VAL_OBJ:
+            print_object(value);
+            break;
     }
 }
 
@@ -92,6 +117,10 @@ void print_type(tll_value value)
 
         case VAL_FLOAT:
             printf("float");
+            break;
+
+        case VAL_OBJ:
+            printf("string");
             break;
     }
 }
