@@ -2,7 +2,6 @@
 
 #include "tll_memory.h"
 #include "tll_object.h"
-#include "tll_object.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -52,20 +51,7 @@ bool are_equals(tll_value value1, tll_value value2)
     }
     else if (IS_OBJ(value1) && IS_OBJ(value2))
     {
-        if (IS_STRING(value1) && IS_STRING(value2))
-        {
-            tll_string* a_str = AS_TLL_STRING(value1);
-            tll_string* b_str = AS_TLL_STRING(value2);
-
-            if (a_str->length == b_str->length)
-            {
-                return memcmp(a_str->chars, b_str->chars, a_str->length) == 0;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        return AS_C_OBJ(value1) == AS_C_OBJ(value2);
     }
     return false; // Unreachable.
 }
