@@ -34,7 +34,11 @@ void write_value_array(tll_value_array *value_array, tll_value value)
 
 bool are_equals(tll_value value1, tll_value value2)
 {
-    if (IS_BOOL(value1) && IS_BOOL(value2))
+    if (IS_NULL(value1) && IS_NULL(value2))
+    {
+        return true;
+    }
+    else if (IS_BOOL(value1) && IS_BOOL(value2))
     {
         return AS_C_BOOL(value1) == AS_C_BOOL(value2);
     }
