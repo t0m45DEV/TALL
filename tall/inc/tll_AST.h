@@ -4,7 +4,6 @@
 #include "tll_value.h"
 #include "tll_scanner.h"
 #include <stdint.h>
-#include <threads.h>
 
 typedef enum {
     AST_ERROR,
