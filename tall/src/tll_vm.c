@@ -50,13 +50,10 @@ static void concatenate(void);
  */
 static void runtime_error(const char* format, ...);
 
-static void reset_stack(void)
-{
-    FREE_ARRAY(tll_value, VM.stack, VM.stack_capacity);
-    VM.stack_capacity = 0;
-    VM.stack = NULL;
-    VM.stack_top = NULL;
-}
+/**
+ * Deletes all the contents of the current stack, make it blank.
+ */
+static void reset_stack(void);
 
 void init_VM(void)
 {
@@ -466,5 +463,13 @@ static void runtime_error(const char* format, ...)
     int line = VM.code_chunk->lines[instruction];
     fprintf(stderr, "[line %d] in script\n", line);
     reset_stack();
+}
+
+static void reset_stack(void)
+{
+    FREE_ARRAY(tll_value, VM.stack, VM.stack_capacity);
+    VM.stack_capacity = 0;
+    VM.stack = NULL;
+    VM.stack_top = NULL;
 }
 
