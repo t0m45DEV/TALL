@@ -6,11 +6,11 @@
 #include <stdint.h>
 
 typedef enum {
-    AST_ERROR,
-    AST_LITERAL,
-    AST_UNARY,
-    AST_BINARY,
-    AST_GROUPING
+    AST_ERROR,    // Error node for bad parsgin
+    AST_LITERAL,  // A literal value
+    AST_UNARY,    // Unary operations, like '!' or '-'
+    AST_BINARY,   // Binary operations, like equalities, comparations and arithmetic stuff
+    AST_GROUPING  // An expression between parenthesis
 } tll_AST_type;
 
 typedef struct tll_AST {
