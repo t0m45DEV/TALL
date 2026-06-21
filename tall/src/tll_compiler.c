@@ -6,6 +6,7 @@
 #include "tll_scanner.h"
 #include "tll_value.h"
 #include "tll_object.h"
+#include <stdint.h>
 
 #ifdef DEBUG_PRINT_CODE
 #include "tll_debug.h"
@@ -24,6 +25,11 @@ static inline tll_code_chunk* current_code_chunk(void);
  * Saves to the current code chunk the given byte, and saves it the given line number.
  */
 static inline void emit_byte(uint8_t byte, int line);
+
+/**
+ * Emits the given short as two bytes on the current code chunk.
+ */
+static inline void emit_short(uint16_t byte, int line);
 
 /**
  * Saves at the current code chunk an OP_RETURN.
@@ -46,6 +52,16 @@ static uint16_t make_constant(tll_value value);
 static void emit_constant(tll_value value, int line);
 
 /**
+ * Emits the bytes necessary for creating a global variable.
+ */
+static inline void define_variable(uint16_t global, int line);
+
+/**
+ * Emits the bytes necessary for reading a global variable.
+ */
+static inline void named_variable(uint16_t global, int line);
+
+/**
  * Travels recursively through the given AST and saves bytecode to the current code chunk (see current_code_chunk).
  */
 static void compile_AST_node(tll_AST* node);
@@ -64,17 +80,16 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
     if (!parsing_error)
     {
         compile_AST_node(AST);
-        emit_return(2);
 
         #ifdef DEBUG_PRINT_CODE
-            disassemble_code_chunk(code_chunk, "code");
+            disassemble_code_chunk(code_chunk, "BYTECODE");
         #endif
     }
     else
     {
         fprintf(stderr, "%s\n", get_error(AST)->as.error.message);
     }
-    end_AST();
+    end_AST(AST);
     free_scanner();
 
     // TODO: Error checking
@@ -89,6 +104,11 @@ static inline tll_code_chunk* current_code_chunk(void)
 static inline void emit_byte(uint8_t byte, int line)
 {
     write_code_chunk(current_code_chunk(), byte, line);
+}
+
+static inline void emit_short(uint16_t byte, int line)
+{
+    emit_bytes((uint8_t) (byte >> 8), (uint8_t) (byte & 0xFF), line);
 }
 
 static inline void emit_return(int line)
@@ -120,7 +140,7 @@ static void emit_constant(tll_value value, int line)
         emit_byte(OP_CONSTANT, line);
         uint16_t const_index = make_constant(value);
 
-        emit_bytes((uint8_t) (const_index >> 8), (uint8_t) (const_index & 0xFF), line);
+        emit_short(const_index, line);
     }
     else
     {
@@ -139,10 +159,25 @@ static void emit_constant(tll_value value, int line)
     }
 }
 
+static inline void define_variable(uint16_t global, int line)
+{
+    emit_byte(OP_DEFINE_GLOBAL, line);
+    emit_short(global, line);
+}
+
+static inline void named_variable(uint16_t global, int line)
+{
+    emit_byte(OP_GET_GLOBAL, line);
+    emit_short(global, line);
+}
+
 static void compile_AST_node(tll_AST* node)
 {
     switch (node->type)
     {
+        case AST_ERROR:
+            break;
+
         case AST_LITERAL:
             emit_constant(node->as.literal.value, node->line);
             break;
@@ -204,6 +239,39 @@ static void compile_AST_node(tll_AST* node)
                     emit_byte(OP_LESS_EQUAL, node->line);
                     break;
             }
+            break;
+
+        case AST_PROGRAM:
+            for (int i = 0; i < node->as.program.count; i++)
+            {
+                compile_AST_node(node->as.program.statements[i]);
+            }
+            break;
+
+        case AST_EXPR_STATEMENT:
+            compile_AST_node(node->as.expression_statement.expression);
+            //emit_byte(OP_POP, node->line);
+            break;
+
+        case AST_VAR_DECLARATION:
+            compile_AST_node(node->as.var_declaration.expression);
+            define_variable(make_constant(AS_TLL_OBJ(node->as.var_declaration.name)), node->line);
+            break;
+
+        case AST_VAR_NAME:
+            named_variable(make_constant(AS_TLL_OBJ(node->as.var_name.name)), node->line);
+            break;
+
+        case AST_RETURN:
+            if (node->as.return_statement.expression != NULL)
+            {
+                compile_AST_node(node->as.return_statement.expression);
+            }
+            else
+            {
+                emit_byte(OP_NULL, node->line);
+            }
+            emit_return(node->line);
             break;
 
         default:

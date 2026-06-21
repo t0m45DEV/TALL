@@ -1,6 +1,7 @@
 #include "tll_AST.h"
 
 #include "tll_arena.h"
+#include "tll_memory.h"
 #include "tll_scanner.h"
 #include "tll_value.h"
 #include "tll_object.h"
@@ -52,7 +53,32 @@ static inline bool AST_check(tll_token_type type);
 static bool AST_match(tll_token_type type);
 
 /**
- * Generates an TALL expression AST from the given tokens collection that is an expression.
+ * Generates a TALL program AST from the given tokens collection, for parsing scripts.
+ */
+static tll_AST* AST_program(void);
+
+/**
+ * Parse the current tokens as an statement.
+ */
+static tll_AST* AST_statement(void);
+
+/**
+ * Parse the current tokens as a variable declaration.
+ */
+static tll_AST* AST_variable_declaration(void);
+
+/**
+ * Parse the current tokens as an statement of an expression (a function call or an expression discarding the value).
+ */
+static tll_AST* AST_expression_statement(void);
+
+/**
+ * Parse the current token as a return statement.
+ */
+static tll_AST* AST_return_statement(void);
+
+/**
+ * Parse the current tokens as an expression.
  */
 static tll_AST* AST_expression(void);
 
@@ -86,6 +112,11 @@ static tll_AST* AST_unary(void);
  */
 static tll_AST* AST_primary(void);
 
+/**
+ * Returns an AST node with type error, using the given line and message as info.
+ */
+static tll_AST* AST_error(int line, const char* message);
+
 tll_AST* create_AST(tll_token* tokens)
 {
     first_arena = create_arena();
@@ -94,11 +125,16 @@ tll_AST* create_AST(tll_token* tokens)
     AST_parser.current = tokens;
     AST_parser.previous = tokens;
 
-    return AST_expression();
+    return AST_program();
 }
 
-void end_AST(void)
+void end_AST(tll_AST* tree)
 {
+    if (tree->type == AST_PROGRAM)
+    {
+        FREE_ARRAY(tll_AST*, tree->as.program.statements, tree->as.program.count);
+    }
+
     free_arena(first_arena);
     first_arena = NULL;
     current_arena = NULL;
@@ -133,6 +169,37 @@ bool has_error(const tll_AST* AST)
 
         case AST_BINARY:
             res = has_error(AST->as.binary.left) || has_error(AST->as.binary.right);
+            break;
+
+        case AST_PROGRAM:
+
+            for (int i = 0; i < AST->as.program.count; i++)
+            {
+                res = has_error(AST->as.program.statements[i]);
+
+                if (res)
+                {
+                    break;
+                }
+            }
+            break;
+
+        case AST_EXPR_STATEMENT:
+            res = has_error(AST->as.expression_statement.expression);
+            break;
+
+        case AST_VAR_DECLARATION:
+            res = has_error(AST->as.var_declaration.expression);
+            break;
+
+        case AST_VAR_NAME:
+            break;
+
+        case AST_RETURN:
+            if (AST->as.return_statement.expression != NULL)
+            {
+                res = has_error(AST->as.return_statement.expression);
+            }
             break;
     }
     return res;
@@ -170,6 +237,37 @@ tll_AST* get_error(tll_AST* AST)
             else
             {
                 res = temp;
+            }
+            break;
+
+        case AST_PROGRAM:
+
+            for (int i = 0; i < AST->as.program.count; i++)
+            {
+                res = get_error(AST->as.program.statements[i]);
+
+                if (res != NULL)
+                {
+                    break;
+                }
+            }
+            break;
+
+        case AST_EXPR_STATEMENT:
+            res = get_error(AST->as.expression_statement.expression);
+            break;
+
+        case AST_VAR_DECLARATION:
+            res = get_error(AST->as.var_declaration.expression);
+            break;
+
+        case AST_VAR_NAME:
+            break;
+
+        case AST_RETURN:
+            if (AST->as.return_statement.expression != NULL)
+            {
+                res = get_error(AST->as.return_statement.expression);
             }
             break;
     }
@@ -235,6 +333,67 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             printf(")\n");
             print_AST_recursive(AST->as.binary.left, child_prefix, false);
             print_AST_recursive(AST->as.binary.right, child_prefix, true);
+            break;
+
+        case AST_PROGRAM:
+            printf("PROGRAM\n");
+            for (int i = 0; i < AST->as.program.count - 1; i++)
+            {
+                print_AST_recursive(AST->as.program.statements[i], child_prefix, false);
+            }
+            if (AST->as.program.count > 0)
+            {
+                print_AST_recursive(AST->as.program.statements[AST->as.program.count - 1], child_prefix, true);
+            }
+            break;
+
+        case AST_EXPR_STATEMENT:
+            printf("EXPRESSION_STATEMENT\n");
+            print_AST_recursive(AST->as.expression_statement.expression, child_prefix, true);
+            break;
+
+        case AST_VAR_DECLARATION:
+            printf("VAR_DECLARATION (");
+            printf("%.*s : ", AST->as.var_declaration.name->length, AST->as.var_declaration.name->chars);
+
+            switch (AST->as.var_declaration.type)
+            {
+                case VAL_NULL:
+                    printf("null");
+                    break;
+
+                case VAL_BOOL:
+                    printf("bool");
+                    break;
+
+                case VAL_INT:
+                    printf("int");
+                    break;
+
+                case VAL_FLOAT:
+                    printf("float");
+                    break;
+
+                case VAL_OBJ: // TODO: Better reading type for objects.
+                    printf("string");
+                    break;
+            }
+            printf(")\n");
+            print_AST_recursive(AST->as.var_declaration.expression, child_prefix, true);
+            break;
+
+        case AST_VAR_NAME:
+            printf("VAR_NAME (");
+            printf("%.*s", AST->as.var_name.name->length, AST->as.var_name.name->chars);
+            printf(")\n");
+            break;
+
+        case AST_RETURN:
+            printf("RETURN\n");
+            if (AST->as.return_statement.expression != NULL)
+            {
+                print_AST_recursive(AST->as.return_statement.expression, child_prefix, true);
+            }
             break;
 
         default:
@@ -314,6 +473,148 @@ static bool AST_match(tll_token_type type)
         res = true;
     }
     return res;
+}
+
+static tll_AST* AST_program(void)
+{
+    tll_AST** statements = NULL;
+    int count = 0;
+    int capacity = 0;
+    int line = AST_parser.current->line;
+
+    while (!AST_check(TOKEN_EOF))
+    {
+        if (count + 1 > capacity)
+        {
+            int old_capacity = capacity;
+            capacity = GROW_CAPACITY(capacity);
+            statements = GROW_ARRAY(tll_AST*, statements, old_capacity, capacity);
+        }
+        statements[count] = AST_statement();
+        count++;
+    }
+    tll_AST* node = alloc_node();
+    node->type = AST_PROGRAM;
+    node->line = line;
+
+    node->as.program.statements = statements;
+    node->as.program.count = count;
+
+    return node;
+}
+
+static tll_AST* AST_statement(void)
+{
+    if (AST_match(TOKEN_VAR))
+    {
+        return AST_variable_declaration();
+    }
+    else if (AST_match(TOKEN_RETURN))
+    {
+        return AST_return_statement();
+    }
+    return AST_expression_statement();
+}
+
+static tll_AST* AST_variable_declaration(void)
+{
+    int line = AST_parser.current->line;
+
+    if (!AST_match(TOKEN_IDENTIFIER))
+    {
+        return AST_error(line, "Invalid variable name.");
+    }
+    tll_string* var_name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
+
+    if (!AST_match(TOKEN_COLON))
+    {
+        return AST_error(line, "Expected ':' after variable name.");
+    }
+    tll_value_type var_type = VAL_NULL;
+
+    if (AST_match(TOKEN_BOOL_TYPE))
+    {
+        var_type = VAL_BOOL;
+    }
+    else if (AST_match(TOKEN_INT_TYPE))
+    {
+        var_type = VAL_INT;
+    }
+    else if (AST_match(TOKEN_FLOAT_TYPE))
+    {
+        var_type = VAL_FLOAT;
+    }
+    else if (AST_match((TOKEN_STRING_TYPE)))
+    {
+        var_type = VAL_OBJ;
+    }
+    else
+    {
+        return AST_error(line, "Variable must have a valid type.");
+    }
+
+    if (!AST_match(TOKEN_EQUAL))
+    {
+        return AST_error(line, "Variables must be initialized with a value.");
+    }
+    tll_AST* expr = AST_expression();
+
+    if (!AST_match(TOKEN_SEMICOLON))
+    {
+        return AST_error(line, "Variable declaration must end with ';'.");
+    }
+    tll_AST* node = alloc_node();
+
+    node->type = AST_VAR_DECLARATION;
+    node->line = line;
+    node->as.var_declaration.name = var_name;
+    node->as.var_declaration.type = var_type;
+    node->as.var_declaration.expression = expr;
+
+    return node;
+}
+
+static tll_AST* AST_expression_statement(void)
+{
+    int line = AST_parser.previous->line;
+
+    tll_AST* expr = AST_expression();
+
+    if (!AST_match(TOKEN_SEMICOLON))
+    {
+        return AST_error(line, "Expected ';' after expression statement.");
+    }
+    tll_AST* node = alloc_node();
+
+    node->type = AST_EXPR_STATEMENT;
+    node->line = line;
+    node->as.expression_statement.expression = expr;
+
+    return node;
+}
+
+static tll_AST* AST_return_statement(void)
+{
+    int line = AST_parser.previous->line;
+    tll_AST* node = alloc_node();
+    node->type = AST_RETURN;
+    node->line = line;
+
+    if (AST_check(TOKEN_SEMICOLON))
+    {
+        node->as.return_statement.expression = NULL;
+        AST_match(TOKEN_SEMICOLON);
+    }
+    else
+    {
+        node->as.return_statement.expression = AST_expression();
+
+        if (!AST_match(TOKEN_SEMICOLON))
+        {
+            return AST_error(line, "Expected ';' after return expression.");
+        }
+    }
+    return node;
 }
 
 static tll_AST* AST_expression(void)
@@ -500,32 +801,53 @@ static tll_AST* AST_primary(void)
         return node;
     }
 
+    // Identifier
+    if (AST_match(TOKEN_IDENTIFIER))
+    {
+        tll_AST* node = alloc_node();
+        node->type = AST_VAR_NAME;
+        node->line = AST_parser.previous->line;
+        node->as.var_name.name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
+        return node;
+    }
+
     // Grouping
     if (AST_match(TOKEN_LEFT_PAREN))
     {
         int line = AST_parser.previous->line;
         tll_AST* expr = AST_expression();
 
-        tll_AST* node = alloc_node();
-
         if (!AST_match(TOKEN_RIGHT_PAREN))
         {
-            node->type = AST_ERROR;
-            node->line = line;
-            node->as.error.message = "Expected ')' after expression.";
-            return node;
+            return AST_error(line, "Expected ')' after expression.");
         }
+        tll_AST* node = alloc_node();
+
         node->type = AST_GROUPING;
         node->line = line;
         node->as.grouping.expression = expr;
 
         return node;
     }
+    return AST_error(AST_parser.previous->line, "Expected expression.");
+}
+
+static tll_AST* AST_error(int line, const char* message)
+{
+    // We continue until the first ';' to synchronize.
+    while (!AST_check(TOKEN_SEMICOLON) && !AST_check(TOKEN_EOF))
+    {
+        AST_advance(); // Advance ignoring the next stuff.
+    }
+    // If TOKEN_EOF is not reach yet, we can continue the parsing.
+    AST_match(TOKEN_SEMICOLON);
+
     tll_AST* node = alloc_node();
 
     node->type = AST_ERROR;
-    node->line = AST_parser.previous->line;
-    node->as.error.message = "Expected expression.";
+    node->line = line;
+    node->as.error.message = message;
+
     return node;
 }
 

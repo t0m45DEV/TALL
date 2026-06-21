@@ -2,6 +2,7 @@
 #define _TLL_VM_H
 
 #include "tll_code_chunk.h"
+#include "tll_dictionary.h"
 #include "tll_value.h"
 
 /**
@@ -13,6 +14,7 @@ typedef struct {
     int stack_capacity;
     tll_value* stack;
     tll_value* stack_top;
+    tll_dictionary globals;
 } tll_vm;
 
 /**

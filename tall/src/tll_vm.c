@@ -2,6 +2,7 @@
 
 #include "tll_code_chunk.h"
 #include "tll_debug.h"
+#include "tll_dictionary.h"
 #include "tll_value.h"
 #include "tll_object.h"
 #include "tll_memory.h"
@@ -36,6 +37,11 @@ static inline uint16_t read_short(void);
 static inline tll_value read_constant(void);
 
 /**
+ * Reads the string pointer currently being seen by the VM, advances the VM immediately, and then returns that pointer.
+ */
+static inline tll_string* read_string(void);
+
+/**
  * Returns the value at distance from the current top of the VM stack.
  */
 static inline tll_value peek(int distance);
@@ -57,12 +63,14 @@ static void reset_stack(void);
 
 void init_VM(void)
 {
+    init_dictionary(&VM.globals);
     init_object_pool();
     reset_stack();
 }
 
 void free_VM(void)
 {
+    free_dictionary(&VM.globals);
     free_object_pool();
     reset_stack();
 }
@@ -124,7 +132,8 @@ static tll_interpret_result run_VM_code(void)
 
         uint8_t instruction = read_byte();
 
-        tll_value a, b; // For the binary operations
+        tll_value a, b;   // For the binary operations.
+        tll_string* name; // For variable or function names.
 
         switch (instruction)
         {
@@ -142,6 +151,26 @@ static tll_interpret_result run_VM_code(void)
 
             case OP_FALSE:
                 push(AS_TLL_BOOL(false));
+                break;
+
+            case OP_POP:
+                pop();
+                break;
+
+            case OP_DEFINE_GLOBAL:
+                set_to_dictionary(&VM.globals, read_string(), peek(0));
+                pop();
+                break;
+
+            case OP_GET_GLOBAL:
+                name = read_string();
+
+                if (!get_from_dictionary(&VM.globals, name, &a))
+                {
+                    runtime_error("Undefined variable '%s'.", name->chars);
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                push(a);
                 break;
 
             case OP_EQUAL:
@@ -429,6 +458,11 @@ static inline uint16_t read_short(void)
 static inline tll_value read_constant(void)
 {
     return VM.code_chunk->constants.values[read_short()];
+}
+
+static inline tll_string* read_string(void)
+{
+    return AS_TLL_STRING(read_constant());
 }
 
 static inline tll_value peek(int distance)

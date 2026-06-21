@@ -138,6 +138,7 @@ tll_token* scan_source_code(const char* source_code)
             scanner.tokens.list = GROW_ARRAY(tll_token, scanner.tokens.list, old_capacity, scanner.tokens.capacity);
         }
         scanner.tokens.list[scanner.tokens.count] = current;
+        scanner.tokens.list[scanner.tokens.count].line = scanner.line;
         scanner.tokens.count++;
 
         current = scan_token();
@@ -150,6 +151,7 @@ tll_token* scan_source_code(const char* source_code)
         scanner.tokens.capacity++;
     }
     scanner.tokens.list[scanner.tokens.count] = current;
+    scanner.tokens.list[scanner.tokens.count].line = scanner.line;
     scanner.tokens.count++;
 
     return scanner.tokens.list;
@@ -195,6 +197,8 @@ static tll_token scan_token(void)
             return make_token(TOKEN_LEFT_BRACE);
         case '}':
             return make_token(TOKEN_RIGHT_BRACE);
+        case ':':
+            return make_token(TOKEN_COLON);
         case ';':
             return make_token(TOKEN_SEMICOLON);
         case ',':
@@ -298,6 +302,11 @@ static void skip_white_space(void)
                     {
                         advance();
                     }
+                    if (peek() == '\n')
+                    {
+                        scanner.line++;
+                    }
+                    break;
                 }
                 else
                 {
@@ -315,12 +324,26 @@ static tll_token_type identifier_type(void)
     {
         case 'a':
             return check_keyword(1, 2, "nd", TOKEN_AND);
+        case 'b':
+            return check_keyword(1, 3, "ool", TOKEN_BOOL_TYPE);
         case 'c':
             return check_keyword(1, 4, "lass", TOKEN_CLASS);
         case 'e':
             return check_keyword(1, 3, "lse", TOKEN_ELSE);
         case 'i':
-            return check_keyword(1, 1, "f", TOKEN_IF);
+            if (scanner.current - scanner.start > 1)
+            {
+                if (scanner.current - scanner.start == 2)
+                {
+                    if (scanner.start[1] == 'f')
+                    {
+                        return TOKEN_IF;
+                    }
+                    break;
+                }
+                return check_keyword(1, 2, "nt", TOKEN_INT_TYPE);
+            }
+            break;
         case 'n':
             return check_keyword(1, 3, "ull", TOKEN_NIL);
         case 'o':
@@ -328,7 +351,17 @@ static tll_token_type identifier_type(void)
         case 'r':
             return check_keyword(1, 5, "eturn", TOKEN_RETURN);
         case 's':
-            return check_keyword(1, 4, "uper", TOKEN_SUPER);
+            if (scanner.current - scanner.start > 1)
+            {
+                switch (scanner.start[1])
+                {
+                    case 'u':
+                        return check_keyword(2, 3, "per", TOKEN_SUPER);
+                    case 't':
+                        return check_keyword(2, 4, "ring", TOKEN_STRING_TYPE);
+                }
+            }
+            break;
         case 'v':
             return check_keyword(1, 2, "ar", TOKEN_VAR);
         case 'w':
@@ -340,6 +373,8 @@ static tll_token_type identifier_type(void)
                 {
                     case 'a':
                         return check_keyword(2, 3, "lse", TOKEN_FALSE);
+                    case 'l':
+                        return check_keyword(2, 3, "oat", TOKEN_FLOAT_TYPE);
                     case 'o':
                         return check_keyword(2, 1, "r", TOKEN_FOR);
                     case 'u':

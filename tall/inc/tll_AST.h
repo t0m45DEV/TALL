@@ -6,11 +6,16 @@
 #include <stdint.h>
 
 typedef enum {
-    AST_ERROR,    // Error node for bad parsgin
-    AST_LITERAL,  // A literal value
-    AST_UNARY,    // Unary operations, like '!' or '-'
-    AST_BINARY,   // Binary operations, like equalities, comparations and arithmetic stuff
-    AST_GROUPING  // An expression between parenthesis
+    AST_ERROR,            // Error node for bad parsing.
+    AST_LITERAL,          // A literal value.
+    AST_UNARY,            // Unary operations, like '!' or '-'.
+    AST_BINARY,           // Binary operations, like equalities, comparations and arithmetic stuff.
+    AST_GROUPING,         // An expression between parenthesis.
+    AST_PROGRAM,          // The root of every TALL script.
+    AST_EXPR_STATEMENT,   // An expression used as a statement.
+    AST_VAR_DECLARATION,  // A var declaration, something like 'var x : int = 10'.
+    AST_VAR_NAME,         // When a variable read is made, like 'return a'.
+    AST_RETURN,           // For returning a variable, an expression or nothing at all.
 } tll_AST_type;
 
 typedef struct tll_AST {
@@ -39,6 +44,29 @@ typedef struct tll_AST {
         struct {
             struct tll_AST* expression;
         } grouping;
+
+        struct {
+            struct tll_AST** statements;
+            int count;
+        } program;
+
+        struct {
+            struct tll_AST* expression;
+        } expression_statement;
+
+        struct {
+            tll_string* name;
+            tll_value_type type;
+            struct tll_AST* expression;
+        } var_declaration;
+
+        struct {
+            tll_string* name;
+        } var_name;
+
+        struct {
+            struct tll_AST* expression;
+        } return_statement;
     } as;
 } tll_AST;
 
@@ -50,7 +78,7 @@ tll_AST* create_AST(tll_token* tokens);
 /**
  * Frees the memory used by the AST.
  */
-void end_AST(void);
+void end_AST(tll_AST* tree);
 
 /**
  * Prints out in a "nice" way the given AST.

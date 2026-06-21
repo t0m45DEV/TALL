@@ -1,1 +1,3 @@
-"he" + "llo, " + "wo" + "rld" == "hello, world"
+var concat : string = "he" + "llo, " + "wo" + "rld";
+var target : string = "hello, world";
+return concat == target;
