@@ -72,6 +72,11 @@ static void run_file(const char* file_path)
         free_VM();
         exit(EX_IOERR);
     }
+    else if (f_size == 1) // Blank file, nothing to compile.
+    {
+        free_VM();
+        exit(EX_OK);
+    }
     char* source_code = ALLOCATE_ARRAY(char, f_size);
 
     if (source_code == NULL)
