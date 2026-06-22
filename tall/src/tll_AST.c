@@ -147,7 +147,7 @@ void end_AST(tll_AST* tree)
 
 void print_AST(const tll_AST* AST, const char* name)
 {
-    printf("%s\n", name);
+    printf("=== %s ===\n", name);
     print_AST_recursive(AST, "", true);
 }
 
