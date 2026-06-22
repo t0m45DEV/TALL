@@ -173,6 +173,17 @@ static tll_interpret_result run_VM_code(void)
                 push(a);
                 break;
 
+            case OP_SET_GLOBAL:
+                name = read_string();
+
+                if (!get_from_dictionary(&VM.globals, name, &a))
+                {
+                    runtime_error("Cannot update the undefined variable '%s'", name->chars);
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                set_to_dictionary(&VM.globals, name, peek(0));
+                break;
+
             case OP_EQUAL:
 
                 if (peek(0).type != peek(1).type)

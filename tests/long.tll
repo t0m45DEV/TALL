@@ -1,0 +1,15 @@
+// This is a comment!
+
+// This is my var 'a'
+var a : int = 10;
+
+var b : int = 7;
+
+var c : int = a + b;
+
+// This is a boolean!
+var ret : bool = c == a + b;
+
+c = 10;
+
+return ret;

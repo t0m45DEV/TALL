@@ -14,6 +14,7 @@ typedef enum {
     AST_PROGRAM,          // The root of every TALL script.
     AST_EXPR_STATEMENT,   // An expression used as a statement.
     AST_VAR_DECLARATION,  // A var declaration, something like 'var x : int = 10'.
+    AST_VAR_ASSIGNMENT,   // A var assignment, for updating the value of an already defined variable.
     AST_VAR_NAME,         // When a variable read is made, like 'return a'.
     AST_RETURN,           // For returning a variable, an expression or nothing at all.
 } tll_AST_type;
@@ -59,6 +60,11 @@ typedef struct tll_AST {
             tll_value_type type;
             struct tll_AST* expression;
         } var_declaration;
+
+        struct {
+            tll_string* name;
+            struct tll_AST* expression;
+        } var_assigment;
 
         struct {
             tll_string* name;

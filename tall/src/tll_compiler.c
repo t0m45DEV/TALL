@@ -250,12 +250,19 @@ static void compile_AST_node(tll_AST* node)
 
         case AST_EXPR_STATEMENT:
             compile_AST_node(node->as.expression_statement.expression);
-            //emit_byte(OP_POP, node->line);
+            emit_byte(OP_POP, node->line);
             break;
+
 
         case AST_VAR_DECLARATION:
             compile_AST_node(node->as.var_declaration.expression);
             define_variable(make_constant(AS_TLL_OBJ(node->as.var_declaration.name)), node->line);
+            break;
+
+        case AST_VAR_ASSIGNMENT:
+            compile_AST_node(node->as.var_assigment.expression);
+            emit_byte(OP_SET_GLOBAL, node->line);
+            emit_short(make_constant(AS_TLL_OBJ(node->as.var_assigment.name)), node->line);
             break;
 
         case AST_VAR_NAME:

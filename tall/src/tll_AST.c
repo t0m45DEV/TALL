@@ -68,6 +68,11 @@ static tll_AST* AST_statement(void);
 static tll_AST* AST_variable_declaration(void);
 
 /**
+ * Parse the current tokens as a variable assignment.
+ */
+static tll_AST* AST_variable_assignment(void);
+
+/**
  * Parse the current tokens as an statement of an expression (a function call or an expression discarding the value).
  */
 static tll_AST* AST_expression_statement(void);
@@ -192,6 +197,10 @@ bool has_error(const tll_AST* AST)
             res = has_error(AST->as.var_declaration.expression);
             break;
 
+        case AST_VAR_ASSIGNMENT:
+            res = has_error(AST->as.var_assigment.expression);
+            break;
+
         case AST_VAR_NAME:
             break;
 
@@ -259,6 +268,10 @@ tll_AST* get_error(tll_AST* AST)
 
         case AST_VAR_DECLARATION:
             res = get_error(AST->as.var_declaration.expression);
+            break;
+
+        case AST_VAR_ASSIGNMENT:
+            res = get_error(AST->as.var_assigment.expression);
             break;
 
         case AST_VAR_NAME:
@@ -380,6 +393,13 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             }
             printf(")\n");
             print_AST_recursive(AST->as.var_declaration.expression, child_prefix, true);
+            break;
+
+        case AST_VAR_ASSIGNMENT:
+            printf("VAR_ASSIGNMENT (");
+            printf("%.*s", AST->as.var_assigment.name->length, AST->as.var_assigment.name->chars);
+            printf(")\n");
+            print_AST_recursive(AST->as.var_assigment.expression, child_prefix, true);
             break;
 
         case AST_VAR_NAME:
@@ -513,6 +533,10 @@ static tll_AST* AST_statement(void)
     {
         return AST_return_statement();
     }
+    else if (AST_match(TOKEN_IDENTIFIER))
+    {
+        return AST_variable_assignment();
+    }
     return AST_expression_statement();
 }
 
@@ -570,6 +594,31 @@ static tll_AST* AST_variable_declaration(void)
     node->as.var_declaration.name = var_name;
     node->as.var_declaration.type = var_type;
     node->as.var_declaration.expression = expr;
+
+    return node;
+}
+
+static tll_AST* AST_variable_assignment(void)
+{
+    int line = AST_parser.previous->line;
+    tll_string* var_name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
+
+    if (!AST_match(TOKEN_EQUAL))
+    {
+        return AST_error(AST_parser.current->line, "Expected '=' after variable assignment.");
+    }
+    tll_AST* expr = AST_expression();
+
+    if (!AST_match(TOKEN_SEMICOLON))
+    {
+        return AST_error(AST_parser.current->line, "Variable assignment must end with ';'.");
+    }
+    tll_AST* node = alloc_node();
+
+    node->type = AST_VAR_ASSIGNMENT;
+    node->line = line;
+    node->as.var_assigment.name = var_name;
+    node->as.var_assigment.expression = expr;
 
     return node;
 }
