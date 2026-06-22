@@ -87,6 +87,11 @@ void print_object(tll_value value)
     }
 }
 
+void print_string(const tll_string string)
+{
+    printf("%.*s", string.length, string.chars);
+}
+
 void init_object_pool(void)
 {
     object_pool = NULL;

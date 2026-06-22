@@ -178,7 +178,7 @@ static tll_interpret_result run_VM_code(void)
 
                 if (!get_from_dictionary(&VM.globals, name, &a))
                 {
-                    runtime_error("Cannot update the undefined variable '%s'", name->chars);
+                    runtime_error("Cannot update the undefined variable '%s'.", name->chars);
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 set_to_dictionary(&VM.globals, name, peek(0));

@@ -131,10 +131,9 @@ static int variable_instruction(const char* op_name, tll_code_chunk* code_chunk,
     uint8_t index_lower = code_chunk->code[offset + 2];
 
     uint16_t index = (index_upper << 8) | index_lower;
-    tll_string* var_name = AS_TLL_STRING(code_chunk->constants.values[index]);
 
     printf("%-16s %4d 'var ", op_name, index);
-    printf("%.*s", var_name->length, var_name->chars);
+    print_string(*AS_TLL_STRING(code_chunk->constants.values[index]));
     printf("'\n");
     return offset + 3;
 }

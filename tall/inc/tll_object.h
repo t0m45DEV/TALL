@@ -51,6 +51,11 @@ void free_object(tll_obj* object);
 void print_object(tll_value value);
 
 /**
+ * Prints out the given TLL string.
+ */
+void print_string(const tll_string string);
+
+/**
  * Ininitalize the pool for dinamyc allocated TLL objects.
  */
 void init_object_pool(void);
