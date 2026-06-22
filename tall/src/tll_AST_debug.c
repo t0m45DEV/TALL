@@ -24,71 +24,13 @@ void print_AST(const tll_AST* AST, const char* name)
 
 bool has_error(const tll_AST* AST)
 {
-    bool res = false;
-
-    switch (AST->type)
-    {
-        case AST_ERROR:
-            res = true;
-            break;
-
-        case AST_LITERAL:
-            break;
-
-        case AST_UNARY:
-            res = has_error(AST->as.unary.operand);
-            break;
-
-        case AST_GROUPING:
-            res = has_error(AST->as.grouping.expression);
-            break;
-
-        case AST_BINARY:
-            res = has_error(AST->as.binary.left) || has_error(AST->as.binary.right);
-            break;
-
-        case AST_PROGRAM:
-
-            for (int i = 0; i < AST->as.program.count; i++)
-            {
-                res = has_error(AST->as.program.statements[i]);
-
-                if (res)
-                {
-                    break;
-                }
-            }
-            break;
-
-        case AST_EXPR_STATEMENT:
-            res = has_error(AST->as.expression_statement.expression);
-            break;
-
-        case AST_VAR_DECLARATION:
-            res = has_error(AST->as.var_declaration.expression);
-            break;
-
-        case AST_VAR_ASSIGNMENT:
-            res = has_error(AST->as.var_assigment.expression);
-            break;
-
-        case AST_VAR_NAME:
-            break;
-
-        case AST_RETURN:
-            if (AST->as.return_statement.expression != NULL)
-            {
-                res = has_error(AST->as.return_statement.expression);
-            }
-            break;
-    }
-    return res;
+    return get_error(AST) != NULL;
 }
 
-tll_AST* get_error(tll_AST* AST)
+const tll_AST* get_error(const tll_AST* AST)
 {
-    tll_AST* temp;
-    tll_AST* res = NULL;
+    const tll_AST* temp;
+    const tll_AST* res = NULL;
 
     switch (AST->type)
     {

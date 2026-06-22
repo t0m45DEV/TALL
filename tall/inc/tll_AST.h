@@ -101,6 +101,11 @@ bool has_error(const tll_AST* AST);
  *
  * Returns NULL otherwise.
  */
-tll_AST* get_error(tll_AST* AST);
+const tll_AST* get_error(const tll_AST* AST);
+
+/**
+ * Returns true if the given AST hasn't any type mismatch.
+ */
+bool type_checks(const tll_AST* AST);
 
 #endif
