@@ -20,9 +20,6 @@ typedef struct tll_object_node {
 // The dynamically allocated TLL objects.
 tll_object_node* object_pool;
 
-// A set of all the strings being used by the VM.
-tll_dictionary strings;
-
 /**
  * Adds the given TLL object to the object pool.
  */
@@ -40,25 +37,11 @@ static tll_string* allocate_string(char* chars, int length);
 
 tll_string* take_string(char* chars, int length)
 {
-    tll_string* interned = dictionary_find_string(&strings, chars, length);
-
-    // If this is an already created string, we use the same object.
-    if (interned != NULL)
-    {
-        FREE_ARRAY(char, chars, length + 1);
-        return interned;
-    }
     return allocate_string(chars, length);
 }
 
 tll_string* copy_string(const char* chars, int length)
 {
-    tll_string* interned = dictionary_find_string(&strings, chars, length);
-
-    if (interned != NULL)
-    {
-        return interned;
-    }
     char* heap_chars = ALLOCATE_ARRAY(char, length + 1);
     memcpy(heap_chars, chars, length);
     heap_chars[length] = '\0';
@@ -95,7 +78,6 @@ void print_string(const tll_string string)
 void init_object_pool(void)
 {
     object_pool = NULL;
-    init_dictionary(&strings);
 }
 
 void free_object_pool(void)
@@ -109,7 +91,6 @@ void free_object_pool(void)
         FREE_POINTER(tll_object_node, current);
         current = next;
     }
-    free_dictionary(&strings);
     init_object_pool();
 }
 
@@ -135,7 +116,6 @@ static tll_string* allocate_string(char* chars, int length)
     string->length = length;
     string->chars = chars;
 
-    set_to_dictionary(&strings, string, AS_TLL_NULL);
     return string;
 }
 

@@ -51,6 +51,10 @@ bool are_equals(tll_value value1, tll_value value2)
     }
     else if (IS_OBJ(value1) && IS_OBJ(value2))
     {
+        if (IS_STRING(value1) && IS_STRING(value2))
+        {
+            return (AS_TLL_STRING(value1)->length == AS_TLL_STRING(value2)->length) && (memcmp(AS_TLL_STRING(value1)->chars, AS_TLL_STRING(value2)->chars, AS_TLL_STRING(value1)->length) == 0);
+        }
         return AS_C_OBJ(value1) == AS_C_OBJ(value2);
     }
     return false; // Unreachable.

@@ -202,7 +202,7 @@ static tll_dict_entry* find_entry(tll_dict_entry* entries, int capacity, tll_str
                 tombstone = entry;
             }
         }
-        else if (entry->key == key || entry->key == NULL)
+        else if (entry->key == key || (entry->key != NULL && entry->key->length == key->length && memcmp(entry->key->chars, key->chars, key->length) == 0))
         {
             // We found the entry.
             break;
