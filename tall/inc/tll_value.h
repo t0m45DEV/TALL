@@ -76,7 +76,7 @@ void write_value_array(tll_value_array* value_array, tll_value value);
 /**
  * Returns true if the two given values are equal.
  */
-bool are_equals(tll_value value1, tll_value value2);
+bool are_equals(const tll_value value1, const tll_value value2);
 
 /**
  * Prints out to the standard output the given value.

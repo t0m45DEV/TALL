@@ -31,7 +31,7 @@ void write_value_array(tll_value_array *value_array, tll_value value)
     value_array->count++;
 }
 
-bool are_equals(tll_value value1, tll_value value2)
+bool are_equals(const tll_value value1, const tll_value value2)
 {
     if (IS_NULL(value1) && IS_NULL(value2))
     {
