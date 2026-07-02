@@ -19,9 +19,14 @@ static int simple_instruction(const char* op_name, int offset);
 static int constant_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset);
 
 /**
- * Print the bytecode at the given offset in the given code_chunk as a variable operation.
+ * Print the bytecode at the given offset in the given code_chunk as a global variable operation.
  */
-static int variable_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset);
+static int global_variable_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset);
+
+/**
+ * Print the bytecode at the given offset in the given code_chunk as a local variable operation.
+ */
+static int local_variable_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset);
 
 void disassemble_code_chunk(tll_code_chunk* code_chunk, const char* chunk_name)
 {
@@ -61,11 +66,15 @@ int disassemble_instruction(tll_code_chunk* code_chunk, int offset)
         case OP_POP:
             return simple_instruction("OP_POP", offset);
         case OP_DEFINE_GLOBAL:
-            return variable_instruction("OP_DEFINE_GLOBAL", code_chunk, offset);
+            return global_variable_instruction("OP_DEFINE_GLOBAL", code_chunk, offset);
         case OP_GET_GLOBAL:
-            return variable_instruction("OP_GET_GLOBAL", code_chunk, offset);
+            return global_variable_instruction("OP_GET_GLOBAL", code_chunk, offset);
         case OP_SET_GLOBAL:
-            return variable_instruction("OP_SET_GLOBAL", code_chunk, offset);
+            return global_variable_instruction("OP_SET_GLOBAL", code_chunk, offset);
+         case OP_GET_LOCAL:
+            return local_variable_instruction("OP_GET_LOCAL", code_chunk, offset);
+        case OP_SET_LOCAL:
+            return local_variable_instruction("OP_SET_LOCAL", code_chunk, offset);
         case OP_EQUAL:
             return simple_instruction("OP_EQUAL", offset);
         case OP_NOT_EQUAL:
@@ -125,7 +134,7 @@ static int constant_instruction(const char* op_name, tll_code_chunk* code_chunk,
     return offset + 3;
 }
 
-static int variable_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset)
+static int global_variable_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset)
 {
     uint8_t index_upper = code_chunk->code[offset + 1];
     uint8_t index_lower = code_chunk->code[offset + 2];
@@ -136,5 +145,13 @@ static int variable_instruction(const char* op_name, tll_code_chunk* code_chunk,
     print_string(*AS_TLL_STRING(code_chunk->constants.values[index]));
     printf("'\n");
     return offset + 3;
+}
+
+static int local_variable_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset)
+{
+    uint8_t stack_slot = code_chunk->code[offset + 1];
+
+    printf("%-16s %4d\n", op_name, stack_slot);
+    return offset + 2;
 }
 

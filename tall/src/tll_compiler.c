@@ -6,15 +6,36 @@
 #include "tll_scanner.h"
 #include "tll_value.h"
 #include "tll_object.h"
+
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef DEBUG_PRINT_CODE
 #include "tll_debug.h"
 #endif
 
-#include <stdio.h>
+#define MAX_LOCAL_COUNT 256
+
+typedef struct {
+    const tll_string* name;
+    int depth;
+    int line;
+} tll_local_var;
+
+typedef struct {
+    tll_local_var locals[MAX_LOCAL_COUNT];
+    int local_count;
+    int scope_depth;
+} tll_compiler;
+
+tll_compiler* current_compiler = NULL;
 
 tll_code_chunk* compiling_code_chunk;
+
+/**
+ * Initialize the given compiler and sets it as the current one to be used as context.
+ */
+static void init_compiler(tll_compiler* compiler);
 
 /**
  * Returns the code chunk now being compiled.
@@ -52,22 +73,59 @@ static uint16_t make_constant(tll_value value);
 static void emit_constant(tll_value value, int line);
 
 /**
- * Emits the bytes necessary for creating a global variable.
+ * Returns the index of the given variable name that locales the local variable inside the given compiler context.
+ *
+ * Returns -1 otherwise.
  */
-static inline void define_variable(uint16_t global, int line);
+static int8_t resolve_local(const tll_compiler* compiler, const tll_string* var_name);
 
 /**
- * Emits the bytes necessary for reading a global variable.
+ * Emits the bytes necessary for creating a global variable.
  */
-static inline void named_variable(uint16_t global, int line);
+static inline void define_global_variable(uint16_t global, int line);
+
+/**
+ * Emits the bytes necessary for creating a local variable.
+ */
+static inline void define_local_variable(const tll_string* var_name, int line);
+
+/**
+ * Emits the bytes necessary for assigning a local or a global variable.
+ */
+static void variable_assignment(const tll_string* var_name, int line);
+
+/**
+ * Emits the bytes necessary for reading a global or a local variable.
+ */
+static void named_variable(const tll_string* var_name, int line);
+
+/**
+ * Starts a new scope for local variables and code.
+ */
+static void begin_scope(void);
+
+/**
+ * Ends the current scope, poping all local variables.
+ */
+static void end_scope(void);
 
 /**
  * Travels recursively through the given AST and saves bytecode to the current code chunk (see current_code_chunk).
  */
 static void compile_AST_node(tll_AST* node);
 
+static void init_compiler(tll_compiler* compiler)
+{
+    compiler->local_count = 0;
+    compiler->scope_depth = 0;
+    current_compiler = compiler;
+}
+
 bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
 {
+    tll_compiler compiler;
+    init_compiler(&compiler);
+
     compiling_code_chunk = code_chunk;
     tll_AST* AST = create_AST(scan_source_code(source_code));
 
@@ -159,16 +217,98 @@ static void emit_constant(tll_value value, int line)
     }
 }
 
-static inline void define_variable(uint16_t global, int line)
+static int8_t resolve_local(const tll_compiler* compiler, const tll_string* var_name)
+{
+    for (int8_t i = compiler->local_count - 1; i >= 0; i--)
+    {
+        const tll_local_var* local = &compiler->locals[i];
+
+        if (are_equals(AS_TLL_OBJ(local->name), AS_TLL_OBJ(var_name)))
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static inline void define_global_variable(uint16_t global, int line)
 {
     emit_byte(OP_DEFINE_GLOBAL, line);
     emit_short(global, line);
 }
 
-static inline void named_variable(uint16_t global, int line)
+static inline void define_local_variable(const tll_string* var_name, int line)
 {
-    emit_byte(OP_GET_GLOBAL, line);
-    emit_short(global, line);
+    for (int i = current_compiler->local_count - 1; i >= 0; i--)
+    {
+        tll_local_var* local = &current_compiler->locals[i];
+
+        if (local->depth != -1 && local->depth < current_compiler->scope_depth)
+        {
+            break;
+        }
+        if (are_equals(AS_TLL_OBJ(local->name), AS_TLL_OBJ(var_name)))
+        {
+            printf("Local variable already defined on line %i.\n", local->line);
+            return;
+        }
+    }
+    if (current_compiler->local_count == MAX_LOCAL_COUNT)
+    {
+        printf("[FATAL ERROR] Too many local variables in a single code block.\n");
+        return;
+    }
+    tll_local_var* local = &current_compiler->locals[current_compiler->local_count];
+    current_compiler->local_count++;
+    local->name = var_name;
+    local->line = line;
+    local->depth = current_compiler->scope_depth;
+}
+
+static void variable_assignment(const tll_string* var_name, int line)
+{
+    int8_t arguments = resolve_local(current_compiler, var_name);
+
+    if (arguments != (int8_t) -1)
+    {
+        emit_bytes(OP_SET_LOCAL, arguments, line);
+    }
+    else
+    {
+        emit_byte(OP_SET_GLOBAL, line);
+        emit_short(make_constant(AS_TLL_OBJ(var_name)), line);
+    }
+}
+
+static void named_variable(const tll_string* var_name, int line)
+{
+    int8_t arguments = resolve_local(current_compiler, var_name);
+
+    if (arguments != (int8_t) -1)
+    {
+        emit_bytes(OP_GET_LOCAL, arguments, line);
+    }
+    else
+    {
+        emit_byte(OP_GET_GLOBAL, line);
+        emit_short(make_constant(AS_TLL_OBJ(var_name)), line);
+    }
+}
+
+static void begin_scope(void)
+{
+    current_compiler->scope_depth++;
+}
+
+static void end_scope(void)
+{
+    current_compiler->scope_depth--;
+
+    while (current_compiler->local_count > 0 && current_compiler->locals[current_compiler->local_count - 1].depth > current_compiler->scope_depth)
+    {
+        emit_byte(OP_POP, current_compiler->locals[current_compiler->local_count - 1].line);
+        current_compiler->local_count--;
+    }
 }
 
 static void compile_AST_node(tll_AST* node)
@@ -253,20 +393,26 @@ static void compile_AST_node(tll_AST* node)
             emit_byte(OP_POP, node->line);
             break;
 
-
         case AST_VAR_DECLARATION:
             compile_AST_node(node->as.var_declaration.expression);
-            define_variable(make_constant(AS_TLL_OBJ(node->as.var_declaration.name)), node->line);
+
+            if (current_compiler->scope_depth == 0)
+            {
+                define_global_variable(make_constant(AS_TLL_OBJ(node->as.var_declaration.name)), node->line);
+            }
+            else
+            {
+                define_local_variable(node->as.var_declaration.name, node->line);
+            }
             break;
 
         case AST_VAR_ASSIGNMENT:
             compile_AST_node(node->as.var_assigment.expression);
-            emit_byte(OP_SET_GLOBAL, node->line);
-            emit_short(make_constant(AS_TLL_OBJ(node->as.var_assigment.name)), node->line);
+            variable_assignment(node->as.var_assigment.name, node->line);
             break;
 
         case AST_VAR_NAME:
-            named_variable(make_constant(AS_TLL_OBJ(node->as.var_name.name)), node->line);
+            named_variable(node->as.var_name.name, node->line);
             break;
 
         case AST_RETURN:
@@ -279,6 +425,15 @@ static void compile_AST_node(tll_AST* node)
                 emit_byte(OP_NULL, node->line);
             }
             emit_return(node->line);
+            break;
+
+        case AST_BLOCK:
+            begin_scope();
+            for (int i = 0; i < node->as.block_assignment.count; i++)
+            {
+                compile_AST_node(node->as.block_assignment.declarations[i]);
+            }
+            end_scope();
             break;
 
         default:

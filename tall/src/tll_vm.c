@@ -184,6 +184,14 @@ static tll_interpret_result run_VM_code(void)
                 set_to_dictionary(&VM.globals, name, peek(0));
                 break;
 
+            case OP_GET_LOCAL:
+                push(VM.stack[read_byte()]);
+                break;
+
+            case OP_SET_LOCAL:
+                VM.stack[read_byte()] = peek(0);
+                break;
+
             case OP_EQUAL:
 
                 if (peek(0).type != peek(1).type)
@@ -450,6 +458,10 @@ static tll_interpret_result run_VM_code(void)
                 print_value(pop());
                 printf("\n");
                 return TLL_INTERPRET_OK;
+
+            default:
+                runtime_error("Unkown instruction with op code %i at line %i.", instruction, VM.ip);
+                return TLL_INTERPRET_RUNTIME_ERROR;
         }
     }
 }

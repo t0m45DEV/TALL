@@ -21,6 +21,11 @@ typedef struct {
 tll_AST_parser AST_parser;
 
 /**
+ * Free all the memory being used by the given tree.
+ */
+static void free_AST_recursive(tll_AST* tree);
+
+/**
  * Returns an empty node saved on the memory arena.
  */
 static tll_AST* alloc_node(void);
@@ -49,6 +54,11 @@ static tll_AST* AST_program(void);
  * Parse the current tokens as an statement.
  */
 static tll_AST* AST_statement(void);
+
+/**
+ * Parse the current tokens as a block of code between brackets.
+ */
+static tll_AST* AST_block(void);
 
 /**
  * Parse the current tokens as a variable declaration.
@@ -123,14 +133,70 @@ tll_AST* create_AST(tll_token* tokens)
 
 void end_AST(tll_AST* tree)
 {
-    if (tree->type == AST_PROGRAM)
-    {
-        FREE_ARRAY(tll_AST*, tree->as.program.statements, tree->as.program.count);
-    }
-
+    free_AST_recursive(tree);
     free_arena(first_arena);
     first_arena = NULL;
     current_arena = NULL;
+}
+
+static void free_AST_recursive(tll_AST* tree)
+{
+    switch (tree->type)
+    {
+        case AST_ERROR:
+            return;
+
+        case AST_LITERAL:
+            return;
+
+        case AST_UNARY:
+            free_AST_recursive(tree->as.unary.operand);
+            break;
+
+        case AST_BINARY:
+            free_AST_recursive(tree->as.binary.left);
+            free_AST_recursive(tree->as.binary.right);
+            break;
+
+        case AST_GROUPING:
+            free_AST_recursive(tree->as.grouping.expression);
+            break;
+
+        case AST_PROGRAM:
+            for (int i = 0; i < tree->as.program.count; i++)
+            {
+                free_AST_recursive(tree->as.program.statements[i]);
+            }
+            FREE_ARRAY(tll_AST*, tree->as.program.statements, tree->as.program.count);
+            break;
+
+        case AST_EXPR_STATEMENT:
+            free_AST_recursive(tree->as.expression_statement.expression);
+            break;
+
+        case AST_VAR_DECLARATION:
+            free_AST_recursive(tree->as.var_declaration.expression);
+            break;
+
+        case AST_VAR_ASSIGNMENT:
+            free_AST_recursive(tree->as.var_assigment.expression);
+            break;
+
+        case AST_VAR_NAME:
+            break;
+
+        case AST_RETURN:
+            free_AST_recursive(tree->as.return_statement.expression);
+            break;
+
+        case AST_BLOCK:
+            for (int i = 0; i < tree->as.block_assignment.count; i++)
+            {
+                free_AST_recursive(tree->as.block_assignment.declarations[i]);
+            }
+            FREE_ARRAY(tll_AST*, tree->as.block_assignment.declarations, tree->as.block_assignment.count);
+            break;
+    }
 }
 
 static tll_AST* alloc_node(void)
@@ -197,6 +263,10 @@ static tll_AST* AST_statement(void)
     {
         return AST_variable_declaration();
     }
+    else if (AST_match(TOKEN_LEFT_BRACE))
+    {
+        return AST_block();
+    }
     else if (AST_match(TOKEN_RETURN))
     {
         return AST_return_statement();
@@ -206,6 +276,38 @@ static tll_AST* AST_statement(void)
         return AST_variable_assignment();
     }
     return AST_expression_statement();
+}
+
+static tll_AST* AST_block(void)
+{
+    tll_AST** statements = NULL;
+    int count = 0;
+    int capacity = 0;
+    int line = AST_parser.current->line;
+
+    while (!AST_check(TOKEN_EOF) && !AST_check(TOKEN_RIGHT_BRACE))
+    {
+        if (count + 1 > capacity)
+        {
+            int old_capacity = capacity;
+            capacity = GROW_CAPACITY(capacity);
+            statements = GROW_ARRAY(tll_AST*, statements, old_capacity, capacity);
+        }
+        statements[count] = AST_statement();
+        count++;
+    }
+    if (!AST_match(TOKEN_RIGHT_BRACE))
+    {
+        return AST_error(line, "Expected '}' after block.");
+    }
+    tll_AST* node = alloc_node();
+    node->type = AST_BLOCK;
+    node->line = line;
+
+    node->as.block_assignment.declarations = statements;
+    node->as.block_assignment.count = count;
+
+    return node;
 }
 
 static tll_AST* AST_variable_declaration(void)
@@ -551,14 +653,20 @@ static tll_AST* AST_primary(void)
 
 static tll_AST* AST_error(int line, const char* message)
 {
-    // We continue until the first ';' to synchronize.
-    while (!AST_check(TOKEN_SEMICOLON) && !AST_check(TOKEN_EOF))
+    // We continue until the first ';' or '}' to synchronize.
+    while (!AST_check(TOKEN_SEMICOLON) && !AST_check(TOKEN_RIGHT_BRACE) && !AST_check(TOKEN_EOF))
     {
         AST_advance(); // Advance ignoring the next stuff.
     }
     // If TOKEN_EOF is not reach yet, we can continue the parsing.
-    AST_match(TOKEN_SEMICOLON);
-
+    if (AST_check(TOKEN_SEMICOLON))
+    {
+        AST_match(TOKEN_SEMICOLON);
+    }
+    else if (AST_check(TOKEN_RIGHT_BRACE))
+    {
+        AST_match(TOKEN_RIGHT_BRACE);
+    }
     tll_AST* node = alloc_node();
 
     node->type = AST_ERROR;

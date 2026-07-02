@@ -17,6 +17,7 @@ typedef enum {
     AST_VAR_ASSIGNMENT,   // A var assignment, for updating the value of an already defined variable.
     AST_VAR_NAME,         // When a variable read is made, like 'return a'.
     AST_RETURN,           // For returning a variable, an expression or nothing at all.
+    AST_BLOCK,            // For code inside brackets: '{' code '}'.
 } tll_AST_type;
 
 typedef struct tll_AST {
@@ -73,6 +74,11 @@ typedef struct tll_AST {
         struct {
             struct tll_AST* expression;
         } return_statement;
+
+        struct {
+            struct tll_AST** declarations;
+            int count;
+        } block_assignment;
     } as;
 } tll_AST;
 
@@ -107,5 +113,12 @@ const tll_AST* get_error(const tll_AST* AST);
  * Returns true if the given AST hasn't any type mismatch.
  */
 bool type_checks(const tll_AST* AST);
+
+/**
+ * Returns the first node with a type mismatch of the given AST.
+ *
+ * Returns NULL if not found.
+ */
+const tll_AST* get_type_mismatch(const tll_AST* AST);
 
 #endif

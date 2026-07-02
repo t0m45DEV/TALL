@@ -10,6 +10,14 @@ var c : int = a + b;
 // This is a boolean!
 var ret : bool = c == a + b;
 
-c = 10;
+{
+    var a_local : int = 5;
+    var b_local : int = a_local + 2;
 
+    c = 10;
+    {
+        b_local = b_local + a_local;
+        ret = !!ret;
+    }
+}
 return ret;

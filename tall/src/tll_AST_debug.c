@@ -96,6 +96,19 @@ const tll_AST* get_error(const tll_AST* AST)
                 res = get_error(AST->as.return_statement.expression);
             }
             break;
+
+        case AST_BLOCK:
+
+            for (int i = 0; i < AST->as.block_assignment.count; i++)
+            {
+                res = get_error(AST->as.block_assignment.declarations[i]);
+
+                if (res != NULL)
+                {
+                    break;
+                }
+            }
+            break;
     }
     return res;
 }
@@ -226,6 +239,18 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             if (AST->as.return_statement.expression != NULL)
             {
                 print_AST_recursive(AST->as.return_statement.expression, child_prefix, true);
+            }
+            break;
+
+        case AST_BLOCK:
+            printf("BLOCK\n");
+            for (int i = 0; i < AST->as.block_assignment.count - 1; i++)
+            {
+                print_AST_recursive(AST->as.block_assignment.declarations[i], child_prefix, false);
+            }
+            if (AST->as.block_assignment.count > 0)
+            {
+                print_AST_recursive(AST->as.block_assignment.declarations[AST->as.block_assignment.count - 1], child_prefix, true);
             }
             break;
 
