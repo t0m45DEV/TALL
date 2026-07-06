@@ -38,6 +38,11 @@ tll_code_chunk* compiling_code_chunk;
 static void init_compiler(tll_compiler* compiler);
 
 /**
+ * Prints out the given message as a compiler error on the given line.
+ */
+static inline void compiler_error(const char* message, int line);
+
+/**
  * Returns the code chunk now being compiled.
  */
 static inline tll_code_chunk* current_code_chunk(void);
@@ -65,7 +70,7 @@ static inline void emit_bytes(uint8_t byte_1, uint8_t byte_2, int line);
 /**
  * Returns the constants pool index for a given value.
  */
-static uint16_t make_constant(tll_value value);
+static uint16_t make_constant(tll_value value, int line);
 
 /**
  * Saves a OP_CONSTANT with the constants pool index for the given value and saves it the given line info.
@@ -121,6 +126,11 @@ static void init_compiler(tll_compiler* compiler)
     current_compiler = compiler;
 }
 
+static inline void compiler_error(const char* message, int line)
+{
+    fprintf(stderr, "[Line %i] Compiler error: %s\n", line, message);
+}
+
 bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
 {
     tll_compiler compiler;
@@ -145,7 +155,8 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
     }
     else
     {
-        fprintf(stderr, "%s\n", get_error(AST)->as.error.message);
+        const tll_AST* error_node = get_error(AST);
+        fprintf(stderr, "[Line %i] Parser error: %s\n", error_node->line, error_node->as.error.message);
     }
     end_AST(AST);
     free_scanner();
@@ -180,12 +191,12 @@ static inline void emit_bytes(uint8_t byte_1, uint8_t byte_2, int line)
     emit_byte(byte_2, line);
 }
 
-static uint16_t make_constant(tll_value value)
+static uint16_t make_constant(tll_value value, int line)
 {
     int constant = add_constant(current_code_chunk(), value);
     if (constant > UINT16_MAX)
     {
-        printf("[FATAL ERROR] Too many constant in one code chunk.\n");
+        compiler_error("Too many constants in one code chunk.", line);
         return 0;
     }
     return (uint16_t) constant;
@@ -196,7 +207,7 @@ static void emit_constant(tll_value value, int line)
     if (IS_NUMBER(value) || IS_STRING(value))
     {
         emit_byte(OP_CONSTANT, line);
-        uint16_t const_index = make_constant(value);
+        uint16_t const_index = make_constant(value, line);
 
         emit_short(const_index, line);
     }
@@ -249,13 +260,15 @@ static inline void define_local_variable(const tll_string* var_name, int line)
         }
         if (are_equals(AS_TLL_OBJ(local->name), AS_TLL_OBJ(var_name)))
         {
-            printf("Local variable already defined on line %i.\n", local->line);
+            char message[100];
+            sprintf(message, "Local variable '%s' already defined on line %i.", var_name->chars, local->line);
+            compiler_error(message, line);
             return;
         }
     }
     if (current_compiler->local_count == MAX_LOCAL_COUNT)
     {
-        printf("[FATAL ERROR] Too many local variables in a single code block.\n");
+        compiler_error("Too many local variables in a single code block.", line);
         return;
     }
     tll_local_var* local = &current_compiler->locals[current_compiler->local_count];
@@ -276,7 +289,7 @@ static void variable_assignment(const tll_string* var_name, int line)
     else
     {
         emit_byte(OP_SET_GLOBAL, line);
-        emit_short(make_constant(AS_TLL_OBJ(var_name)), line);
+        emit_short(make_constant(AS_TLL_OBJ(var_name), line), line);
     }
 }
 
@@ -291,7 +304,7 @@ static void named_variable(const tll_string* var_name, int line)
     else
     {
         emit_byte(OP_GET_GLOBAL, line);
-        emit_short(make_constant(AS_TLL_OBJ(var_name)), line);
+        emit_short(make_constant(AS_TLL_OBJ(var_name), line), line);
     }
 }
 
@@ -398,7 +411,7 @@ static void compile_AST_node(tll_AST* node)
 
             if (current_compiler->scope_depth == 0)
             {
-                define_global_variable(make_constant(AS_TLL_OBJ(node->as.var_declaration.name)), node->line);
+                define_global_variable(make_constant(AS_TLL_OBJ(node->as.var_declaration.name), node->line), node->line);
             }
             else
             {
