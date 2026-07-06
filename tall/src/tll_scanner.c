@@ -304,6 +304,7 @@ static void skip_white_space(void)
                     }
                     if (peek() == '\n')
                     {
+                        advance();
                         scanner.line++;
                     }
                     break;
