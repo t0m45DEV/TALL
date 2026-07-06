@@ -119,21 +119,21 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
 
     if (is_last)
     {
-        printf("└──");
+        printf("└─");
     }
     else
     {
-        printf("├──");
+        printf("├─");
     }
     char child_prefix[256];
 
     if (is_last)
     {
-        snprintf(child_prefix, sizeof(child_prefix), "%s%s", prefix, "    ");
+        snprintf(child_prefix, sizeof(child_prefix), "%s%s", prefix, "   ");
     }
     else
     {
-        snprintf(child_prefix, sizeof(child_prefix), "%s%s", prefix, "│   ");
+        snprintf(child_prefix, sizeof(child_prefix), "%s%s", prefix, "│  ");
     }
 
     switch (AST->type)
