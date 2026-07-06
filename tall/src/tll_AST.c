@@ -63,7 +63,7 @@ static tll_AST* AST_block(void);
 /**
  * Parse the current tokens as a variable declaration.
  */
-static tll_AST* AST_variable_declaration(void);
+static tll_AST* AST_variable_declaration(bool is_const);
 
 /**
  * Parse the current tokens as a variable assignment.
@@ -174,6 +174,10 @@ static void free_AST_recursive(tll_AST* tree)
             free_AST_recursive(tree->as.expression_statement.expression);
             break;
 
+        case AST_CONST_DECLARATION:
+            free_AST_recursive(tree->as.const_declaration.expression);
+            break;
+
         case AST_VAR_DECLARATION:
             free_AST_recursive(tree->as.var_declaration.expression);
             break;
@@ -261,7 +265,11 @@ static tll_AST* AST_statement(void)
 {
     if (AST_match(TOKEN_VAR))
     {
-        return AST_variable_declaration();
+        return AST_variable_declaration(false);
+    }
+    else if (AST_match(TOKEN_CONST))
+    {
+        return AST_variable_declaration(true);
     }
     else if (AST_match(TOKEN_LEFT_BRACE))
     {
@@ -310,7 +318,7 @@ static tll_AST* AST_block(void)
     return node;
 }
 
-static tll_AST* AST_variable_declaration(void)
+static tll_AST* AST_variable_declaration(bool is_const)
 {
     int line = AST_parser.current->line;
 
@@ -359,7 +367,14 @@ static tll_AST* AST_variable_declaration(void)
     }
     tll_AST* node = alloc_node();
 
-    node->type = AST_VAR_DECLARATION;
+    if (is_const)
+    {
+        node->type = AST_CONST_DECLARATION;
+    }
+    else
+    {
+        node->type = AST_VAR_DECLARATION;
+    }
     node->line = line;
     node->as.var_declaration.name = var_name;
     node->as.var_declaration.type = var_type;

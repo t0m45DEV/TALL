@@ -3,7 +3,7 @@
 // This is my var 'a'
 var a : int = 10;
 
-var b : int = 7;
+const b : int = 7;
 
 var c : int = a + b;
 
@@ -11,7 +11,7 @@ var c : int = a + b;
 var ret : bool = c == a + b;
 
 {
-    var a_local : int = 5;
+    const a_local : int = 5;
     var b_local : int = a_local + 2;
 
     c = 10;

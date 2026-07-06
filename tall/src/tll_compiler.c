@@ -18,6 +18,7 @@
 
 typedef struct {
     const tll_string* name;
+    bool is_const;
     int depth;
     int line;
 } tll_local_var;
@@ -80,6 +81,11 @@ static uint16_t make_constant(tll_value value, int line);
 static void emit_constant(tll_value value, int line);
 
 /**
+ * Returns if the given variable name is defined as constant or not.
+ */
+static bool is_local_const(const tll_compiler* compiler, const tll_string* var_name);
+
+/**
  * Returns the index of the given variable name that locales the local variable inside the given compiler context.
  *
  * Returns -1 otherwise.
@@ -89,12 +95,12 @@ static int8_t resolve_local(const tll_compiler* compiler, const tll_string* var_
 /**
  * Emits the bytes necessary for creating a global variable.
  */
-static inline void define_global_variable(uint16_t global, int line);
+static inline void define_global_variable(uint16_t global, int line, bool is_const);
 
 /**
  * Emits the bytes necessary for creating a local variable.
  */
-static inline void define_local_variable(const tll_string* var_name, int line);
+static inline void define_local_variable(const tll_string* var_name, int line, bool is_const);
 
 /**
  * Emits the bytes necessary for assigning a local or a global variable.
@@ -235,6 +241,20 @@ static void emit_constant(tll_value value, int line)
     }
 }
 
+static bool is_local_const(const tll_compiler* compiler, const tll_string* var_name)
+{
+    for (int8_t i = compiler->local_count - 1; i >= 0; i--)
+    {
+        const tll_local_var* local = &compiler->locals[i];
+
+        if (are_equals(AS_TLL_OBJ(local->name), AS_TLL_OBJ(var_name)))
+        {
+            return local->is_const;
+        }
+    }
+    return false;
+}
+
 static int8_t resolve_local(const tll_compiler* compiler, const tll_string* var_name)
 {
     for (int8_t i = compiler->local_count - 1; i >= 0; i--)
@@ -249,13 +269,20 @@ static int8_t resolve_local(const tll_compiler* compiler, const tll_string* var_
     return -1;
 }
 
-static inline void define_global_variable(uint16_t global, int line)
+static inline void define_global_variable(uint16_t global, int line, bool is_const)
 {
-    emit_byte(OP_DEFINE_GLOBAL, line);
+    if (is_const)
+    {
+        emit_byte(OP_DEF_GLOBAL_CONST, line);
+    }
+    else
+    {
+        emit_byte(OP_DEF_GLOBAL_VAR, line);
+    }
     emit_short(global, line);
 }
 
-static inline void define_local_variable(const tll_string* var_name, int line)
+static inline void define_local_variable(const tll_string* var_name, int line, bool is_const)
 {
     for (int i = current_compiler->local_count - 1; i >= 0; i--)
     {
@@ -281,6 +308,7 @@ static inline void define_local_variable(const tll_string* var_name, int line)
     tll_local_var* local = &current_compiler->locals[current_compiler->local_count];
     current_compiler->local_count++;
     local->name = var_name;
+    local->is_const = is_const;
     local->line = line;
     local->depth = current_compiler->scope_depth;
 }
@@ -291,6 +319,11 @@ static void variable_assignment(const tll_string* var_name, int line)
 
     if (arguments != (int8_t) -1)
     {
+        if (is_local_const(current_compiler, var_name))
+        {
+            compiler_error("Trying to assign a value to a constant.", line);
+            return;
+        }
         emit_bytes(OP_SET_LOCAL, arguments, line);
     }
     else
@@ -413,16 +446,29 @@ static void compile_AST_node(tll_AST* node)
             emit_byte(OP_POP, node->line);
             break;
 
+        case AST_CONST_DECLARATION:
+            compile_AST_node(node->as.var_declaration.expression);
+
+            if (current_compiler->scope_depth == 0)
+            {
+                define_global_variable(make_constant(AS_TLL_OBJ(node->as.var_declaration.name), node->line), node->line, true);
+            }
+            else
+            {
+                define_local_variable(node->as.var_declaration.name, node->line, true);
+            }
+            break;
+
         case AST_VAR_DECLARATION:
             compile_AST_node(node->as.var_declaration.expression);
 
             if (current_compiler->scope_depth == 0)
             {
-                define_global_variable(make_constant(AS_TLL_OBJ(node->as.var_declaration.name), node->line), node->line);
+                define_global_variable(make_constant(AS_TLL_OBJ(node->as.var_declaration.name), node->line), node->line, false);
             }
             else
             {
-                define_local_variable(node->as.var_declaration.name, node->line);
+                define_local_variable(node->as.var_declaration.name, node->line, false);
             }
             break;
 

@@ -14,7 +14,8 @@ typedef struct {
     int stack_capacity;
     tll_value* stack;
     tll_value* stack_top;
-    tll_dictionary globals;
+    tll_dictionary global_vars;
+    tll_dictionary global_consts;
 } tll_vm;
 
 /**

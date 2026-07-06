@@ -79,6 +79,10 @@ const tll_AST* get_error(const tll_AST* AST)
             res = get_error(AST->as.expression_statement.expression);
             break;
 
+        case AST_CONST_DECLARATION:
+            res = get_error(AST->as.const_declaration.expression);
+            break;
+
         case AST_VAR_DECLARATION:
             res = get_error(AST->as.var_declaration.expression);
             break;
@@ -189,6 +193,37 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
         case AST_EXPR_STATEMENT:
             printf("EXPRESSION_STATEMENT\n");
             print_AST_recursive(AST->as.expression_statement.expression, child_prefix, true);
+            break;
+
+        case AST_CONST_DECLARATION:
+            printf("CONST_DECLARATION (");
+            print_string(*AST->as.var_declaration.name);
+            printf(" ");
+
+            switch (AST->as.var_declaration.type)
+            {
+                case VAL_NULL:
+                    printf("null");
+                    break;
+
+                case VAL_BOOL:
+                    printf("bool");
+                    break;
+
+                case VAL_INT:
+                    printf("int");
+                    break;
+
+                case VAL_FLOAT:
+                    printf("float");
+                    break;
+
+                case VAL_OBJ: // TODO: Better reading type for objects.
+                    printf("string");
+                    break;
+            }
+            printf(")\n");
+            print_AST_recursive(AST->as.var_declaration.expression, child_prefix, true);
             break;
 
         case AST_VAR_DECLARATION:

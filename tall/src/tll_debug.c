@@ -65,8 +65,10 @@ int disassemble_instruction(tll_code_chunk* code_chunk, int offset)
             return simple_instruction("OP_FALSE", offset);
         case OP_POP:
             return simple_instruction("OP_POP", offset);
-        case OP_DEFINE_GLOBAL:
-            return global_variable_instruction("OP_DEFINE_GLOBAL", code_chunk, offset);
+        case OP_DEF_GLOBAL_CONST:
+            return global_variable_instruction("OP_DEF_GLOBAL_CONST", code_chunk, offset);
+        case OP_DEF_GLOBAL_VAR:
+            return global_variable_instruction("OP_DEF_GLOBAL_VAR", code_chunk, offset);
         case OP_GET_GLOBAL:
             return global_variable_instruction("OP_GET_GLOBAL", code_chunk, offset);
         case OP_SET_GLOBAL:
@@ -120,7 +122,7 @@ static int constant_instruction(const char* op_name, tll_code_chunk* code_chunk,
 
     uint16_t index = (index_upper << 8) | index_lower;
 
-    printf("%-16s %4d '", op_name, index);
+    printf("%-20s %4d '", op_name, index);
 
     tll_value value = code_chunk->constants.values[index];
     print_type(value);
@@ -141,7 +143,7 @@ static int global_variable_instruction(const char* op_name, tll_code_chunk* code
 
     uint16_t index = (index_upper << 8) | index_lower;
 
-    printf("%-16s %4d 'var ", op_name, index);
+    printf("%-20s %4d 'var ", op_name, index);
     print_string(*AS_TLL_STRING(code_chunk->constants.values[index]));
     printf("'\n");
     return offset + 3;
@@ -151,7 +153,7 @@ static int local_variable_instruction(const char* op_name, tll_code_chunk* code_
 {
     uint8_t stack_slot = code_chunk->code[offset + 1];
 
-    printf("%-16s %4d\n", op_name, stack_slot);
+    printf("%-20s %4d\n", op_name, stack_slot);
     return offset + 2;
 }
 

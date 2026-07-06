@@ -63,14 +63,16 @@ static void reset_stack(void);
 
 void init_VM(void)
 {
-    init_dictionary(&VM.globals);
+    init_dictionary(&VM.global_vars);
+    init_dictionary(&VM.global_consts);
     init_object_pool();
     reset_stack();
 }
 
 void free_VM(void)
 {
-    free_dictionary(&VM.globals);
+    free_dictionary(&VM.global_vars);
+    free_dictionary(&VM.global_consts);
     free_object_pool();
     reset_stack();
 }
@@ -157,31 +159,52 @@ static tll_interpret_result run_VM_code(void)
                 pop();
                 break;
 
-            case OP_DEFINE_GLOBAL:
-                set_to_dictionary(&VM.globals, read_string(), peek(0));
+            case OP_DEF_GLOBAL_CONST:
+                set_to_dictionary(&VM.global_consts, read_string(), peek(0));
+                pop();
+                break;
+
+            case OP_DEF_GLOBAL_VAR:
+                set_to_dictionary(&VM.global_vars, read_string(), peek(0));
                 pop();
                 break;
 
             case OP_GET_GLOBAL:
                 name = read_string();
 
-                if (!get_from_dictionary(&VM.globals, name, &a))
+                if (get_from_dictionary(&VM.global_vars, name, &a))
+                {
+                    push(a);
+                    break;
+                }
+                else if (get_from_dictionary(&VM.global_consts, name, &a))
+                {
+                    push(a);
+                    break;
+                }
+                else
                 {
                     runtime_error("Undefined variable '%s'.", name->chars);
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                push(a);
-                break;
+                break; // Unreachable.
 
             case OP_SET_GLOBAL:
                 name = read_string();
 
-                if (!get_from_dictionary(&VM.globals, name, &a))
+                if (!get_from_dictionary(&VM.global_vars, name, &a))
                 {
-                    runtime_error("Cannot update the undefined variable '%s'.", name->chars);
+                    if (get_from_dictionary(&VM.global_consts, name, &a))
+                    {
+                        runtime_error("Trying to redefine constant '%s'.", name->chars);
+                    }
+                    else
+                    {
+                        runtime_error("Cannot update the undefined variable '%s'.", name->chars);
+                    }
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                set_to_dictionary(&VM.globals, name, peek(0));
+                set_to_dictionary(&VM.global_vars, name, peek(0));
                 break;
 
             case OP_GET_LOCAL:
@@ -510,15 +533,17 @@ static void concatenate(void)
 
 static void runtime_error(const char* format, ...)
 {
+    size_t instruction = VM.ip - VM.code_chunk->code - 1;
+    int line = VM.code_chunk->lines[instruction];
+
+    fprintf(stderr, "[line %i] Execution error: ", line);
+
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
     va_end(args);
     fputs("\n", stderr);
 
-    size_t instruction = VM.ip - VM.code_chunk->code - 1;
-    int line = VM.code_chunk->lines[instruction];
-    fprintf(stderr, "[line %d] in script\n", line);
     reset_stack();
 }
 

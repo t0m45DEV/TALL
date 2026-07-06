@@ -328,7 +328,18 @@ static tll_token_type identifier_type(void)
         case 'b':
             return check_keyword(1, 3, "ool", TOKEN_BOOL_TYPE);
         case 'c':
-            return check_keyword(1, 4, "lass", TOKEN_CLASS);
+            if (scanner.current - scanner.start > 1)
+            {
+                switch (scanner.start[1])
+                {
+                    case 'l':
+                        return check_keyword(2, 3, "ass", TOKEN_CLASS);
+
+                    case 'o':
+                        return check_keyword(2, 3, "nst", TOKEN_CONST);
+                }
+            }
+            break;
         case 'e':
             return check_keyword(1, 3, "lse", TOKEN_ELSE);
         case 'i':
