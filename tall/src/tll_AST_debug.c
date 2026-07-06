@@ -194,6 +194,7 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
         case AST_VAR_DECLARATION:
             printf("VAR_DECLARATION (");
             print_string(*AST->as.var_declaration.name);
+            printf(" ");
 
             switch (AST->as.var_declaration.type)
             {
