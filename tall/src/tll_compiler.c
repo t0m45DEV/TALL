@@ -28,6 +28,8 @@ typedef struct {
     int scope_depth;
 } tll_compiler;
 
+int error_count = 0;
+
 tll_compiler* current_compiler = NULL;
 
 tll_code_chunk* compiling_code_chunk;
@@ -124,11 +126,13 @@ static void init_compiler(tll_compiler* compiler)
     compiler->local_count = 0;
     compiler->scope_depth = 0;
     current_compiler = compiler;
+    error_count = 0;
 }
 
 static inline void compiler_error(const char* message, int line)
 {
     fprintf(stderr, "[Line %i] Compiler error: %s\n", line, message);
+    error_count++;
 }
 
 bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
@@ -144,6 +148,7 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
     #endif
 
     bool parsing_error = has_error(AST);
+    bool compiler_error = false;
 
     if (!parsing_error)
     {
@@ -152,6 +157,8 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
         #ifdef DEBUG_PRINT_CODE
             disassemble_code_chunk(code_chunk, "BYTECODE");
         #endif
+
+        compiler_error = error_count > 0;
     }
     else
     {
@@ -162,7 +169,7 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
     free_scanner();
 
     // TODO: Error checking
-    return !parsing_error;
+    return !parsing_error && !compiler_error;
 }
 
 static inline tll_code_chunk* current_code_chunk(void)
