@@ -56,6 +56,11 @@ static tll_AST* AST_program(void);
 static tll_AST* AST_statement(void);
 
 /**
+ * Parse the current tokens as an if statement.
+ */
+static tll_AST* AST_if_statement(void);
+
+/**
  * Parse the current tokens as a block of code between brackets.
  */
 static tll_AST* AST_block(void);
@@ -200,6 +205,16 @@ static void free_AST_recursive(tll_AST* tree)
             }
             FREE_ARRAY(tll_AST*, tree->as.block_assignment.declarations, tree->as.block_assignment.count);
             break;
+
+        case AST_IF:
+            free_AST_recursive(tree->as.if_statement.condition);
+            free_AST_recursive(tree->as.if_statement.code_block);
+
+            if (tree->as.if_statement.else_block != NULL)
+            {
+                free_AST_recursive(tree->as.if_statement.else_block);
+            }
+            break;
     }
 }
 
@@ -263,7 +278,11 @@ static tll_AST* AST_program(void)
 
 static tll_AST* AST_statement(void)
 {
-    if (AST_match(TOKEN_VAR))
+    if (AST_match(TOKEN_IF))
+    {
+        return AST_if_statement();
+    }
+    else if (AST_match(TOKEN_VAR))
     {
         return AST_variable_declaration(false);
     }
@@ -284,6 +303,56 @@ static tll_AST* AST_statement(void)
         return AST_variable_assignment();
     }
     return AST_expression_statement();
+}
+
+static tll_AST* AST_if_statement(void)
+{
+    int line = AST_parser.current->line;
+
+    if (!AST_match(TOKEN_LEFT_PAREN))
+    {
+        return AST_error(AST_parser.current->line, "Expected '(' after 'if'.");
+    }
+    tll_AST* condition = AST_expression();
+
+    if (!AST_match(TOKEN_RIGHT_PAREN))
+    {
+        return AST_error(AST_parser.current->line, "Expected ')' after 'if' condition.");
+    }
+
+    if (!AST_match(TOKEN_LEFT_BRACE))
+    {
+        return AST_error(AST_parser.current->line, "Expected '{' at the start of the 'if' body.");
+    }
+    tll_AST* statement = AST_block();
+
+    tll_AST* else_block = NULL;
+
+    if (AST_match(TOKEN_ELSE))
+    {
+        if (AST_match(TOKEN_IF))
+        {
+            else_block = AST_if_statement();
+        }
+        else if (AST_match(TOKEN_LEFT_BRACE))
+        {
+            else_block = AST_block();
+        }
+        else
+        {
+            else_block = AST_error(AST_parser.current->line, "Expected '{' or 'if' after 'else'.");
+        }
+    }
+    tll_AST* node = alloc_node();
+
+    node->type = AST_IF;
+    node->line = line;
+
+    node->as.if_statement.condition = condition;
+    node->as.if_statement.code_block = statement;
+    node->as.if_statement.else_block = else_block;
+
+    return node;
 }
 
 static tll_AST* AST_block(void)

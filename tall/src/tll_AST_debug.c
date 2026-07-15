@@ -113,6 +113,24 @@ const tll_AST* get_error(const tll_AST* AST)
                 }
             }
             break;
+
+        case AST_IF:
+            res = get_error(AST->as.if_statement.condition);
+
+            if (res != NULL)
+            {
+                break;
+            }
+            res = get_error(AST->as.if_statement.code_block);
+
+            if (res == NULL)
+            {
+                if (AST->as.if_statement.else_block != NULL)
+                {
+                    res = get_error(AST->as.if_statement.else_block);
+                }
+            }
+            break;
     }
     return res;
 }
@@ -287,6 +305,21 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             if (AST->as.block_assignment.count > 0)
             {
                 print_AST_recursive(AST->as.block_assignment.declarations[AST->as.block_assignment.count - 1], child_prefix, true);
+            }
+            break;
+
+        case AST_IF:
+            printf("IF\n");
+            print_AST_recursive(AST->as.if_statement.condition, child_prefix, false);
+
+            if (AST->as.if_statement.else_block != NULL)
+            {
+                print_AST_recursive(AST->as.if_statement.code_block, child_prefix, false);
+                print_AST_recursive(AST->as.if_statement.else_block, child_prefix, true);
+            }
+            else
+            {
+                print_AST_recursive(AST->as.if_statement.code_block, child_prefix, true);
             }
             break;
 

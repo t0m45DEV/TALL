@@ -31,6 +31,8 @@ typedef enum {
     OP_DIVIDE,
     OP_NOT,
     OP_NEGATE,
+    OP_JMP,
+    OP_JMP_IF_FALSE,
     OP_RETURN,
 } tll_opcode;
 

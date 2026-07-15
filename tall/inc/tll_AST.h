@@ -19,6 +19,7 @@ typedef enum {
     AST_VAR_NAME,          // When a variable read is made, like 'return a'.
     AST_RETURN,            // For returning a variable, an expression or nothing at all.
     AST_BLOCK,             // For code inside brackets: '{' code '}'.
+    AST_IF,                // For an 'if' statement.
 } tll_AST_type;
 
 typedef struct tll_AST {
@@ -86,6 +87,12 @@ typedef struct tll_AST {
             struct tll_AST** declarations;
             int count;
         } block_assignment;
+
+        struct {
+            struct tll_AST* condition;
+            struct tll_AST* code_block;
+            struct tll_AST* else_block;
+        } if_statement;
     } as;
 } tll_AST;
 

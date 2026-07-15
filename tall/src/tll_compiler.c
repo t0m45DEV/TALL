@@ -66,6 +66,21 @@ static inline void emit_short(uint16_t byte, int line);
 static inline void emit_return(int line);
 
 /**
+ * Emits the necessary instructions to make a bytecode 'jump' operation.
+ */
+static inline int emit_jump(int line);
+
+/**
+ * Emits the necessary instructions to make a bytecode 'jump if false' operation.
+ */
+static inline int emit_conditional_jump(int line);
+
+/**
+ * Emits the current_code_chunk position as the parameter for a 'jump' instruction at the given offset.
+ */
+static inline void path_jump(int offset, int line);
+
+/**
  * Saves two bytes, in the order they are given into the current code chunk.
  */
 static inline void emit_bytes(uint8_t byte_1, uint8_t byte_2, int line);
@@ -196,6 +211,36 @@ static inline void emit_short(uint16_t byte, int line)
 static inline void emit_return(int line)
 {
     emit_byte(OP_RETURN, line);
+}
+
+static inline int emit_jump(int line)
+{
+    emit_byte(OP_JMP, line);
+    emit_short(0xFFFF, line);
+
+    return current_code_chunk()->count - 2;
+}
+
+static inline int emit_conditional_jump(int line)
+{
+    emit_byte(OP_JMP_IF_FALSE, line);
+    emit_short(0xFFFF, line);
+
+    return current_code_chunk()->count - 2;
+}
+
+static inline void path_jump(int offset, int line)
+{
+    // - 2 to adjust for the bytecode for the jump offset itself.
+    int jump = current_code_chunk()->count - offset - 2;
+
+    if (jump > UINT16_MAX)
+    {
+        compiler_error("Too much code to jump over.", line);
+        return;
+    }
+    current_code_chunk()->code[offset] = (jump >> 8) & 0xFF;
+    current_code_chunk()->code[offset + 1] = jump & 0xFF;
 }
 
 static inline void emit_bytes(uint8_t byte_1, uint8_t byte_2, int line)
@@ -500,6 +545,32 @@ static void compile_AST_node(tll_AST* node)
                 compile_AST_node(node->as.block_assignment.declarations[i]);
             }
             end_scope();
+            break;
+
+        case AST_IF:
+            compile_AST_node(node->as.if_statement.condition);
+
+            int then_jump = emit_conditional_jump(node->line);
+            emit_byte(OP_POP, node->line);
+
+            compile_AST_node(node->as.if_statement.code_block);
+
+            if (node->as.if_statement.else_block != NULL)
+            {
+                int else_jump = emit_jump(node->line);
+
+                // So the true branch can jump over the false branch jump instruction.
+                path_jump(then_jump, node->line);
+
+                emit_byte(OP_POP, node->line);
+                compile_AST_node(node->as.if_statement.else_block);
+
+                path_jump(else_jump, node->line);
+            }
+            else
+            {
+                path_jump(then_jump, node->line);
+            }
             break;
 
         default:

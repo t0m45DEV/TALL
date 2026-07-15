@@ -28,6 +28,11 @@ static int global_variable_instruction(const char* op_name, tll_code_chunk* code
  */
 static int local_variable_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset);
 
+/**
+ * Print the bytecode at the given offset in the given code_chunk as a jump instruction.
+ */
+static int jump_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset);
+
 void disassemble_code_chunk(tll_code_chunk* code_chunk, const char* chunk_name)
 {
     printf("=== %s ===\n", chunk_name);
@@ -101,6 +106,10 @@ int disassemble_instruction(tll_code_chunk* code_chunk, int offset)
             return simple_instruction("OP_NOT", offset);
         case OP_NEGATE:
             return simple_instruction("OP_NEGATE", offset);
+        case OP_JMP:
+            return jump_instruction("OP_JMP", code_chunk, offset);
+        case OP_JMP_IF_FALSE:
+            return jump_instruction("OP_JMP_IF_FALSE", code_chunk, offset);
         case OP_RETURN:
             return simple_instruction("OP_RETURN", offset);
         default:
@@ -155,5 +164,16 @@ static int local_variable_instruction(const char* op_name, tll_code_chunk* code_
 
     printf("%-20s %4d\n", op_name, stack_slot);
     return offset + 2;
+}
+
+static int jump_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset)
+{
+    uint8_t jump_upper = code_chunk->code[offset + 1];
+    uint8_t jump_lower = code_chunk->code[offset + 2];
+
+    uint16_t jump = (jump_upper << 8) | jump_lower;
+
+    printf("%-20s %4d\n", op_name, jump);
+    return offset + 3;
 }
 

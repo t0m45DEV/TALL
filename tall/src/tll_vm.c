@@ -136,6 +136,7 @@ static tll_interpret_result run_VM_code(void)
 
         tll_value a, b;   // For the binary operations.
         tll_string* name; // For variable or function names.
+        uint16_t c;       // For two-byte values.
 
         switch (instruction)
         {
@@ -474,6 +475,19 @@ static tll_interpret_result run_VM_code(void)
                 else if (IS_FLOAT(peek(0)))
                 {
                     push(AS_TLL_FLOAT(-AS_C_FLOAT(pop())));
+                }
+                break;
+
+            case OP_JMP:
+                VM.ip += read_short();
+                break;
+
+            case OP_JMP_IF_FALSE:
+                c = read_short();
+
+                if (are_equals(AS_TLL_BOOL(false), peek(0)))
+                {
+                    VM.ip += c;
                 }
                 break;
 

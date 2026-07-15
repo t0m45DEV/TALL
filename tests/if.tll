@@ -1,0 +1,18 @@
+var a : int = 2;
+var b : int = 3;
+
+var message : string = "before if";
+
+if (a == b)
+{
+    message = "true branch!";
+}
+else if (a > b)
+{
+    message = "else if branch!";
+}
+else
+{
+    message = "false branch!";
+}
+return message;
