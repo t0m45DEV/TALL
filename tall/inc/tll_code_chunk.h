@@ -33,6 +33,7 @@ typedef enum {
     OP_NEGATE,
     OP_JMP,
     OP_JMP_IF_FALSE,
+    OP_JMP_IF_TRUE,
     OP_RETURN,
 } tll_opcode;
 

@@ -73,7 +73,12 @@ static inline int emit_jump(int line);
 /**
  * Emits the necessary instructions to make a bytecode 'jump if false' operation.
  */
-static inline int emit_conditional_jump(int line);
+static inline int emit_conditional_false_jump(int line);
+
+/**
+ * Emits the necessary instructions to make a bytecode 'jump if true' operation.
+ */
+static inline int emit_conditional_true_jump(int line);
 
 /**
  * Emits the current_code_chunk position as the parameter for a 'jump' instruction at the given offset.
@@ -221,9 +226,17 @@ static inline int emit_jump(int line)
     return current_code_chunk()->count - 2;
 }
 
-static inline int emit_conditional_jump(int line)
+static inline int emit_conditional_false_jump(int line)
 {
     emit_byte(OP_JMP_IF_FALSE, line);
+    emit_short(0xFFFF, line);
+
+    return current_code_chunk()->count - 2;
+}
+
+static inline int emit_conditional_true_jump(int line)
+{
+    emit_byte(OP_JMP_IF_TRUE, line);
     emit_short(0xFFFF, line);
 
     return current_code_chunk()->count - 2;
@@ -441,6 +454,29 @@ static void compile_AST_node(tll_AST* node)
             break;
 
         case AST_BINARY:
+
+            if (node->as.binary.op == TOKEN_AND)
+            {
+                compile_AST_node(node->as.binary.left);
+
+                int end_jump = emit_conditional_false_jump(node->line);
+                emit_byte(OP_POP, node->line);
+
+                compile_AST_node(node->as.binary.right);
+                path_jump(end_jump, node->line);
+                break;
+            }
+            else if (node->as.binary.op == TOKEN_OR)
+            {
+                compile_AST_node(node->as.binary.left);
+
+                int end_jump = emit_conditional_true_jump(node->line);
+                emit_byte(OP_POP, node->line);
+
+                compile_AST_node(node->as.binary.right);
+                path_jump(end_jump, node->line);
+                break;
+            }
             compile_AST_node(node->as.binary.left);
             compile_AST_node(node->as.binary.right);
 
@@ -550,7 +586,7 @@ static void compile_AST_node(tll_AST* node)
         case AST_IF:
             compile_AST_node(node->as.if_statement.condition);
 
-            int then_jump = emit_conditional_jump(node->line);
+            int then_jump = emit_conditional_false_jump(node->line);
             emit_byte(OP_POP, node->line);
 
             compile_AST_node(node->as.if_statement.code_block);

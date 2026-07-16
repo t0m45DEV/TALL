@@ -333,6 +333,12 @@ static void print_AST_operation(tll_token_type operation)
 {
     switch (operation)
     {
+        case TOKEN_AND:
+            printf("and");
+            break;
+        case TOKEN_OR:
+            printf("or");
+            break;
         case TOKEN_MINUS:
             printf("-");
             break;

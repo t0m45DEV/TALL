@@ -91,6 +91,11 @@ static tll_AST* AST_return_statement(void);
 static tll_AST* AST_expression(void);
 
 /**
+ * Parse the current tokens as a logical proposition.
+ */
+static tll_AST* AST_proposition(void);
+
+/**
  * Parse the current token as a equality check (==, !=)
  */
 static tll_AST* AST_equality(void);
@@ -522,7 +527,32 @@ static tll_AST* AST_return_statement(void)
 
 static tll_AST* AST_expression(void)
 {
-    return AST_equality();
+    return AST_proposition();
+}
+
+static tll_AST* AST_proposition(void)
+{
+    tll_AST* left = AST_equality();
+
+    while (AST_check(TOKEN_AND) || AST_check(TOKEN_OR))
+    {
+        AST_advance();
+
+        tll_token_type op = AST_parser.previous->type;
+        int line = AST_parser.previous->line;
+        tll_AST* right = AST_equality();
+
+        tll_AST* node = alloc_node();
+        node->type = AST_BINARY;
+        node->line = line;
+
+        node->as.binary.op = op;
+        node->as.binary.left = left;
+        node->as.binary.right = right;
+
+        left = node;
+    }
+    return left;
 }
 
 static tll_AST* AST_equality(void)

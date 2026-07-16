@@ -3,7 +3,7 @@ var b : int = 3;
 
 var message : string = "before if";
 
-if (a == b)
+if (true and a == b)
 {
     message = "true branch!";
 }

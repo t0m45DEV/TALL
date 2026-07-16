@@ -491,6 +491,15 @@ static tll_interpret_result run_VM_code(void)
                 }
                 break;
 
+            case OP_JMP_IF_TRUE:
+                c = read_short();
+
+                if (are_equals(AS_TLL_BOOL(true), peek(0)))
+                {
+                    VM.ip += c;
+                }
+                break;
+
             case OP_RETURN:
                 print_value(pop());
                 printf("\n");
