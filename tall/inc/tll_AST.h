@@ -20,6 +20,7 @@ typedef enum {
     AST_RETURN,            // For returning a variable, an expression or nothing at all.
     AST_BLOCK,             // For code inside brackets: '{' code '}'.
     AST_IF,                // For an 'if' statement.
+    AST_WHILE,             // For a while loop.
 } tll_AST_type;
 
 typedef struct tll_AST {
@@ -93,6 +94,11 @@ typedef struct tll_AST {
             struct tll_AST* code_block;
             struct tll_AST* else_block;
         } if_statement;
+
+        struct {
+            struct tll_AST* condition;
+            struct tll_AST* code_block;
+        } while_loop;
     } as;
 } tll_AST;
 

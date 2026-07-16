@@ -106,8 +106,10 @@ int disassemble_instruction(tll_code_chunk* code_chunk, int offset)
             return simple_instruction("OP_NOT", offset);
         case OP_NEGATE:
             return simple_instruction("OP_NEGATE", offset);
-        case OP_JMP:
-            return jump_instruction("OP_JMP", code_chunk, offset);
+        case OP_JMP_BACK:
+            return jump_instruction("OP_JMP_BACK", code_chunk, offset);
+        case OP_JMP_AHEAD:
+            return jump_instruction("OP_JMP_AHEAD", code_chunk, offset);
         case OP_JMP_IF_FALSE:
             return jump_instruction("OP_JMP_IF_FALSE", code_chunk, offset);
         case OP_JMP_IF_TRUE:

@@ -56,6 +56,11 @@ static tll_AST* AST_program(void);
 static tll_AST* AST_statement(void);
 
 /**
+ * Parse the current tokens as a while loop.
+ */
+static tll_AST* AST_while_loop(void);
+
+/**
  * Parse the current tokens as an if statement.
  */
 static tll_AST* AST_if_statement(void);
@@ -220,6 +225,11 @@ static void free_AST_recursive(tll_AST* tree)
                 free_AST_recursive(tree->as.if_statement.else_block);
             }
             break;
+
+        case AST_WHILE:
+            free_AST_recursive(tree->as.while_loop.condition);
+            free_AST_recursive(tree->as.while_loop.code_block);
+            break;
     }
 }
 
@@ -283,7 +293,11 @@ static tll_AST* AST_program(void)
 
 static tll_AST* AST_statement(void)
 {
-    if (AST_match(TOKEN_IF))
+    if (AST_match(TOKEN_WHILE))
+    {
+        return AST_while_loop();
+    }
+    else if (AST_match(TOKEN_IF))
     {
         return AST_if_statement();
     }
@@ -308,6 +322,37 @@ static tll_AST* AST_statement(void)
         return AST_variable_assignment();
     }
     return AST_expression_statement();
+}
+
+static tll_AST* AST_while_loop(void)
+{
+    int line = AST_parser.previous->line;
+
+    if (!AST_match(TOKEN_LEFT_PAREN))
+    {
+        return AST_error(AST_parser.current->line, "Expected '(' after 'while'.");
+    }
+    tll_AST* condition = AST_expression();
+
+    if (!AST_match(TOKEN_RIGHT_PAREN))
+    {
+        return AST_error(AST_parser.current->line, "Expected ')' after 'while' condition. ");
+    }
+    if (!AST_match(TOKEN_LEFT_BRACE))
+    {
+        return AST_error(AST_parser.current->line, "Expected '{' at the start of the 'while' body.");
+    }
+    tll_AST* statements = AST_block();
+
+    tll_AST* node = alloc_node();
+
+    node->type = AST_WHILE;
+    node->line = line;
+
+    node->as.while_loop.condition = condition;
+    node->as.while_loop.code_block = statements;
+
+    return node;
 }
 
 static tll_AST* AST_if_statement(void)

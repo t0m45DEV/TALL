@@ -66,9 +66,9 @@ static inline void emit_short(uint16_t byte, int line);
 static inline void emit_return(int line);
 
 /**
- * Emits the necessary instructions to make a bytecode 'jump' operation.
+ * Emits the necessary instructions to make a bytecode 'jump ahead' operation.
  */
-static inline int emit_jump(int line);
+static inline int emit_jump_ahead(int line);
 
 /**
  * Emits the necessary instructions to make a bytecode 'jump if false' operation.
@@ -218,9 +218,9 @@ static inline void emit_return(int line)
     emit_byte(OP_RETURN, line);
 }
 
-static inline int emit_jump(int line)
+static inline int emit_jump_ahead(int line)
 {
-    emit_byte(OP_JMP, line);
+    emit_byte(OP_JMP_AHEAD, line);
     emit_short(0xFFFF, line);
 
     return current_code_chunk()->count - 2;
@@ -593,7 +593,7 @@ static void compile_AST_node(tll_AST* node)
 
             if (node->as.if_statement.else_block != NULL)
             {
-                int else_jump = emit_jump(node->line);
+                int else_jump = emit_jump_ahead(node->line);
 
                 // So the true branch can jump over the false branch jump instruction.
                 path_jump(then_jump, node->line);
@@ -607,6 +607,26 @@ static void compile_AST_node(tll_AST* node)
             {
                 path_jump(then_jump, node->line);
             }
+            break;
+
+        case AST_WHILE:
+            int loop_start = current_code_chunk()->count;
+            compile_AST_node(node->as.while_loop.condition);
+
+            int end_jump = emit_conditional_false_jump(node->line);
+
+            compile_AST_node(node->as.while_loop.code_block);
+
+            // Go back to the while condition.
+            emit_byte(OP_JMP_BACK, node->line);
+            int loop_offset = current_code_chunk()->count - loop_start + 2;
+            emit_short(loop_offset, node->line);
+
+            // Path the jump for the while condition.
+            path_jump(end_jump, node->line);
+
+            // Pop out the while condition.
+            emit_byte(OP_POP, node->line);
             break;
 
         default:

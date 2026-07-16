@@ -478,7 +478,11 @@ static tll_interpret_result run_VM_code(void)
                 }
                 break;
 
-            case OP_JMP:
+            case OP_JMP_BACK:
+                VM.ip -= read_short();
+                break;
+
+            case OP_JMP_AHEAD:
                 VM.ip += read_short();
                 break;
 

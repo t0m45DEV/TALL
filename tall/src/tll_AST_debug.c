@@ -131,6 +131,15 @@ const tll_AST* get_error(const tll_AST* AST)
                 }
             }
             break;
+
+        case AST_WHILE:
+            res = get_error(AST->as.while_loop.condition);
+
+            if (res == NULL)
+            {
+                res = get_error(AST->as.while_loop.code_block);
+            }
+            break;
     }
     return res;
 }
@@ -321,6 +330,12 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             {
                 print_AST_recursive(AST->as.if_statement.code_block, child_prefix, true);
             }
+            break;
+
+        case AST_WHILE:
+            printf("WHILE\n");
+            print_AST_recursive(AST->as.while_loop.condition, child_prefix, false);
+            print_AST_recursive(AST->as.while_loop.code_block, child_prefix, true);
             break;
 
         default:
