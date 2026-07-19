@@ -1,13 +1,19 @@
-var i : int = 0;
+const limit : int = 10;
 var n : int = 0;
 
-while (i < 10)
 {
-    if (i != 5)
+    var i : int = 0;
+
+    while (i < 10)
     {
-        n = n + i;
+        if (i != 5)
+        {
+            n = n + i;
+        }
+        i++;
     }
-    i = i + 1;
+    n = n + 5;
 }
-n = n + 5;
+
 return n;
+
