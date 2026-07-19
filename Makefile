@@ -13,7 +13,8 @@ PROGRAM = tall
 OUTPUT = $(OUTPUT_DIR)/$(PROGRAM)
 
 CC = gcc
-CFLAGS = -Wall -Werror -Wextra -Wshadow -fanalyzer -I$(INC_DIR)
+CCFLAGS = -std=c2x -Wall -Werror -Wextra -Wshadow -I$(INC_DIR)
+CFLAGS = -fanalyzer $(CCFLAGS)
 
 DEBUGGER = gdb
 
@@ -50,7 +51,7 @@ profiler: $(SRC_FILES)
 	rm $(PROFILER_OUTPUT) gmon.out
 
 analyze : $(SRC_FILES)
-	$(STATIC_CHECKER) $^ $(STATIC_CHECKER_FLAGS)
+	$(STATIC_CHECKER) $^ $(STATIC_CHECKER_FLAGS) -- $(CCFLAGS)
 
 mem_check : $(OUTPUT)
 	$(MEM_CHECKER) $(MEM_CHECKER_FLAGS) $(OUTPUT) $(CHECK_FILE)
