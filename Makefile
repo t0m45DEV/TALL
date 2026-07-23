@@ -13,7 +13,7 @@ PROGRAM = tall
 OUTPUT = $(OUTPUT_DIR)/$(PROGRAM)
 
 CC = gcc
-CCFLAGS = -std=c2x -Wall -Werror -Wextra -Wshadow -I$(INC_DIR)
+CCFLAGS = -Wall -Werror -Wextra -Wshadow -I$(INC_DIR)
 CFLAGS = -fanalyzer $(CCFLAGS)
 
 DEBUGGER = gdb
