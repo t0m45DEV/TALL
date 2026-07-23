@@ -4,11 +4,11 @@ var n : int = 0;
 {
     var i : int = 0;
 
-    while (i < 10)
+    while (i < limit)
     {
         if (i != 5)
         {
-            n = n + i;
+            n += i;
         }
         i++;
     }

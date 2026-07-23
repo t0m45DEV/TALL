@@ -77,12 +77,22 @@ static tll_AST* AST_block(void);
 static tll_AST* AST_variable_declaration(bool is_const);
 
 /**
- * Parse the current tokens as a variable assignment.
+ * Parse the current tokens as some variable assignment ('i = v', 'i++', 'i += v', etc), and checks for an ending semicolon if the given boolean is true.
  */
-static tll_AST* AST_variable_assignment(void);
+static tll_AST* AST_variable_assignment(bool check_semicolon);
 
 /**
- * Parse the current tokens as a quick modification for a defined variable (like 'i++' or 'i--'), and checks for an end semicolon if the given boolean is true.
+ * Parse the current tokens an specific variable assignment ('i = v'), and checks for an ending semicolon if the given boolean is true.
+ */
+static tll_AST* AST_specific_variable_assignment(bool check_semicolon);
+
+/**
+ * Parse the current tokens as a simple addition or substraction assignment (like 'i += v'), and checks for an ending semicolon if the given boolean is true.
+ */
+static tll_AST* AST_variable_simple_assignment(bool check_semicolon);
+
+/**
+ * Parse the current tokens as a quick modification for a defined variable (like 'i++' or 'i--'), and checks for an ending semicolon if the given boolean is true.
  */
 static tll_AST* AST_variable_quick_modification(bool check_semicolon);
 
@@ -325,11 +335,7 @@ static tll_AST* AST_statement(void)
     }
     else if (AST_match(TOKEN_IDENTIFIER))
     {
-        if (AST_check(TOKEN_PLUS_PLUS) || AST_check(TOKEN_MINUS_MINUS))
-        {
-            return AST_variable_quick_modification(true);
-        }
-        return AST_variable_assignment();
+        return AST_variable_assignment(true);
     }
     return AST_expression_statement();
 }
@@ -512,7 +518,20 @@ static tll_AST* AST_variable_declaration(bool is_const)
     return node;
 }
 
-static tll_AST* AST_variable_assignment(void)
+static tll_AST* AST_variable_assignment(bool check_semicolon)
+{
+    if (AST_check(TOKEN_PLUS_PLUS) || AST_check(TOKEN_MINUS_MINUS))
+    {
+        return AST_variable_quick_modification(check_semicolon);
+    }
+    else if (AST_check(TOKEN_PLUS_EQUAL) || AST_check(TOKEN_MINUS_EQUAL))
+    {
+        return AST_variable_simple_assignment(check_semicolon);
+    }
+    return AST_specific_variable_assignment(check_semicolon);
+}
+
+static tll_AST* AST_specific_variable_assignment(bool check_semicolon)
 {
     int line = AST_parser.previous->line;
     tll_string* var_name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
@@ -523,9 +542,12 @@ static tll_AST* AST_variable_assignment(void)
     }
     tll_AST* expr = AST_expression();
 
-    if (!AST_match(TOKEN_SEMICOLON))
+    if (check_semicolon)
     {
-        return AST_error(AST_parser.current->line, "Variable assignment must end with ';'.");
+        if (!AST_match(TOKEN_SEMICOLON))
+        {
+            return AST_error(AST_parser.current->line, "Variable assignment must end with ';'.");
+        }
     }
     tll_AST* node = alloc_node();
 
@@ -535,6 +557,57 @@ static tll_AST* AST_variable_assignment(void)
     node->as.var_assigment.expression = expr;
 
     return node;
+}
+
+static tll_AST* AST_variable_simple_assignment(bool check_semicolon)
+{
+    int line = AST_parser.previous->line;
+    tll_string* var_name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
+    tll_token_type op;
+
+    if (AST_match(TOKEN_PLUS_EQUAL))
+    {
+        op = TOKEN_PLUS;
+    }
+    else if (AST_match(TOKEN_MINUS_EQUAL))
+    {
+        op = TOKEN_MINUS;
+    }
+    else
+    {
+        return AST_error(AST_parser.current->line, "Invalid variable assignment.");
+    }
+    tll_AST* expr = AST_expression();
+
+    if (check_semicolon)
+    {
+        if (!AST_match(TOKEN_SEMICOLON))
+        {
+            return AST_error(AST_parser.current->line, "Expected ';' after variable assignment.");
+        }
+    }
+    tll_AST* var_node = alloc_node();
+
+    var_node->line = line;
+    var_node->type = AST_VAR_NAME;
+    var_node->as.var_name.name = var_name;
+
+    tll_AST* binary_node = alloc_node();
+
+    binary_node->line = line;
+    binary_node->type = AST_BINARY;
+    binary_node->as.binary.op = op;
+    binary_node->as.binary.left = var_node;
+    binary_node->as.binary.right = expr;
+
+    tll_AST* assignment_node = alloc_node();
+
+    assignment_node->line = line;
+    assignment_node->type = AST_VAR_ASSIGNMENT;
+    assignment_node->as.var_assigment.name = var_name;
+    assignment_node->as.var_assigment.expression = binary_node;
+
+    return assignment_node;
 }
 
 static tll_AST* AST_variable_quick_modification(bool check_semicolon)

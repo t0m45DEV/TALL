@@ -206,9 +206,31 @@ static tll_token scan_token(void)
         case '.':
             return make_token(TOKEN_DOT);
         case '-':
-            return make_token(match('-') ? TOKEN_MINUS_MINUS : TOKEN_MINUS);
+            if (match('-'))
+            {
+                return make_token(TOKEN_MINUS_MINUS);
+            }
+            else if (match('='))
+            {
+                return make_token(TOKEN_MINUS_EQUAL);
+            }
+            else
+            {
+                return make_token(TOKEN_MINUS);
+            }
         case '+':
-            return make_token(match('+') ? TOKEN_PLUS_PLUS : TOKEN_PLUS);
+            if (match('+'))
+            {
+                return make_token(TOKEN_PLUS_PLUS);
+            }
+            else if (match('='))
+            {
+                return make_token(TOKEN_PLUS_EQUAL);
+            }
+            else
+            {
+                return make_token(TOKEN_PLUS);
+            }
         case '/':
             return make_token(TOKEN_SLASH);
         case '*':
