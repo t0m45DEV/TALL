@@ -226,7 +226,10 @@ static void free_AST_recursive(tll_AST* tree)
             break;
 
         case AST_RETURN:
-            free_AST_recursive(tree->as.return_statement.expression);
+            if (tree->as.return_statement.expression != NULL)
+            {
+                free_AST_recursive(tree->as.return_statement.expression);
+            }
             break;
 
         case AST_BLOCK:
