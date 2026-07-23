@@ -427,34 +427,44 @@ static void compile_AST_node(tll_AST* node)
     switch (node->type)
     {
         case AST_ERROR:
+        {
             break;
-
+        }
         case AST_LITERAL:
+        {
             emit_constant(node->as.literal.value, node->line);
             break;
-
+        }
         case AST_UNARY:
+        {
             compile_AST_node(node->as.unary.operand);
 
             switch (node->as.unary.op)
             {
                 case TOKEN_BANG:
+                {
                     emit_byte(OP_NOT, node->line);
                     break;
+                }
                 case TOKEN_MINUS:
+                {
                     emit_byte(OP_NEGATE, node->line);
                     break;
+                }
                 default:
+                {
                     break; // Unreachable.
+                }
             }
             break;
-
+        }
         case AST_GROUPING:
+        {
             compile_AST_node(node->as.grouping.expression);
             break;
-
+        }
         case AST_BINARY:
-
+        {
             if (node->as.binary.op == TOKEN_AND)
             {
                 compile_AST_node(node->as.binary.left);
@@ -483,51 +493,74 @@ static void compile_AST_node(tll_AST* node)
             switch (node->as.binary.op)
             {
                 case TOKEN_PLUS:
+                {
                     emit_byte(OP_ADD, node->line);
                     break;
+                }
                 case TOKEN_MINUS:
+                {
                     emit_byte(OP_SUBSTRACT, node->line);
                     break;
+                }
                 case TOKEN_STAR:
+                {
                     emit_byte(OP_MULTIPLY, node->line);
                     break;
+                }
                 case TOKEN_SLASH:
+                {
                     emit_byte(OP_DIVIDE, node->line);
                     break;
+                }
                 case TOKEN_EQUAL_EQUAL:
+                {
                     emit_byte(OP_EQUAL, node->line);
                     break;
+                }
                 case TOKEN_BANG_EQUAL:
+                {
                     emit_byte(OP_NOT_EQUAL, node->line);
                     break;
+                }
                 case TOKEN_GREATER:
+                {
                     emit_byte(OP_GREATER, node->line);
                     break;
+                }
                 case TOKEN_GREATER_EQUAL:
+                {
                     emit_byte(OP_GREATER_EQUAL, node->line);
                     break;
+                }
                 case TOKEN_LESS:
+                {
                     emit_byte(OP_LESS, node->line);
                     break;
+                }
                 case TOKEN_LESS_EQUAL:
+                {
                     emit_byte(OP_LESS_EQUAL, node->line);
                     break;
+                }
             }
             break;
-
+        }
         case AST_PROGRAM:
+        {
             for (int i = 0; i < node->as.program.count; i++)
             {
                 compile_AST_node(node->as.program.statements[i]);
             }
             break;
-
+        }
         case AST_EXPR_STATEMENT:
+        {
             compile_AST_node(node->as.expression_statement.expression);
             emit_byte(OP_POP, node->line);
             break;
-
+        }
         case AST_CONST_DECLARATION:
+        {
             compile_AST_node(node->as.var_declaration.expression);
 
             if (current_compiler->scope_depth == 0)
@@ -539,8 +572,9 @@ static void compile_AST_node(tll_AST* node)
                 define_local_variable(node->as.var_declaration.name, node->line, true);
             }
             break;
-
+        }
         case AST_VAR_DECLARATION:
+        {
             compile_AST_node(node->as.var_declaration.expression);
 
             if (current_compiler->scope_depth == 0)
@@ -552,17 +586,20 @@ static void compile_AST_node(tll_AST* node)
                 define_local_variable(node->as.var_declaration.name, node->line, false);
             }
             break;
-
+        }
         case AST_VAR_ASSIGNMENT:
+        {
             compile_AST_node(node->as.var_assigment.expression);
             variable_assignment(node->as.var_assigment.name, node->line);
             break;
-
+        }
         case AST_VAR_NAME:
+        {
             named_variable(node->as.var_name.name, node->line);
             break;
-
+        }
         case AST_RETURN:
+        {
             if (node->as.return_statement.expression != NULL)
             {
                 compile_AST_node(node->as.return_statement.expression);
@@ -573,8 +610,9 @@ static void compile_AST_node(tll_AST* node)
             }
             emit_return(node->line);
             break;
-
+        }
         case AST_BLOCK:
+        {
             begin_scope();
             for (int i = 0; i < node->as.block_assignment.count; i++)
             {
@@ -582,8 +620,9 @@ static void compile_AST_node(tll_AST* node)
             }
             end_scope();
             break;
-
+        }
         case AST_IF:
+        {
             compile_AST_node(node->as.if_statement.condition);
 
             int then_jump = emit_conditional_false_jump(node->line);
@@ -608,7 +647,7 @@ static void compile_AST_node(tll_AST* node)
                 path_jump(then_jump, node->line);
             }
             break;
-
+        }
         case AST_WHILE:
         {
             int loop_start = current_code_chunk()->count;
@@ -630,7 +669,6 @@ static void compile_AST_node(tll_AST* node)
             emit_byte(OP_POP, node->line);
             break;
         }
-
         case AST_FOR:
         {
             compile_AST_node(node->as.for_loop.initializer);
@@ -655,9 +693,10 @@ static void compile_AST_node(tll_AST* node)
             emit_byte(OP_POP, node->line);
             break;
         }
-
         default:
+        {
             return; // Unreachable.
+        }
     }
 }
 

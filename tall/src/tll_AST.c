@@ -180,67 +180,81 @@ static void free_AST_recursive(tll_AST* tree)
     switch (tree->type)
     {
         case AST_ERROR:
+        {
             return;
-
+        }
         case AST_LITERAL:
+        {
             return;
-
+        }
         case AST_UNARY:
+        {
             free_AST_recursive(tree->as.unary.operand);
             break;
-
+        }
         case AST_BINARY:
+        {
             free_AST_recursive(tree->as.binary.left);
             free_AST_recursive(tree->as.binary.right);
             break;
-
+        }
         case AST_GROUPING:
+        {
             free_AST_recursive(tree->as.grouping.expression);
             break;
-
+        }
         case AST_PROGRAM:
+        {
             for (int i = 0; i < tree->as.program.count; i++)
             {
                 free_AST_recursive(tree->as.program.statements[i]);
             }
             FREE_ARRAY(tll_AST*, tree->as.program.statements, tree->as.program.count);
             break;
-
+        }
         case AST_EXPR_STATEMENT:
+        {
             free_AST_recursive(tree->as.expression_statement.expression);
             break;
-
+        }
         case AST_CONST_DECLARATION:
+        {
             free_AST_recursive(tree->as.const_declaration.expression);
             break;
-
+        }
         case AST_VAR_DECLARATION:
+        {
             free_AST_recursive(tree->as.var_declaration.expression);
             break;
-
+        }
         case AST_VAR_ASSIGNMENT:
+        {
             free_AST_recursive(tree->as.var_assigment.expression);
             break;
-
+        }
         case AST_VAR_NAME:
+        {
             break;
-
+        }
         case AST_RETURN:
+        {
             if (tree->as.return_statement.expression != NULL)
             {
                 free_AST_recursive(tree->as.return_statement.expression);
             }
             break;
-
+        }
         case AST_BLOCK:
+        {
             for (int i = 0; i < tree->as.block_assignment.count; i++)
             {
                 free_AST_recursive(tree->as.block_assignment.declarations[i]);
             }
             FREE_ARRAY(tll_AST*, tree->as.block_assignment.declarations, tree->as.block_assignment.count);
             break;
-
+        }
         case AST_IF:
+        {
             free_AST_recursive(tree->as.if_statement.condition);
             free_AST_recursive(tree->as.if_statement.code_block);
 
@@ -249,18 +263,21 @@ static void free_AST_recursive(tll_AST* tree)
                 free_AST_recursive(tree->as.if_statement.else_block);
             }
             break;
-
+        }
         case AST_WHILE:
+        {
             free_AST_recursive(tree->as.while_loop.condition);
             free_AST_recursive(tree->as.while_loop.code_block);
             break;
-
+        }
         case AST_FOR:
+        {
             free_AST_recursive(tree->as.for_loop.initializer);
             free_AST_recursive(tree->as.for_loop.condition);
             free_AST_recursive(tree->as.for_loop.increment);
             free_AST_recursive(tree->as.for_loop.code_block);
             break;
+        }
     }
 }
 

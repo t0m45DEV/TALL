@@ -190,22 +190,39 @@ static tll_token scan_token(void)
     switch (c)
     {
         case '(':
+        {
             return make_token(TOKEN_LEFT_PAREN);
+        }
         case ')':
+        {
             return make_token(TOKEN_RIGHT_PAREN);
+        }
         case '{':
+        {
             return make_token(TOKEN_LEFT_BRACE);
+        }
         case '}':
+        {
             return make_token(TOKEN_RIGHT_BRACE);
+        }
         case ':':
+        {
             return make_token(TOKEN_COLON);
+        }
         case ';':
+        {
             return make_token(TOKEN_SEMICOLON);
+        }
         case ',':
+        {
             return make_token(TOKEN_COMMA);
+        }
         case '.':
+        {
             return make_token(TOKEN_DOT);
+        }
         case '-':
+        {
             if (match('-'))
             {
                 return make_token(TOKEN_MINUS_MINUS);
@@ -218,7 +235,9 @@ static tll_token scan_token(void)
             {
                 return make_token(TOKEN_MINUS);
             }
+        }
         case '+':
+        {
             if (match('+'))
             {
                 return make_token(TOKEN_PLUS_PLUS);
@@ -231,22 +250,36 @@ static tll_token scan_token(void)
             {
                 return make_token(TOKEN_PLUS);
             }
+        }
         case '/':
+        {
             return make_token(TOKEN_SLASH);
+        }
         case '*':
+        {
             return make_token(TOKEN_STAR);
+        }
         case '!':
+        {
             return make_token(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
+        }
         case '=':
+        {
             return make_token(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
+        }
         case '<':
+        {
             return make_token(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
+        }
         case '>':
+        {
             return make_token(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+        }
         case '"':
+        {
             return string();
+        }
     }
-
     return error_token("Unexpected character.");
 }
 
@@ -310,13 +343,18 @@ static void skip_white_space(void)
             case ' ':
             case '\r':
             case '\t':
+            {
                 advance();
                 break;
+            }
             case '\n':
+            {
                 scanner.line++;
                 advance();
                 break;
+            }
             case '/':
+            {
                 if (peek_next() == '/')
                 {
                     // A comment goes until the end of the line
@@ -335,8 +373,11 @@ static void skip_white_space(void)
                 {
                     return;
                 }
+            }
             default:
+            {
                 return;
+            }
         }
     }
 }
@@ -346,25 +387,37 @@ static tll_token_type identifier_type(void)
     switch (scanner.start[0])
     {
         case 'a':
+        {
             return check_keyword(1, 2, "nd", TOKEN_AND);
+        }
         case 'b':
+        {
             return check_keyword(1, 3, "ool", TOKEN_BOOL_TYPE);
+        }
         case 'c':
+        {
             if (scanner.current - scanner.start > 1)
             {
                 switch (scanner.start[1])
                 {
                     case 'l':
+                    {
                         return check_keyword(2, 3, "ass", TOKEN_CLASS);
-
+                    }
                     case 'o':
+                    {
                         return check_keyword(2, 3, "nst", TOKEN_CONST);
+                    }
                 }
             }
             break;
+        }
         case 'e':
+        {
             return check_keyword(1, 3, "lse", TOKEN_ELSE);
+        }
         case 'i':
+        {
             if (scanner.current - scanner.start > 1)
             {
                 if (scanner.current - scanner.start == 2)
@@ -378,56 +431,89 @@ static tll_token_type identifier_type(void)
                 return check_keyword(1, 2, "nt", TOKEN_INT_TYPE);
             }
             break;
+        }
         case 'n':
+        {
             return check_keyword(1, 3, "ull", TOKEN_NIL);
+        }
         case 'o':
+        {
             return check_keyword(1, 1, "r", TOKEN_OR);
+        }
         case 'r':
+        {
             return check_keyword(1, 5, "eturn", TOKEN_RETURN);
+        }
         case 's':
+        {
             if (scanner.current - scanner.start > 1)
             {
                 switch (scanner.start[1])
                 {
                     case 'u':
+                    {
                         return check_keyword(2, 3, "per", TOKEN_SUPER);
+                    }
                     case 't':
+                    {
                         return check_keyword(2, 4, "ring", TOKEN_STRING_TYPE);
+                    }
                 }
             }
             break;
+        }
         case 'v':
+        {
             return check_keyword(1, 2, "ar", TOKEN_VAR);
+        }
         case 'w':
+        {
             return check_keyword(1, 4, "hile", TOKEN_WHILE);
+        }
         case 'f':
+        {
             if (scanner.current - scanner.start > 1)
             {
                 switch (scanner.start[1])
                 {
                     case 'a':
+                    {
                         return check_keyword(2, 3, "lse", TOKEN_FALSE);
+                    }
                     case 'l':
+                    {
                         return check_keyword(2, 3, "oat", TOKEN_FLOAT_TYPE);
+                    }
                     case 'o':
+                    {
                         return check_keyword(2, 1, "r", TOKEN_FOR);
+                    }
                     case 'u':
+                    {
                         return check_keyword(2, 1, "n", TOKEN_FUN);
+                    }
                 }
             }
             break;
+        }
         case 't':
+        {
             if (scanner.current - scanner.start > 1)
             {
                 switch (scanner.start[1])
                 {
                     case 'h':
+                    {
                         return check_keyword(2, 2, "is", TOKEN_THIS);
+                    }
                     case 'r':
+                    {
                         return check_keyword(2, 2, "ue", TOKEN_TRUE);
+                    }
                 }
             }
             break;
+        }
     }
     return TOKEN_IDENTIFIER;
 }

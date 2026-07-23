@@ -134,53 +134,58 @@ static tll_interpret_result run_VM_code(void)
 
         uint8_t instruction = read_byte();
 
-        tll_value a, b;   // For the binary operations.
-        tll_string* name; // For variable or function names.
-        uint16_t c;       // For two-byte values.
-
         switch (instruction)
         {
             case OP_CONSTANT:
+            {
                 push(read_constant());
                 break;
-
+            }
             case OP_NULL:
+            {
                 push(AS_TLL_NULL);
                 break;
-
+            }
             case OP_TRUE:
+            {
                 push(AS_TLL_BOOL(true));
                 break;
-
+            }
             case OP_FALSE:
+            {
                 push(AS_TLL_BOOL(false));
                 break;
-
+            }
             case OP_POP:
+            {
                 pop();
                 break;
-
+            }
             case OP_DEF_GLOBAL_CONST:
+            {
                 set_to_dictionary(&VM.global_consts, read_string(), peek(0));
                 pop();
                 break;
-
+            }
             case OP_DEF_GLOBAL_VAR:
+            {
                 set_to_dictionary(&VM.global_vars, read_string(), peek(0));
                 pop();
                 break;
-
+            }
             case OP_GET_GLOBAL:
-                name = read_string();
+            {
+                tll_value value;
+                tll_string* name = read_string();
 
-                if (get_from_dictionary(&VM.global_vars, name, &a))
+                if (get_from_dictionary(&VM.global_vars, name, &value))
                 {
-                    push(a);
+                    push(value);
                     break;
                 }
-                else if (get_from_dictionary(&VM.global_consts, name, &a))
+                else if (get_from_dictionary(&VM.global_consts, name, &value))
                 {
-                    push(a);
+                    push(value);
                     break;
                 }
                 else
@@ -189,13 +194,15 @@ static tll_interpret_result run_VM_code(void)
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 break; // Unreachable.
-
+            }
             case OP_SET_GLOBAL:
-                name = read_string();
+            {
+                tll_value value;
+                tll_string* name = read_string();
 
-                if (!get_from_dictionary(&VM.global_vars, name, &a))
+                if (!get_from_dictionary(&VM.global_vars, name, &value))
                 {
-                    if (get_from_dictionary(&VM.global_consts, name, &a))
+                    if (get_from_dictionary(&VM.global_consts, name, &value))
                     {
                         runtime_error("Trying to redefine constant '%s'.", name->chars);
                     }
@@ -207,48 +214,50 @@ static tll_interpret_result run_VM_code(void)
                 }
                 set_to_dictionary(&VM.global_vars, name, peek(0));
                 break;
-
+            }
             case OP_GET_LOCAL:
+            {
                 push(VM.stack[read_byte()]);
                 break;
-
+            }
             case OP_SET_LOCAL:
+            {
                 VM.stack[read_byte()] = peek(0);
                 break;
-
+            }
             case OP_EQUAL:
-
+            {
                 if (peek(0).type != peek(1).type)
                 {
                     runtime_error("Operands must have the same type to be compared.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                b = pop();
-                a = pop();
+                tll_value b = pop();
+                tll_value a = pop();
                 push(AS_TLL_BOOL(are_equals(a, b)));
                 break;
-
+            }
             case OP_NOT_EQUAL:
-
+            {
                 if (peek(0).type != peek(1).type)
                 {
                     runtime_error("Operands must have the same type to be compared.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                b = pop();
-                a = pop();
+                tll_value b = pop();
+                tll_value a = pop();
                 push(AS_TLL_BOOL(!are_equals(a, b)));
-                break;
-
+               break;
+            }
             case OP_GREATER:
-
+            {
                 if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
                 {
                     runtime_error("Operands must have the same type to be compared.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                b = pop();
-                a = pop();
+                tll_value b = pop();
+                tll_value a = pop();
 
                 if (IS_INT(a) && IS_INT(b))
                 {
@@ -264,16 +273,16 @@ static tll_interpret_result run_VM_code(void)
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-
+            }
             case OP_GREATER_EQUAL:
-
+            {
                 if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
                 {
                     runtime_error("Operands must have the same type to be compared.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                b = pop();
-                a = pop();
+                tll_value b = pop();
+                tll_value a = pop();
 
                 if (IS_INT(a) && IS_INT(b))
                 {
@@ -289,16 +298,16 @@ static tll_interpret_result run_VM_code(void)
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-
+            }
             case OP_LESS:
-
+            {
                 if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
                 {
                     runtime_error("Operands must have the same type to be compared.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                b = pop();
-                a = pop();
+                tll_value b = pop();
+                tll_value a = pop();
 
                 if (IS_INT(a) && IS_INT(b))
                 {
@@ -314,16 +323,16 @@ static tll_interpret_result run_VM_code(void)
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-
+            }
             case OP_LESS_EQUAL:
-
+            {
                 if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
                 {
                     runtime_error("Operands must have the same type to be compared.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                b = pop();
-                a = pop();
+                tll_value b = pop();
+                tll_value a = pop();
 
                 if (IS_INT(a) && IS_INT(b))
                 {
@@ -339,9 +348,9 @@ static tll_interpret_result run_VM_code(void)
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-
+            }
             case OP_ADD:
-
+            {
                 if (IS_STRING(peek(0)) && IS_STRING(peek(1)))
                 {
                     concatenate();
@@ -360,8 +369,8 @@ static tll_interpret_result run_VM_code(void)
                         return TLL_INTERPRET_RUNTIME_ERROR;
                     }
                 }
-                b = pop();
-                a = pop();
+                tll_value b = pop();
+                tll_value a = pop();
 
                 if (IS_INT(b) && IS_INT(a))
                 {
@@ -377,16 +386,16 @@ static tll_interpret_result run_VM_code(void)
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-
+            }
             case OP_SUBSTRACT:
-
+            {
                 if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
                 {
                     runtime_error("Operands must be either 'int' or 'float'.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                b = pop();
-                a = pop();
+                tll_value b = pop();
+                tll_value a = pop();
 
                 if (IS_INT(b) && IS_INT(a))
                 {
@@ -402,16 +411,16 @@ static tll_interpret_result run_VM_code(void)
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-
+            }
             case OP_MULTIPLY:
-
+            {
                 if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
                 {
                     runtime_error("Operands must be either 'int' or 'float'.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                b = pop();
-                a = pop();
+                tll_value b = pop();
+                tll_value a = pop();
 
                 if (IS_INT(b) && IS_INT(a))
                 {
@@ -427,16 +436,16 @@ static tll_interpret_result run_VM_code(void)
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-
+            }
             case OP_DIVIDE:
-
+            {
                 if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1)))
                 {
                     runtime_error("Operands must be either 'int' or 'float'.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                b = pop();
-                a = pop();
+                tll_value b = pop();
+                tll_value a = pop();
 
                 if (IS_INT(b) && IS_INT(a))
                 {
@@ -452,8 +461,9 @@ static tll_interpret_result run_VM_code(void)
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 break;
-
+            }
             case OP_NOT:
+            {
                 if (!IS_BOOL(peek(0)))
                 {
                     runtime_error("Operand must be a boolean.");
@@ -461,8 +471,9 @@ static tll_interpret_result run_VM_code(void)
                 }
                 push(AS_TLL_BOOL(!AS_C_BOOL(pop())));
                 break;
-
+            }
             case OP_NEGATE:
+            {
                 if (!IS_NUMBER(peek(0)))
                 {
                     runtime_error("Operand must be a number.");
@@ -477,41 +488,48 @@ static tll_interpret_result run_VM_code(void)
                     push(AS_TLL_FLOAT(-AS_C_FLOAT(pop())));
                 }
                 break;
-
+            }
             case OP_JMP_BACK:
+            {
                 VM.ip -= read_short();
                 break;
-
+            }
             case OP_JMP_AHEAD:
+            {
                 VM.ip += read_short();
                 break;
-
+            }
             case OP_JMP_IF_FALSE:
-                c = read_short();
+            {
+                uint16_t offset = read_short();
 
                 if (are_equals(AS_TLL_BOOL(false), peek(0)))
                 {
-                    VM.ip += c;
+                    VM.ip += offset;
                 }
                 break;
-
+            }
             case OP_JMP_IF_TRUE:
-                c = read_short();
+            {
+                uint16_t offset = read_short();
 
                 if (are_equals(AS_TLL_BOOL(true), peek(0)))
                 {
-                    VM.ip += c;
+                    VM.ip += offset;
                 }
                 break;
-
+            }
             case OP_RETURN:
+            {
                 print_value(pop());
                 printf("\n");
                 return TLL_INTERPRET_OK;
-
+            }
             default:
+            {
                 runtime_error("Unkown instruction with op code %i at line %i.", instruction, VM.ip);
                 return TLL_INTERPRET_RUNTIME_ERROR;
+            }
         }
     }
 }

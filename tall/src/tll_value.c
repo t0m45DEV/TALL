@@ -65,10 +65,12 @@ void print_value(tll_value value)
     switch (value.type)
     {
         case VAL_NULL:
+        {
             printf("null");
             break;
-
+        }
         case VAL_BOOL:
+        {
             if (AS_C_BOOL(value))
             {
                 printf("true");
@@ -78,18 +80,22 @@ void print_value(tll_value value)
                 printf("false");
             }
             break;
-
+        }
         case VAL_INT:
+        {
             printf("%i", AS_C_INT(value));
             break;
-
+        }
         case VAL_FLOAT:
+        {
             printf("%g", AS_C_FLOAT(value));
             break;
-
+        }
         case VAL_OBJ:
+        {
             print_object(value);
             break;
+        }
     }
 }
 
@@ -98,24 +104,30 @@ void print_type(tll_value value)
     switch (value.type)
     {
         case VAL_NULL:
+        {
             printf("null");
             break;
-
+        }
         case VAL_BOOL:
+        {
             printf("bool");
             break;
-
+        }
         case VAL_INT:
+        {
             printf("int");
             break;
-
+        }
         case VAL_FLOAT:
+        {
             printf("float");
             break;
-
+        }
         case VAL_OBJ:
+        {
             printf("string");
             break;
+        }
     }
 }
 

@@ -54,9 +54,11 @@ void free_object(tll_obj* object)
     switch (object->type)
     {
         case OBJ_STRING:
+        {
             FREE_ARRAY(char, ((tll_string*) object)->chars, ((tll_string*) object)->length + 1);
             FREE_POINTER(tll_string, (tll_string*) object);
             break;
+        }
     }
 }
 
@@ -65,8 +67,10 @@ void print_object(tll_value value)
     switch (OBJ_TYPE(value))
     {
         case OBJ_STRING:
+        {
             printf("%s", AS_C_STRING(value));
             break;
+        }
     }
 }
 

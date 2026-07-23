@@ -35,21 +35,26 @@ const tll_AST* get_error(const tll_AST* AST)
     switch (AST->type)
     {
         case AST_ERROR:
+        {
             res = AST;
             break;
-
+        }
         case AST_LITERAL:
+        {
             break;
-
+        }
         case AST_UNARY:
+        {
             res = get_error(AST->as.unary.operand);
             break;
-
+        }
         case AST_GROUPING:
+        {
             res = get_error(AST->as.grouping.expression);
             break;
-
+        }
         case AST_BINARY:
+        {
             temp = get_error(AST->as.binary.left);
 
             if (temp == NULL)
@@ -61,9 +66,9 @@ const tll_AST* get_error(const tll_AST* AST)
                 res = temp;
             }
             break;
-
+        }
         case AST_PROGRAM:
-
+        {
             for (int i = 0; i < AST->as.program.count; i++)
             {
                 res = get_error(AST->as.program.statements[i]);
@@ -74,35 +79,41 @@ const tll_AST* get_error(const tll_AST* AST)
                 }
             }
             break;
-
+        }
         case AST_EXPR_STATEMENT:
+        {
             res = get_error(AST->as.expression_statement.expression);
             break;
-
+        }
         case AST_CONST_DECLARATION:
+        {
             res = get_error(AST->as.const_declaration.expression);
             break;
-
+        }
         case AST_VAR_DECLARATION:
+        {
             res = get_error(AST->as.var_declaration.expression);
             break;
-
+        }
         case AST_VAR_ASSIGNMENT:
+        {
             res = get_error(AST->as.var_assigment.expression);
             break;
-
+        }
         case AST_VAR_NAME:
+        {
             break;
-
+        }
         case AST_RETURN:
+        {
             if (AST->as.return_statement.expression != NULL)
             {
                 res = get_error(AST->as.return_statement.expression);
             }
             break;
-
+        }
         case AST_BLOCK:
-
+        {
             for (int i = 0; i < AST->as.block_assignment.count; i++)
             {
                 res = get_error(AST->as.block_assignment.declarations[i]);
@@ -113,8 +124,9 @@ const tll_AST* get_error(const tll_AST* AST)
                 }
             }
             break;
-
+        }
         case AST_IF:
+        {
             res = get_error(AST->as.if_statement.condition);
 
             if (res != NULL)
@@ -131,8 +143,9 @@ const tll_AST* get_error(const tll_AST* AST)
                 }
             }
             break;
-
+        }
         case AST_WHILE:
+        {
             res = get_error(AST->as.while_loop.condition);
 
             if (res == NULL)
@@ -140,8 +153,9 @@ const tll_AST* get_error(const tll_AST* AST)
                 res = get_error(AST->as.while_loop.code_block);
             }
             break;
-
+        }
         case AST_FOR:
+        {
             res = get_error(AST->as.for_loop.initializer);
 
             if (res != NULL)
@@ -162,6 +176,7 @@ const tll_AST* get_error(const tll_AST* AST)
             }
             res = get_error(AST->as.for_loop.code_block);
             break;
+        }
     }
     return res;
 }
@@ -192,10 +207,12 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
     switch (AST->type)
     {
         case AST_ERROR:
+        {
             printf("ERROR: %s\n", AST->as.error.message);
             break;
-
+        }
         case AST_LITERAL:
+        {
             printf("LITERAL (");
             print_type(AST->as.literal.value);
 
@@ -206,28 +223,32 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             }
             printf(")\n");
             break;
-
+        }
         case AST_UNARY:
+        {
             printf("UNARY (");
             print_AST_operation(AST->as.unary.op);
             printf(")\n");
             print_AST_recursive(AST->as.unary.operand, child_prefix, true);
             break;
-
+        }
         case AST_GROUPING:
+        {
             printf("GROUPING\n");
             print_AST_recursive(AST->as.grouping.expression, child_prefix, true);
             break;
-
+        }
         case AST_BINARY:
+        {
             printf("BINARY (");
             print_AST_operation(AST->as.binary.op);
             printf(")\n");
             print_AST_recursive(AST->as.binary.left, child_prefix, false);
             print_AST_recursive(AST->as.binary.right, child_prefix, true);
             break;
-
+        }
         case AST_PROGRAM:
+        {
             printf("PROGRAM\n");
             for (int i = 0; i < AST->as.program.count - 1; i++)
             {
@@ -238,13 +259,15 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
                 print_AST_recursive(AST->as.program.statements[AST->as.program.count - 1], child_prefix, true);
             }
             break;
-
+        }
         case AST_EXPR_STATEMENT:
+        {
             printf("EXPRESSION_STATEMENT\n");
             print_AST_recursive(AST->as.expression_statement.expression, child_prefix, true);
             break;
-
+        }
         case AST_CONST_DECLARATION:
+        {
             printf("CONST_DECLARATION (");
             print_string(*AST->as.var_declaration.name);
             printf(" ");
@@ -252,30 +275,37 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             switch (AST->as.var_declaration.type)
             {
                 case VAL_NULL:
+                {
                     printf("null");
                     break;
-
+                }
                 case VAL_BOOL:
+                {
                     printf("bool");
                     break;
-
+                }
                 case VAL_INT:
+                {
                     printf("int");
                     break;
-
+                }
                 case VAL_FLOAT:
+                {
                     printf("float");
                     break;
-
+                }
                 case VAL_OBJ: // TODO: Better reading type for objects.
+                {
                     printf("string");
                     break;
+                }
             }
             printf(")\n");
             print_AST_recursive(AST->as.var_declaration.expression, child_prefix, true);
             break;
-
+        }
         case AST_VAR_DECLARATION:
+        {
             printf("VAR_DECLARATION (");
             print_string(*AST->as.var_declaration.name);
             printf(" ");
@@ -283,51 +313,61 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             switch (AST->as.var_declaration.type)
             {
                 case VAL_NULL:
+                {
                     printf("null");
                     break;
-
+                }
                 case VAL_BOOL:
+                {
                     printf("bool");
                     break;
-
+                }
                 case VAL_INT:
+                {
                     printf("int");
                     break;
-
+                }
                 case VAL_FLOAT:
+                {
                     printf("float");
                     break;
-
+                }
                 case VAL_OBJ: // TODO: Better reading type for objects.
+                {
                     printf("string");
                     break;
+                }
             }
             printf(")\n");
             print_AST_recursive(AST->as.var_declaration.expression, child_prefix, true);
             break;
-
+        }
         case AST_VAR_ASSIGNMENT:
+        {
             printf("VAR_ASSIGNMENT (");
             print_string(*AST->as.var_assigment.name);
             printf(")\n");
             print_AST_recursive(AST->as.var_assigment.expression, child_prefix, true);
             break;
-
+        }
         case AST_VAR_NAME:
+        {
             printf("VAR_NAME (");
             print_string(*AST->as.var_name.name);
             printf(")\n");
             break;
-
+        }
         case AST_RETURN:
+        {
             printf("RETURN\n");
             if (AST->as.return_statement.expression != NULL)
             {
                 print_AST_recursive(AST->as.return_statement.expression, child_prefix, true);
             }
             break;
-
+        }
         case AST_BLOCK:
+        {
             printf("BLOCK\n");
             for (int i = 0; i < AST->as.block_assignment.count - 1; i++)
             {
@@ -338,8 +378,9 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
                 print_AST_recursive(AST->as.block_assignment.declarations[AST->as.block_assignment.count - 1], child_prefix, true);
             }
             break;
-
+        }
         case AST_IF:
+        {
             printf("IF\n");
             print_AST_recursive(AST->as.if_statement.condition, child_prefix, false);
 
@@ -353,24 +394,28 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
                 print_AST_recursive(AST->as.if_statement.code_block, child_prefix, true);
             }
             break;
-
+        }
         case AST_WHILE:
+        {
             printf("WHILE\n");
             print_AST_recursive(AST->as.while_loop.condition, child_prefix, false);
             print_AST_recursive(AST->as.while_loop.code_block, child_prefix, true);
             break;
-
+        }
         case AST_FOR:
+        {
             printf("FOR\n");
             print_AST_recursive(AST->as.for_loop.initializer, child_prefix, false);
             print_AST_recursive(AST->as.for_loop.condition, child_prefix, false);
             print_AST_recursive(AST->as.for_loop.increment, child_prefix, false);
             print_AST_recursive(AST->as.for_loop.code_block, child_prefix, true);
             break;
-
+        }
         default:
+        {
             printf("UNKNOWN AST\n");
             break;
+        }
     }
 }
 
@@ -379,47 +424,75 @@ static void print_AST_operation(tll_token_type operation)
     switch (operation)
     {
         case TOKEN_AND:
+        {
             printf("and");
             break;
+        }
         case TOKEN_OR:
+        {
             printf("or");
             break;
+        }
         case TOKEN_MINUS:
+        {
             printf("-");
             break;
+        }
         case TOKEN_PLUS:
+        {
             printf("+");
             break;
+        }
         case TOKEN_STAR:
+        {
             printf("*");
             break;
+        }
         case TOKEN_SLASH:
+        {
             printf("/");
             break;
+        }
         case TOKEN_BANG:
+        {
             printf("!");
             break;
+        }
         case TOKEN_EQUAL_EQUAL:
+        {
             printf("==");
             break;
+        }
         case TOKEN_BANG_EQUAL:
+        {
             printf("!=");
             break;
+        }
         case TOKEN_GREATER:
+        {
             printf(">");
             break;
+        }
         case TOKEN_GREATER_EQUAL:
+        {
             printf(">=");
             break;
+        }
         case TOKEN_LESS:
+        {
             printf("<");
             break;
+        }
         case TOKEN_LESS_EQUAL:
+        {
             printf("<=");
             break;
+        }
         default:
+        {
             printf("?");
             break;
+        }
     }
 }
 
