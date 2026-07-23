@@ -21,6 +21,7 @@ typedef enum {
     AST_BLOCK,             // For code inside brackets: '{' code '}'.
     AST_IF,                // For an 'if' statement.
     AST_WHILE,             // For a while loop.
+    AST_FOR,               // For a for loop.
 } tll_AST_type;
 
 typedef struct tll_AST {
@@ -99,6 +100,13 @@ typedef struct tll_AST {
             struct tll_AST* condition;
             struct tll_AST* code_block;
         } while_loop;
+
+        struct {
+            struct tll_AST* initializer;
+            struct tll_AST* condition;
+            struct tll_AST* increment;
+            struct tll_AST* code_block;
+        } for_loop;
     } as;
 } tll_AST;
 

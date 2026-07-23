@@ -610,6 +610,7 @@ static void compile_AST_node(tll_AST* node)
             break;
 
         case AST_WHILE:
+        {
             int loop_start = current_code_chunk()->count;
             compile_AST_node(node->as.while_loop.condition);
 
@@ -628,6 +629,32 @@ static void compile_AST_node(tll_AST* node)
             // Pop out the while condition.
             emit_byte(OP_POP, node->line);
             break;
+        }
+
+        case AST_FOR:
+        {
+            compile_AST_node(node->as.for_loop.initializer);
+
+            int loop_start = current_code_chunk()->count;
+            compile_AST_node(node->as.for_loop.condition);
+
+            int end_jump = emit_conditional_false_jump(node->line);
+
+            compile_AST_node(node->as.for_loop.code_block);
+            compile_AST_node(node->as.for_loop.increment);
+
+            // Go back to the while condition.
+            emit_byte(OP_JMP_BACK, node->line);
+            int loop_offset = current_code_chunk()->count - loop_start + 2;
+            emit_short(loop_offset, node->line);
+
+            // Path the jump for the while condition.
+            path_jump(end_jump, node->line);
+
+            // Pop out the while condition.
+            emit_byte(OP_POP, node->line);
+            break;
+        }
 
         default:
             return; // Unreachable.

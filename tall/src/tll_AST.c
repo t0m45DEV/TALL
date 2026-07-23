@@ -62,6 +62,11 @@ static tll_AST* AST_statement(void);
 static tll_AST* AST_while_loop(void);
 
 /**
+ * Parse the current tokens as a for loop.
+ */
+static tll_AST* AST_for_loop(void);
+
+/**
  * Parse the current tokens as an if statement.
  */
 static tll_AST* AST_if_statement(void);
@@ -246,6 +251,13 @@ static void free_AST_recursive(tll_AST* tree)
             free_AST_recursive(tree->as.while_loop.condition);
             free_AST_recursive(tree->as.while_loop.code_block);
             break;
+
+        case AST_FOR:
+            free_AST_recursive(tree->as.for_loop.initializer);
+            free_AST_recursive(tree->as.for_loop.condition);
+            free_AST_recursive(tree->as.for_loop.increment);
+            free_AST_recursive(tree->as.for_loop.code_block);
+            break;
     }
 }
 
@@ -309,7 +321,11 @@ static tll_AST* AST_program(void)
 
 static tll_AST* AST_statement(void)
 {
-    if (AST_match(TOKEN_WHILE))
+    if (AST_match(TOKEN_FOR))
+    {
+        return AST_for_loop();
+    }
+    else if (AST_match(TOKEN_WHILE))
     {
         return AST_while_loop();
     }
@@ -367,6 +383,68 @@ static tll_AST* AST_while_loop(void)
 
     node->as.while_loop.condition = condition;
     node->as.while_loop.code_block = statements;
+
+    return node;
+}
+
+static tll_AST* AST_for_loop(void)
+{
+    int line = AST_parser.previous->line;
+
+    if (!AST_match(TOKEN_LEFT_PAREN))
+    {
+        return AST_error(AST_parser.current->line, "Expected '(' after 'while'.");
+    }
+    tll_AST* initializer = NULL;
+
+    if (AST_match(TOKEN_VAR))
+    {
+        initializer = AST_variable_declaration(false);
+    }
+    else if (AST_match(TOKEN_IDENTIFIER))
+    {
+        initializer = AST_variable_assignment(true);
+    }
+    else
+    {
+        initializer = AST_error(AST_parser.current->line, "Initializer for a loop must be a variable declaration or assignment.");
+    }
+    tll_AST* condition = AST_expression();
+
+    if (!AST_match(TOKEN_SEMICOLON))
+    {
+        return AST_error(AST_parser.current->line, "Condition for a loop must be separated with ';'.");
+    }
+    tll_AST* increment = NULL;
+
+    if (AST_match(TOKEN_IDENTIFIER))
+    {
+        increment = AST_variable_assignment(false);
+    }
+    else
+    {
+        increment = AST_error(AST_parser.current->line, "Increment step for a loop must be a variable assignment.");
+    }
+
+    if (!AST_match(TOKEN_RIGHT_PAREN))
+    {
+        return AST_error(AST_parser.current->line, "Expected ')' after 'while' condition. ");
+    }
+    if (!AST_match(TOKEN_LEFT_BRACE))
+    {
+        return AST_error(AST_parser.current->line, "Expected '{' at the start of the 'while' body.");
+    }
+    tll_AST* statements = AST_block();
+
+    tll_AST* node = alloc_node();
+
+    node->type = AST_FOR;
+    node->line = line;
+
+    node->as.for_loop.initializer = initializer;
+    node->as.for_loop.condition = condition;
+    node->as.for_loop.increment = increment;
+    node->as.for_loop.code_block = statements;
 
     return node;
 }
@@ -528,7 +606,11 @@ static tll_AST* AST_variable_assignment(bool check_semicolon)
     {
         return AST_variable_simple_assignment(check_semicolon);
     }
-    return AST_specific_variable_assignment(check_semicolon);
+    else if (AST_check(TOKEN_EQUAL))
+    {
+        return AST_specific_variable_assignment(check_semicolon);
+    }
+    return AST_expression_statement();
 }
 
 static tll_AST* AST_specific_variable_assignment(bool check_semicolon)
