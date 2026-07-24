@@ -1,9 +1,10 @@
 #include "tll_vm.h"
-
+#include "tll_flags.h"
 #include "tll_common.h"
 #include "tll_file_manager.h"
 #include "tll_memory.h"
 
+#include <stddef.h>
 #include <sysexits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,28 +19,74 @@ static void repl(void);
  */
 static void run_file(const char* file_path);
 
-int main(int argc, const char* argv[])
+int main(int argc, char* argv[])
 {
+    if (!check_flags(argc, argv))
+    {
+        fprintf(stderr, "Unkown flag, try running 'tall -h' for the help page.\n");
+        exit(EX_USAGE);
+    }
+
+    if (is_version_flag())
+    {
+        printf("TALL v0.12 by t0m45DEV.\n");
+        exit(EX_OK);
+    }
+    else if (is_help_flag())
+    {
+        printf("Usage: %s [-v] [-h] [-p] [-b] [-d] [path_to_file]\n", strip_path(argv[0]));
+        printf("  -v  print version\n");
+        printf("  -h  print this help\n");
+        printf("  -p  debug print parser step\n");
+        printf("  -b  debug print bytecode step\n");
+        printf("  -d  debug print both parser and bytecode steps\n");
+        exit(EX_OK);
+    }
+    // After this point, we run the compiler as usual.
     init_VM();
 
     if (argc == 1)
     {
         repl();
     }
-    else if (argc == 2)
+    else if (argc == 2 || argc == 3)
     {
-        if (!is_tll_file(argv[1]))
+        char* file_path = NULL;
+
+        if (argc == 2)
+        {
+            if (is_flag_argument(argv[1]))
+            {
+                free_VM();
+                fprintf(stderr, "Usage: %s path_to_file", strip_path(argv[0]));
+                exit(EX_USAGE);
+            }
+            file_path = argv[1];
+        }
+        else if (argc == 3)
+        {
+            if (is_flag_argument(argv[1]))
+            {
+                file_path = argv[2];
+            }
+            else
+            {
+                file_path = argv[1];
+            }
+        }
+
+        if (!is_tll_file(file_path))
         {
             free_VM();
-            fprintf(stderr, "File %s has not \".tll\" extension.\n", argv[1]);
+            fprintf(stderr, "File %s has not '.tll' extension.\n", file_path);
             exit(EX_DATAERR);
         }
-        run_file(argv[1]);
+        run_file(file_path);
     }
     else
     {
         free_VM();
-        fprintf(stderr, "Usage: %s [path]\n", argv[0]);
+        fprintf(stderr, "Usage: %s [path]\n", strip_path(argv[0]));
         exit(EX_USAGE);
     }
     free_VM();
@@ -65,14 +112,14 @@ static void repl(void)
 
 static void run_file(const char* file_path)
 {
-    int f_size = file_size(file_path) + 1; // Last one byte for \0 terminator.
+    size_t f_size = file_size(file_path) + 1; // Last one byte for \0 terminator.
 
-    if (f_size == -1)
+    if (f_size - 1 == (size_t) -1)
     {
         free_VM();
         exit(EX_IOERR);
     }
-    else if (f_size == 1) // Blank file, nothing to compile.
+    else if (f_size == (size_t) 1) // Blank file, nothing to compile.
     {
         free_VM();
         exit(EX_OK);

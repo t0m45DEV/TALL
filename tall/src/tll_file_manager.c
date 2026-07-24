@@ -67,3 +67,14 @@ int read_file(const char* file_path, char* buffer)
     return 1;
 }
 
+const char* strip_path(const char* path)
+{
+    const char* stripped = strrchr(path, '/');
+
+    if (stripped)
+    {
+        return stripped + 1;
+    }
+    return path;
+}
+

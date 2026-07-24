@@ -6,13 +6,11 @@
 #include "tll_scanner.h"
 #include "tll_value.h"
 #include "tll_object.h"
+#include "tll_debug.h"
+#include "tll_flags.h"
 
 #include <stdint.h>
 #include <stdio.h>
-
-#ifdef DEBUG_PRINT_CODE
-#include "tll_debug.h"
-#endif
 
 #define MAX_LOCAL_COUNT 256
 
@@ -169,9 +167,10 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
     compiling_code_chunk = code_chunk;
     tll_AST* AST = create_AST(scan_source_code(source_code));
 
-    #ifdef DEBUG_PRINT_CODE
+    if (is_debug_parser_flag())
+    {
         print_AST(AST, "AST");
-    #endif
+    }
 
     bool parsing_error = has_error(AST);
     bool compiler_error = false;
@@ -180,10 +179,10 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
     {
         compile_AST_node(AST);
 
-        #ifdef DEBUG_PRINT_CODE
+        if (is_debug_bytecode_flag())
+        {
             disassemble_code_chunk(code_chunk, "BYTECODE");
-        #endif
-
+        }
         compiler_error = error_count > 0;
     }
     else

@@ -21,4 +21,9 @@ size_t file_size(const char* file_path);
  */
 int read_file(const char* file_path, char* buffer);
 
+/**
+ * Returns the extracted name of the file from the given full path.
+ */
+const char* strip_path(const char* path);
+
 #endif
