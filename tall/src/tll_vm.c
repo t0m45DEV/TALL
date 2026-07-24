@@ -7,6 +7,7 @@
 #include "tll_object.h"
 #include "tll_memory.h"
 #include "tll_compiler.h"
+#include "tll_flags.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -120,7 +121,8 @@ static tll_interpret_result run_VM_code(void)
 {
     while (true)
     {
-        #ifdef TLL_DEBUG_TRACE_EXECUTION
+        if (is_trace_flag())
+        {
             printf("          ");
             for (tll_value* slot = VM.stack; slot < VM.stack_top; slot++)
             {
@@ -130,8 +132,7 @@ static tll_interpret_result run_VM_code(void)
             }
             printf("\n");
             disassemble_instruction(VM.code_chunk, (int) (VM.ip - VM.code_chunk->code));
-        #endif
-
+        }
         uint8_t instruction = read_byte();
 
         switch (instruction)

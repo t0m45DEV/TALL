@@ -23,6 +23,11 @@ bool is_debug_parser_flag(void);
 bool is_debug_bytecode_flag(void);
 
 /**
+ * Returns true if the user asked for the trace code execution.
+ */
+bool is_trace_flag(void);
+
+/**
  * Returns true if the user asked for the help page info.
  */
 bool is_help_flag(void);

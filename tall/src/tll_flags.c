@@ -9,6 +9,9 @@ bool flag_parser = false;
 // True if the user used the debug printing flag for the bytecode generation step.
 bool flag_bytecode = false;
 
+// True if the user used the trace code execution flag.
+bool flag_trace = false;
+
 // True if the user used the help flag.
 bool flag_help = false;
 
@@ -19,7 +22,7 @@ bool check_flags(int argc, char* argv[])
 {
     int opt;
 
-    while ((opt = getopt(argc, argv, "pbdhv")) != -1)
+    while ((opt = getopt(argc, argv, "pbdthv")) != -1)
     {
         switch (opt)
         {
@@ -37,6 +40,11 @@ bool check_flags(int argc, char* argv[])
             {
                 flag_parser = true;
                 flag_bytecode = true;
+                break;
+            }
+            case 't':
+            {
+                flag_trace = true;
                 break;
             }
             case 'h':
@@ -71,6 +79,11 @@ bool is_debug_parser_flag(void)
 bool is_debug_bytecode_flag(void)
 {
     return flag_bytecode;
+}
+
+bool is_trace_flag(void)
+{
+    return flag_trace;
 }
 
 bool is_help_flag(void)
