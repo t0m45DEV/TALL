@@ -590,6 +590,7 @@ static void compile_AST_node(tll_AST* node)
         {
             compile_AST_node(node->as.var_assigment.expression);
             variable_assignment(node->as.var_assigment.name, node->line);
+            emit_byte(OP_POP, node->line);
             break;
         }
         case AST_VAR_NAME:
@@ -643,7 +644,10 @@ static void compile_AST_node(tll_AST* node)
             }
             else
             {
+                int skip_jump = emit_jump_ahead(node->line);
                 path_jump(then_jump, node->line);
+                emit_byte(OP_POP, node->line);
+                path_jump(skip_jump, node->line);
             }
             break;
         }
@@ -653,6 +657,8 @@ static void compile_AST_node(tll_AST* node)
             compile_AST_node(node->as.while_loop.condition);
 
             int end_jump = emit_conditional_false_jump(node->line);
+            // Pop out the 'true' value from the stack.
+            emit_byte(OP_POP, node->line);
 
             compile_AST_node(node->as.while_loop.code_block);
 
@@ -676,6 +682,8 @@ static void compile_AST_node(tll_AST* node)
             compile_AST_node(node->as.for_loop.condition);
 
             int end_jump = emit_conditional_false_jump(node->line);
+            // Pop out the 'true' value from the stack.
+            emit_byte(OP_POP, node->line);
 
             compile_AST_node(node->as.for_loop.code_block);
             compile_AST_node(node->as.for_loop.increment);
