@@ -34,9 +34,10 @@ int main(int argc, char* argv[])
     }
     else if (is_help_flag())
     {
-        printf("Usage: %s [-v] [-h] [-p] [-b] [-d] [path_to_file]\n", strip_path(argv[0]));
+        printf("Usage: %s [-v] [-h] [-t] [-p] [-b] [-d] [path_to_file]\n", strip_path(argv[0]));
         printf("  -v  print version\n");
         printf("  -h  print this help\n");
+        printf("  -t  debug print the state of the stack on each instruction\n");
         printf("  -p  debug print parser step\n");
         printf("  -b  debug print bytecode step\n");
         printf("  -d  debug print both parser and bytecode steps\n");
