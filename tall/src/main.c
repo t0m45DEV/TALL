@@ -50,29 +50,21 @@ int main(int argc, char* argv[])
     {
         repl();
     }
-    else if (argc == 2 || argc == 3)
+    else
     {
         char* file_path = NULL;
 
-        if (argc == 2)
+        for (int i = 1; i < argc; i++)
         {
-            if (is_flag_argument(argv[1]))
+            if (!is_flag_argument(argv[i]))
             {
-                free_VM();
-                fprintf(stderr, "Usage: %s path_to_file", strip_path(argv[0]));
-                exit(EX_USAGE);
-            }
-            file_path = argv[1];
-        }
-        else if (argc == 3)
-        {
-            if (is_flag_argument(argv[1]))
-            {
-                file_path = argv[2];
-            }
-            else
-            {
-                file_path = argv[1];
+                if (file_path != NULL)
+                {
+                    free_VM();
+                    fprintf(stderr, "Usage: %s [-flags] [path]\n", strip_path(argv[0]));
+                    exit(EX_USAGE);
+                }
+                file_path = argv[i];
             }
         }
 
@@ -83,12 +75,6 @@ int main(int argc, char* argv[])
             exit(EX_DATAERR);
         }
         run_file(file_path);
-    }
-    else
-    {
-        free_VM();
-        fprintf(stderr, "Usage: %s [path]\n", strip_path(argv[0]));
-        exit(EX_USAGE);
     }
     free_VM();
     exit(EX_OK);
