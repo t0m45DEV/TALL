@@ -6,7 +6,7 @@
 
 static const char* get_file_extension(const char* file_path)
 {
-    const char* file_dot = strchr(file_path, '.');
+    const char* file_dot = strrchr(file_path, '.');
 
     if (!file_dot)
     {
