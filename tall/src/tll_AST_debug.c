@@ -269,7 +269,7 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
         case AST_CONST_DECLARATION:
         {
             printf("CONST_DECLARATION (");
-            print_string(*AST->as.var_declaration.name);
+            print_value(AS_TLL_OBJ(AST->as.var_declaration.name));
             printf(" ");
 
             switch (AST->as.var_declaration.type)
@@ -307,7 +307,7 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
         case AST_VAR_DECLARATION:
         {
             printf("VAR_DECLARATION (");
-            print_string(*AST->as.var_declaration.name);
+            print_value(AS_TLL_OBJ(AST->as.var_declaration.name));
             printf(" ");
 
             switch (AST->as.var_declaration.type)
@@ -345,7 +345,7 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
         case AST_VAR_ASSIGNMENT:
         {
             printf("VAR_ASSIGNMENT (");
-            print_string(*AST->as.var_assigment.name);
+            print_value(AS_TLL_OBJ(AST->as.var_assigment.name));
             printf(")\n");
             print_AST_recursive(AST->as.var_assigment.expression, child_prefix, true);
             break;
@@ -353,7 +353,7 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
         case AST_VAR_NAME:
         {
             printf("VAR_NAME (");
-            print_string(*AST->as.var_name.name);
+            print_value(AS_TLL_OBJ(AST->as.var_name.name));
             printf(")\n");
             break;
         }

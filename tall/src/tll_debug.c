@@ -215,7 +215,7 @@ static int global_variable_instruction(const char* op_name, tll_code_chunk* code
     uint16_t index = (index_upper << 8) | index_lower;
 
     printf("%-20s %4d 'var ", op_name, index);
-    print_string(*AS_TLL_STRING(code_chunk->constants.values[index]));
+    print_value(code_chunk->constants.values[index]);
     printf("'\n");
     return offset + 3;
 }

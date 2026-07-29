@@ -35,6 +35,11 @@ static tll_obj* allocate_object(size_t size, tll_obj_type type);
  */
 static tll_string* allocate_string(char* chars, int length);
 
+/**
+ * Print the given TLL string to standar output.
+ */
+static inline void print_string(const tll_string string);
+
 tll_string* take_string(char* chars, int length)
 {
     return allocate_string(chars, length);
@@ -68,15 +73,10 @@ void print_object(tll_value value)
     {
         case OBJ_STRING:
         {
-            printf("%s", AS_C_STRING(value));
+            print_string(*AS_TLL_STRING(value));
             break;
         }
     }
-}
-
-void print_string(const tll_string string)
-{
-    printf("%.*s", string.length, string.chars);
 }
 
 void init_object_pool(void)
@@ -121,5 +121,10 @@ static tll_string* allocate_string(char* chars, int length)
     string->chars = chars;
 
     return string;
+}
+
+static inline void print_string(const tll_string string)
+{
+    printf("%.*s", string.length, string.chars);
 }
 
