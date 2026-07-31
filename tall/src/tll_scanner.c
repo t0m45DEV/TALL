@@ -490,7 +490,7 @@ static tll_token_type identifier_type(void)
                     }
                     case 'u':
                     {
-                        return check_keyword(2, 1, "n", TOKEN_FUN);
+                        return check_keyword(2, 2, "nc", TOKEN_FUNC);
                     }
                 }
             }
