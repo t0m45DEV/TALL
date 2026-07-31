@@ -742,7 +742,7 @@ static void compile_AST_node(tll_AST* node)
         }
         default:
         {
-            return; // Unreachable.
+            compiler_error("Unkown expression or statement.", node->line);
         }
     }
 }
