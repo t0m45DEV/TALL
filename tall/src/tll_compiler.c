@@ -15,13 +15,20 @@
 #define MAX_LOCAL_COUNT 256
 
 typedef struct {
-    const tll_string* name;
+    tll_string* name;
     bool is_const;
     int depth;
     int line;
 } tll_local_var;
 
+typedef enum {
+    TYPE_FUNCTION,
+    TYPE_SCRIPT
+} tll_function_type;
+
 typedef struct {
+    tll_function* function;
+    tll_function_type type;
     tll_local_var locals[MAX_LOCAL_COUNT];
     int local_count;
     int scope_depth;
@@ -36,7 +43,12 @@ tll_code_chunk* compiling_code_chunk;
 /**
  * Initialize the given compiler and sets it as the current one to be used as context.
  */
-static void init_compiler(tll_compiler* compiler);
+static void init_compiler(tll_compiler* compiler, tll_function_type type);
+
+/**
+ * End the function being currently compiled, and returns the function that called that one.
+ */
+static tll_function* end_compiler(void);
 
 /**
  * Prints out the given message as a compiler error on the given line.
@@ -118,7 +130,7 @@ static inline void define_global_variable(uint16_t global, int line, bool is_con
 /**
  * Emits the bytes necessary for creating a local variable.
  */
-static inline void define_local_variable(const tll_string* var_name, int line, bool is_const);
+static void define_local_variable(tll_string* var_name, int line, bool is_const);
 
 /**
  * Emits the bytes necessary for assigning a local or a global variable.
@@ -145,12 +157,26 @@ static void end_scope(void);
  */
 static void compile_AST_node(tll_AST* node);
 
-static void init_compiler(tll_compiler* compiler)
+static void init_compiler(tll_compiler* compiler, tll_function_type type)
 {
+    compiler->function = new_function();
+    //compiler->function = NULL;
+    compiler->type = type;
     compiler->local_count = 0;
     compiler->scope_depth = 0;
     current_compiler = compiler;
     error_count = 0;
+
+    tll_local_var* local = &current_compiler->locals[current_compiler->local_count++];
+
+    local->depth = 0;
+    local->name = NULL;
+    local->is_const = false;
+}
+
+static tll_function* end_compiler(void)
+{
+    return current_compiler->function;
 }
 
 static inline void compiler_error(const char* message, int line)
@@ -159,10 +185,10 @@ static inline void compiler_error(const char* message, int line)
     error_count++;
 }
 
-bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
+tll_function* compile_code(const char* source_code, tll_code_chunk* code_chunk)
 {
     tll_compiler compiler;
-    init_compiler(&compiler);
+    init_compiler(&compiler, TYPE_SCRIPT);
 
     compiling_code_chunk = code_chunk;
     tll_AST* AST = create_AST(scan_source_code(source_code));
@@ -181,7 +207,14 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
 
         if (is_debug_bytecode_flag())
         {
-            disassemble_code_chunk(code_chunk, "BYTECODE");
+            if (current_compiler->type == TYPE_SCRIPT)
+            {
+                disassemble_code_chunk(current_code_chunk(), "<script>");
+            }
+            else
+            {
+                disassemble_code_chunk(current_code_chunk(), current_compiler->function->name->chars);
+            }
         }
         compiler_error = error_count > 0;
     }
@@ -194,12 +227,19 @@ bool compile_code(const char* source_code, tll_code_chunk* code_chunk)
     free_scanner();
 
     // TODO: Error checking
-    return !parsing_error && !compiler_error;
+    if (!parsing_error && !compiler_error)
+    {
+        return end_compiler();
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 static inline tll_code_chunk* current_code_chunk(void)
 {
-    return compiling_code_chunk;
+    return &current_compiler->function->code_chunk;
 }
 
 static inline void emit_byte(uint8_t byte, int line)
@@ -304,7 +344,7 @@ static bool is_local_const(const tll_compiler* compiler, const tll_string* var_n
     {
         const tll_local_var* local = &compiler->locals[i];
 
-        if (are_equals(AS_TLL_OBJ(local->name), AS_TLL_OBJ(var_name)))
+        if (local->name != NULL && are_equals(AS_TLL_OBJ(local->name), AS_TLL_OBJ(var_name)))
         {
             return local->is_const;
         }
@@ -318,7 +358,7 @@ static int8_t resolve_local(const tll_compiler* compiler, const tll_string* var_
     {
         const tll_local_var* local = &compiler->locals[i];
 
-        if (are_equals(AS_TLL_OBJ(local->name), AS_TLL_OBJ(var_name)))
+        if (local->name != NULL && are_equals(AS_TLL_OBJ(local->name), AS_TLL_OBJ(var_name)))
         {
             return i;
         }
@@ -339,7 +379,7 @@ static inline void define_global_variable(uint16_t global, int line, bool is_con
     emit_short(global, line);
 }
 
-static inline void define_local_variable(const tll_string* var_name, int line, bool is_const)
+static void define_local_variable(tll_string* var_name, int line, bool is_const)
 {
     for (int i = current_compiler->local_count - 1; i >= 0; i--)
     {

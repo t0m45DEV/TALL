@@ -1,5 +1,6 @@
 #include "tll_object.h"
 
+#include "tll_code_chunk.h"
 #include "tll_dictionary.h"
 #include "tll_memory.h"
 #include "tll_value.h"
@@ -40,6 +41,11 @@ static tll_string* allocate_string(char* chars, int length);
  */
 static inline void print_string(const tll_string string);
 
+/**
+ * Print the given TLL function to standar output.
+ */
+static void print_function(const tll_function function);
+
 tll_string* take_string(char* chars, int length)
 {
     return allocate_string(chars, length);
@@ -54,6 +60,19 @@ tll_string* copy_string(const char* chars, int length)
     return allocate_string(heap_chars, length);
 }
 
+tll_function* new_function(void)
+{
+    tll_function* function = ALLOCATE_OBJ(tll_function, OBJ_FUNCTION);
+
+    function->arity = 0;
+    function->arguments_types = NULL;
+    function->name = NULL;
+    function->return_type = VAL_NULL;
+    init_code_chunk(&function->code_chunk);
+
+    return function;
+}
+
 void free_object(tll_obj* object)
 {
     switch (object->type)
@@ -62,6 +81,19 @@ void free_object(tll_obj* object)
         {
             FREE_ARRAY(char, ((tll_string*) object)->chars, ((tll_string*) object)->length + 1);
             FREE_POINTER(tll_string, (tll_string*) object);
+            break;
+        }
+        case OBJ_FUNCTION:
+        {
+            tll_function* function = (tll_function*) object;
+
+            if (function->name != NULL)
+            {
+                free_object((tll_obj*) function->name);
+            }
+            free_code_chunk(&function->code_chunk);
+            FREE_ARRAY(tll_value_type, function->arguments_types, function->arity);
+            FREE_POINTER(tll_function, function);
             break;
         }
     }
@@ -74,6 +106,11 @@ void print_object(tll_value value)
         case OBJ_STRING:
         {
             print_string(*AS_TLL_STRING(value));
+            break;
+        }
+        case OBJ_FUNCTION:
+        {
+            print_function(*AS_TLL_FUNCTION(value));
             break;
         }
     }
@@ -126,5 +163,19 @@ static tll_string* allocate_string(char* chars, int length)
 static inline void print_string(const tll_string string)
 {
     printf("%.*s", string.length, string.chars);
+}
+
+static void print_function(const tll_function function)
+{
+    if (function.name == NULL)
+    {
+        printf("<script>");
+    }
+    else
+    {
+        printf("<func ");
+        print_string(*function.name);
+        printf(">");
+    }
 }
 

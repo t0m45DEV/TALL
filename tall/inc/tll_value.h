@@ -24,6 +24,7 @@
 
 typedef struct tll_obj tll_obj;
 typedef struct tll_string tll_string;
+typedef struct tll_function tll_function;
 
 /**
  * The posible types for the data on TALL.

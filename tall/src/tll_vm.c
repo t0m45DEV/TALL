@@ -23,24 +23,24 @@ tll_vm VM;
 static tll_interpret_result run_VM_code(void);
 
 /**
- * Returns the current byte being seen by the VM, and advances it immediately.
+ * Returns the current byte being seen by the given frame, and advances it immediately.
  */
-static inline uint8_t read_byte(void);
+static inline uint8_t read_byte(tll_call_frame* frame);
 
 /**
- * Returns the current two bytes being seen by the VM in the form of a 16 bits integer, and advances the VM immediately.
+ * Returns the current two bytes being seen by the given frame in the form of a 16 bits integer, and advances it immediately.
  */
-static inline uint16_t read_short(void);
+static inline uint16_t read_short(tll_call_frame* frame);
 
 /**
- * Reads the short currently being seen by the VM, advances the VM immediately, and then returns the constant from the constant pool at that short position.
+ * Reads the short currently being seen by the given frame, advances it immediately, and then returns the constant from the constant pool at that short position.
  */
-static inline tll_value read_constant(void);
+static inline tll_value read_constant(tll_call_frame* frame);
 
 /**
- * Reads the string pointer currently being seen by the VM, advances the VM immediately, and then returns that pointer.
+ * Reads the string pointer currently being seen by the given frame, advances it immediately, and then returns that pointer.
  */
-static inline tll_string* read_string(void);
+static inline tll_string* read_string(tll_call_frame* frame);
 
 /**
  * Returns the value at distance from the current top of the VM stack.
@@ -83,18 +83,28 @@ tll_interpret_result interpret_code(const char* source_code)
     tll_code_chunk code_chunk;
     init_code_chunk(&code_chunk);
 
-    if (!compile_code(source_code, &code_chunk))
+    tll_function* compiled_function = compile_code(source_code, &code_chunk);
+
+    if (compiled_function == NULL)
     {
         free_code_chunk(&code_chunk);
         return TLL_INTERPRET_COMPILE_ERROR;
     }
-    VM.code_chunk = &code_chunk;
-    VM.ip = VM.code_chunk->code;
+    push(AS_TLL_OBJ(compiled_function));
 
-    tll_interpret_result result = run_VM_code();
+    if (VM.frame_count + 1 > VM.frame_capacity)
+    {
+        int old_capacity = VM.frame_capacity;
+        VM.frame_capacity = GROW_CAPACITY(VM.frame_capacity);
+        VM.frames = GROW_ARRAY(tll_call_frame, VM.frames, old_capacity, VM.frame_capacity);
+    }
+    tll_call_frame* frame = &VM.frames[VM.frame_count++];
 
-    free_code_chunk(&code_chunk);
-    return result;
+    frame->function = compiled_function;
+    frame->ip = compiled_function->code_chunk.code;
+    frame->slots = VM.stack;
+
+    return run_VM_code();
 }
 
 void push(tll_value value)
@@ -119,6 +129,8 @@ tll_value pop(void)
 
 static tll_interpret_result run_VM_code(void)
 {
+    tll_call_frame* frame = &VM.frames[VM.frame_count - 1];
+
     while (true)
     {
         if (is_trace_flag())
@@ -131,15 +143,15 @@ static tll_interpret_result run_VM_code(void)
                 printf(" ]");
             }
             printf("\n");
-            disassemble_instruction(VM.code_chunk, (int) (VM.ip - VM.code_chunk->code));
+            disassemble_instruction(&frame->function->code_chunk, (int) (frame->ip - frame->function->code_chunk.code));
         }
-        uint8_t instruction = read_byte();
+        uint8_t instruction = read_byte(frame);
 
         switch (instruction)
         {
             case OP_CONSTANT:
             {
-                push(read_constant());
+                push(read_constant(frame));
                 break;
             }
             case OP_NULL:
@@ -164,20 +176,20 @@ static tll_interpret_result run_VM_code(void)
             }
             case OP_DEF_GLOBAL_CONST:
             {
-                set_to_dictionary(&VM.global_consts, read_string(), peek(0));
+                set_to_dictionary(&VM.global_consts, read_string(frame), peek(0));
                 pop();
                 break;
             }
             case OP_DEF_GLOBAL_VAR:
             {
-                set_to_dictionary(&VM.global_vars, read_string(), peek(0));
+                set_to_dictionary(&VM.global_vars, read_string(frame), peek(0));
                 pop();
                 break;
             }
             case OP_GET_GLOBAL:
             {
                 tll_value value;
-                tll_string* name = read_string();
+                tll_string* name = read_string(frame);
 
                 if (get_from_dictionary(&VM.global_vars, name, &value))
                 {
@@ -199,7 +211,7 @@ static tll_interpret_result run_VM_code(void)
             case OP_SET_GLOBAL:
             {
                 tll_value value;
-                tll_string* name = read_string();
+                tll_string* name = read_string(frame);
 
                 if (!get_from_dictionary(&VM.global_vars, name, &value))
                 {
@@ -218,12 +230,12 @@ static tll_interpret_result run_VM_code(void)
             }
             case OP_GET_LOCAL:
             {
-                push(VM.stack[read_byte()]);
+                push(frame->slots[read_byte(frame)]);
                 break;
             }
             case OP_SET_LOCAL:
             {
-                VM.stack[read_byte()] = peek(0);
+                frame->slots[read_byte(frame)] = peek(0);
                 break;
             }
             case OP_EQUAL:
@@ -492,31 +504,31 @@ static tll_interpret_result run_VM_code(void)
             }
             case OP_JMP_BACK:
             {
-                VM.ip -= read_short();
+                frame->ip -= read_short(frame);
                 break;
             }
             case OP_JMP_AHEAD:
             {
-                VM.ip += read_short();
+                frame->ip += read_short(frame);
                 break;
             }
             case OP_JMP_IF_FALSE:
             {
-                uint16_t offset = read_short();
+                uint16_t offset = read_short(frame);
 
                 if (are_equals(AS_TLL_BOOL(false), peek(0)))
                 {
-                    VM.ip += offset;
+                    frame->ip += offset;
                 }
                 break;
             }
             case OP_JMP_IF_TRUE:
             {
-                uint16_t offset = read_short();
+                uint16_t offset = read_short(frame);
 
                 if (are_equals(AS_TLL_BOOL(true), peek(0)))
                 {
-                    VM.ip += offset;
+                    frame->ip += offset;
                 }
                 break;
             }
@@ -528,33 +540,33 @@ static tll_interpret_result run_VM_code(void)
             }
             default:
             {
-                runtime_error("Unkown instruction with op code %i at line %i.", instruction, VM.ip);
+                runtime_error("Unkown instruction with op code %i at line %i.", instruction, frame->ip);
                 return TLL_INTERPRET_RUNTIME_ERROR;
             }
         }
     }
 }
 
-static inline uint8_t read_byte(void)
+static inline uint8_t read_byte(tll_call_frame* frame)
 {
-    return *VM.ip++;
+    return *frame->ip++;
 }
 
-static inline uint16_t read_short(void)
+static inline uint16_t read_short(tll_call_frame* frame)
 {
-    uint8_t high = read_byte();
-    uint8_t low = read_byte();
+    uint8_t high = read_byte(frame);
+    uint8_t low = read_byte(frame);
     return (uint16_t) ((high << 8) | low);
 }
 
-static inline tll_value read_constant(void)
+static inline tll_value read_constant(tll_call_frame* frame)
 {
-    return VM.code_chunk->constants.values[read_short()];
+    return frame->function->code_chunk.constants.values[read_short(frame)];
 }
 
-static inline tll_string* read_string(void)
+static inline tll_string* read_string(tll_call_frame* frame)
 {
-    return AS_TLL_STRING(read_constant());
+    return AS_TLL_STRING(read_constant(frame));
 }
 
 static inline tll_value peek(int distance)
@@ -579,8 +591,9 @@ static void concatenate(void)
 
 static void runtime_error(const char* format, ...)
 {
-    size_t instruction = VM.ip - VM.code_chunk->code - 1;
-    int line = VM.code_chunk->lines[instruction];
+    tll_call_frame* frame = &VM.frames[VM.frame_count - 1];
+    size_t instruction = frame->ip - (uint8_t*) &frame->function->code_chunk - 1;
+    int line = frame->function->code_chunk.lines[instruction];
 
     fprintf(stderr, "[line %i] Execution error: ", line);
 
@@ -599,5 +612,11 @@ static void reset_stack(void)
     VM.stack_capacity = 0;
     VM.stack = NULL;
     VM.stack_top = NULL;
+
+    FREE_ARRAY(tll_call_frame, VM.frames, VM.frame_capacity);
+    VM.frames = NULL;
+    VM.frame_count = 0;
+    VM.frame_capacity = 0;
+
 }
 

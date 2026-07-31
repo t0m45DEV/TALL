@@ -6,11 +6,21 @@
 #include "tll_value.h"
 
 /**
+ * The generic VM call frame for a function.
+ */
+typedef struct {
+    tll_function* function;
+    uint8_t* ip;
+    tll_value* slots;
+} tll_call_frame;
+
+/**
  * The C representation for the TALL VM.
  */
 typedef struct {
-    tll_code_chunk* code_chunk;
-    uint8_t* ip;
+    tll_call_frame* frames;
+    int frame_count;
+    int frame_capacity;
     int stack_capacity;
     tll_value* stack;
     tll_value* stack_top;

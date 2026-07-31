@@ -6,8 +6,8 @@
 #include <stdbool.h>
 
 /**
- * Parse the given source_code, checking for compile errors, generates bytecode for the TALL VM, then saves it on the given code_chunk. Returns true if the compilation went succesful.
+ * Parse the given source_code, checking for compile errors, generates bytecode for the TALL VM, then saves it on the given code_chunk. Returns the pointer to the script fully compiled in the form of a TLL function object, or NULL if any error appeared.
  */
-bool compile_code(const char* source_code, tll_code_chunk* code_chunk);
+tll_function* compile_code(const char* source_code, tll_code_chunk* code_chunk);
 
 #endif
