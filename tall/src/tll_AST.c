@@ -77,6 +77,11 @@ static tll_AST* AST_if_statement(void);
 static tll_AST* AST_block(void);
 
 /**
+ * Parse the current tokens as a type for a variable, returns true if the parsing was alrighty.
+ */
+static bool parse_variable_type(tll_value_type* type);
+
+/**
  * Parse the current tokens as a variable declaration.
  */
 static tll_AST* AST_variable_declaration(bool is_const);
@@ -551,6 +556,32 @@ static tll_AST* AST_block(void)
     return node;
 }
 
+static bool parse_variable_type(tll_value_type* type)
+{
+    if (AST_match(TOKEN_BOOL_TYPE))
+    {
+        *type = VAL_BOOL;
+    }
+    else if (AST_match(TOKEN_INT_TYPE))
+    {
+        *type = VAL_INT;
+    }
+    else if (AST_match(TOKEN_FLOAT_TYPE))
+    {
+        *type = VAL_FLOAT;
+    }
+    else if (AST_match((TOKEN_STRING_TYPE)))
+    {
+        *type = VAL_OBJ;
+    }
+    else
+    {
+        type = NULL;
+        return false;
+    }
+    return true;
+}
+
 static tll_AST* AST_variable_declaration(bool is_const)
 {
     int line = AST_parser.current->line;
@@ -565,25 +596,9 @@ static tll_AST* AST_variable_declaration(bool is_const)
     {
         return AST_error(line, "Expected ':' after variable name.");
     }
-    tll_value_type var_type = VAL_NULL;
+    tll_value_type var_type;
 
-    if (AST_match(TOKEN_BOOL_TYPE))
-    {
-        var_type = VAL_BOOL;
-    }
-    else if (AST_match(TOKEN_INT_TYPE))
-    {
-        var_type = VAL_INT;
-    }
-    else if (AST_match(TOKEN_FLOAT_TYPE))
-    {
-        var_type = VAL_FLOAT;
-    }
-    else if (AST_match((TOKEN_STRING_TYPE)))
-    {
-        var_type = VAL_OBJ;
-    }
-    else
+    if (!parse_variable_type(&var_type))
     {
         return AST_error(line, "Variable must have a valid type.");
     }
