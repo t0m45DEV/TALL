@@ -231,6 +231,10 @@ static tll_token scan_token(void)
             {
                 return make_token(TOKEN_MINUS_EQUAL);
             }
+            else if (match('>'))
+            {
+                return make_token(TOKEN_RIGHT_ARROW);
+            }
             else
             {
                 return make_token(TOKEN_MINUS);
