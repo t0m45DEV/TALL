@@ -592,7 +592,7 @@ static void concatenate(void)
 static void runtime_error(const char* format, ...)
 {
     tll_call_frame* frame = &VM.frames[VM.frame_count - 1];
-    size_t instruction = frame->ip - (uint8_t*) &frame->function->code_chunk - 1;
+    size_t instruction = frame->ip - frame->function->code_chunk.code - 1;
     int line = frame->function->code_chunk.lines[instruction];
 
     fprintf(stderr, "[line %i] Execution error: ", line);
