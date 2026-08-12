@@ -680,7 +680,11 @@ static tll_AST* AST_block(void)
 
 static bool parse_variable_type(tll_value_type* type)
 {
-    if (AST_match(TOKEN_BOOL_TYPE))
+    if (AST_match(TOKEN_NIL))
+    {
+        *type = VAL_NULL;
+    }
+    else if (AST_match(TOKEN_BOOL_TYPE))
     {
         *type = VAL_BOOL;
     }
