@@ -1,6 +1,7 @@
 #include "tll_AST.h"
 
 #include "tll_object.h"
+#include "tll_value.h"
 
 #include <stdio.h>
 
@@ -15,6 +16,11 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
  * Prints out the given operation using the correct ASCII symbol.
  */
 static void print_AST_operation(tll_token_type operation);
+
+/**
+ * Prints out the given TLL value type.
+ */
+static void print_type_from_type(tll_value_type type);
 
 void print_AST(const tll_AST* AST, const char* name)
 {
@@ -271,35 +277,7 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             printf("CONST_DECLARATION (");
             print_value(AS_TLL_OBJ(AST->as.var_declaration.name));
             printf(" ");
-
-            switch (AST->as.var_declaration.type)
-            {
-                case VAL_NULL:
-                {
-                    printf("null");
-                    break;
-                }
-                case VAL_BOOL:
-                {
-                    printf("bool");
-                    break;
-                }
-                case VAL_INT:
-                {
-                    printf("int");
-                    break;
-                }
-                case VAL_FLOAT:
-                {
-                    printf("float");
-                    break;
-                }
-                case VAL_OBJ: // TODO: Better reading type for objects.
-                {
-                    printf("string");
-                    break;
-                }
-            }
+            print_type_from_type(AST->as.var_declaration.type);
             printf(")\n");
             print_AST_recursive(AST->as.var_declaration.expression, child_prefix, true);
             break;
@@ -309,35 +287,7 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             printf("VAR_DECLARATION (");
             print_value(AS_TLL_OBJ(AST->as.var_declaration.name));
             printf(" ");
-
-            switch (AST->as.var_declaration.type)
-            {
-                case VAL_NULL:
-                {
-                    printf("null");
-                    break;
-                }
-                case VAL_BOOL:
-                {
-                    printf("bool");
-                    break;
-                }
-                case VAL_INT:
-                {
-                    printf("int");
-                    break;
-                }
-                case VAL_FLOAT:
-                {
-                    printf("float");
-                    break;
-                }
-                case VAL_OBJ: // TODO: Better reading type for objects.
-                {
-                    printf("string");
-                    break;
-                }
-            }
+            print_type_from_type(AST->as.var_declaration.type);
             printf(")\n");
             print_AST_recursive(AST->as.var_declaration.expression, child_prefix, true);
             break;
@@ -493,6 +443,19 @@ static void print_AST_operation(tll_token_type operation)
             printf("?");
             break;
         }
+    }
+}
+
+static void print_type_from_type(tll_value_type type)
+{
+    if (type == VAL_OBJ)
+    {
+        // TODO: Better object printing
+        printf("string");
+    }
+    else
+    {
+        print_type((tll_value) {type, {}});
     }
 }
 
