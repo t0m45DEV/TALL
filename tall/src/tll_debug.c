@@ -196,11 +196,18 @@ static int constant_instruction(const char* op_name, tll_code_chunk* code_chunk,
     printf("%-20s %4d '", op_name, index);
 
     tll_value value = code_chunk->constants.values[index];
-    print_type(value);
+
+    if (!IS_FUNCTION(value))
+    {
+        print_type(value);
+    }
 
     if (!IS_NULL(value))
     {
-        printf(" ");
+        if (!IS_FUNCTION(value))
+        {
+            printf(" ");
+        }
         print_value(code_chunk->constants.values[index]);
     }
     printf("'\n");
