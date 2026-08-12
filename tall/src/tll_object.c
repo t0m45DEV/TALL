@@ -87,10 +87,6 @@ void free_object(tll_obj* object)
         {
             tll_function* function = (tll_function*) object;
 
-            if (function->name != NULL)
-            {
-                free_object((tll_obj*) function->name);
-            }
             free_code_chunk(&function->code_chunk);
             FREE_ARRAY(tll_value_type, function->arguments_types, function->arity);
             FREE_POINTER(tll_function, function);
