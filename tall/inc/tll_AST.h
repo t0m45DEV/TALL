@@ -22,6 +22,7 @@ typedef enum {
     AST_IF,                // For an 'if' statement.
     AST_WHILE,             // For a while loop.
     AST_FOR,               // For a for loop.
+    AST_FUNC_DECLARATION   // For a function definition.
 } tll_AST_type;
 
 typedef struct tll_AST {
@@ -107,6 +108,16 @@ typedef struct tll_AST {
             struct tll_AST* increment;
             struct tll_AST* code_block;
         } for_loop;
+
+        struct {
+            tll_string* name;
+            struct tll_AST* code_block;
+            tll_value_type return_type;
+            tll_string** parameters_names;
+            tll_value_type* parameters_types;
+            int arity;
+            int parameters_capacity;
+        } function_declaration;
     } as;
 } tll_AST;
 

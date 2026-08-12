@@ -26,7 +26,8 @@ typedef enum {
     TYPE_SCRIPT
 } tll_function_type;
 
-typedef struct {
+typedef struct tll_compiler {
+    struct tll_compiler* enclosing;
     tll_function* function;
     tll_function_type type;
     tll_local_var locals[MAX_LOCAL_COUNT];
@@ -159,8 +160,8 @@ static void compile_AST_node(tll_AST* node);
 
 static void init_compiler(tll_compiler* compiler, tll_function_type type)
 {
+    compiler->enclosing = current_compiler;
     compiler->function = new_function();
-    //compiler->function = NULL;
     compiler->type = type;
     compiler->local_count = 0;
     compiler->scope_depth = 0;
@@ -176,7 +177,9 @@ static void init_compiler(tll_compiler* compiler, tll_function_type type)
 
 static tll_function* end_compiler(void)
 {
-    return current_compiler->function;
+    tll_function* function = current_compiler->function;
+    current_compiler = current_compiler->enclosing;
+    return function;
 }
 
 static inline void compiler_error(const char* message, int line)
@@ -314,7 +317,7 @@ static uint16_t make_constant(tll_value value, int line)
 
 static void emit_constant(tll_value value, int line)
 {
-    if (IS_NUMBER(value) || IS_STRING(value))
+    if (!IS_NULL(value) && !IS_BOOL(value))
     {
         emit_byte(OP_CONSTANT, line);
         uint16_t const_index = make_constant(value, line);
@@ -738,6 +741,24 @@ static void compile_AST_node(tll_AST* node)
 
             // Pop out the while condition.
             emit_byte(OP_POP, node->line);
+            break;
+        }
+        case AST_FUNC_DECLARATION:
+        {
+            if (current_compiler->scope_depth > 0)
+            {
+                compiler_error("Functions can only be defined globally.", node->line);
+                break;
+            }
+            tll_compiler compiler;
+            init_compiler(&compiler, TYPE_FUNCTION);
+            begin_scope();
+            compile_AST_node(node->as.function_declaration.code_block);
+            //end_scope();
+
+            tll_function* function = end_compiler();
+            function->name = node->as.function_declaration.name;
+            emit_constant(AS_TLL_OBJ(function), node->line);
             break;
         }
         default:

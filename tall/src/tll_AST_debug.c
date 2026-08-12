@@ -183,6 +183,11 @@ const tll_AST* get_error(const tll_AST* AST)
             res = get_error(AST->as.for_loop.code_block);
             break;
         }
+        case AST_FUNC_DECLARATION:
+        {
+            res = get_error(AST->as.function_declaration.code_block);
+            break;
+        }
     }
     return res;
 }
@@ -359,6 +364,30 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             print_AST_recursive(AST->as.for_loop.condition, child_prefix, false);
             print_AST_recursive(AST->as.for_loop.increment, child_prefix, false);
             print_AST_recursive(AST->as.for_loop.code_block, child_prefix, true);
+            break;
+        }
+        case AST_FUNC_DECLARATION:
+        {
+            printf("FUNC <");
+            print_value(AS_TLL_OBJ(AST->as.function_declaration.name));
+            printf("(");
+            if (AST->as.function_declaration.arity == 0)
+            {
+                print_value(AS_TLL_NULL);
+            }
+            else
+            {
+                for (int i = 0; i < AST->as.function_declaration.arity - 1; i++)
+                {
+                    print_type_from_type(AST->as.function_declaration.parameters_types[i]);
+                    printf(", ");
+                }
+                print_type_from_type(AST->as.function_declaration.parameters_types[AST->as.function_declaration.arity - 1]);
+            }
+            printf(") -> ");
+            print_type_from_type(AST->as.function_declaration.return_type);
+            printf(">\n");
+            print_AST_recursive(AST->as.function_declaration.code_block, child_prefix, true);
             break;
         }
         default:

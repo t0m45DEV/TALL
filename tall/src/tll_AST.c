@@ -8,6 +8,7 @@
 
 #include <stdatomic.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define EMPTY_NODE ((tll_AST) {AST_UNARY, -1, {.unary.op=0, .unary.operand=0}})
 
@@ -55,6 +56,11 @@ static tll_AST* AST_program(void);
  * Parse the current tokens as an statement.
  */
 static tll_AST* AST_statement(void);
+
+/**
+ * Parse the current tokens as a function declaration.
+ */
+static tll_AST* AST_function_declaration(void);
 
 /**
  * Parse the current tokens as a while loop.
@@ -283,6 +289,16 @@ static void free_AST_recursive(tll_AST* tree)
             free_AST_recursive(tree->as.for_loop.code_block);
             break;
         }
+        case AST_FUNC_DECLARATION:
+        {
+            if (tree->as.function_declaration.arity > 0)
+            {
+                FREE_ARRAY(tll_value_type, tree->as.function_declaration.parameters_types, tree->as.function_declaration.parameters_capacity);
+                FREE_ARRAY(tll_string*, tree->as.function_declaration.parameters_names, tree->as.function_declaration.parameters_capacity);
+            }
+            free_AST_recursive(tree->as.function_declaration.code_block);
+            break;
+        }
     }
 }
 
@@ -346,7 +362,11 @@ static tll_AST* AST_program(void)
 
 static tll_AST* AST_statement(void)
 {
-    if (AST_match(TOKEN_FOR))
+    if (AST_match(TOKEN_FUNC))
+    {
+        return AST_function_declaration();
+    }
+    else if (AST_match(TOKEN_FOR))
     {
         return AST_for_loop();
     }
@@ -379,6 +399,108 @@ static tll_AST* AST_statement(void)
         return AST_variable_assignment(true);
     }
     return AST_expression_statement();
+}
+
+static tll_AST* AST_function_declaration(void)
+{
+    int line = AST_parser.previous->line;
+
+    if (!AST_match(TOKEN_IDENTIFIER))
+    {
+        return AST_error(AST_parser.current->line, "Expected a function name after 'func'.");
+    }
+    tll_string* func_name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
+
+    if (!AST_match(TOKEN_LEFT_PAREN))
+    {
+        return AST_error(AST_parser.current->line, "Expected '(' after function name when declaring a function.");
+    }
+    int arity = 0;
+    int capacity = 0;
+    tll_value_type* parameters_types = NULL;
+    tll_string** parameters_names = NULL;
+
+    if (AST_match(TOKEN_NIL))
+    {
+        arity = 0;
+        capacity = 0;
+    }
+    else
+    {
+        do
+        {
+            if (arity + 1 > capacity)
+            {
+                int old_capacity = capacity;
+                capacity = GROW_CAPACITY(capacity);
+
+                parameters_types = GROW_ARRAY(tll_value_type, parameters_types, old_capacity, capacity);
+                parameters_names = GROW_ARRAY(tll_string*, parameters_names, old_capacity, capacity);
+            }
+            arity++;
+
+            if (!AST_match(TOKEN_IDENTIFIER))
+            {
+                return AST_error(AST_parser.previous->line, "Invalid function argument name.");
+            }
+            tll_string* var_name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
+
+            if (!AST_match(TOKEN_COLON))
+            {
+                return AST_error(AST_parser.previous->line, "Expected ':' after function argument name.");
+            }
+            parameters_names[arity] = var_name;
+
+            tll_value_type var_type;
+
+            if (!parse_variable_type(&var_type))
+            {
+                return AST_error(AST_parser.previous->line, "Function parameter must have a valid type.");
+            }
+            if (var_type == VAL_NULL)
+            {
+                return AST_error(AST_parser.previous->line, "Function parameter can't be of type 'null'.");
+            }
+            parameters_types[arity] = var_type;
+        }
+        while (AST_match(TOKEN_COMMA));
+    }
+
+    if (!AST_match(TOKEN_RIGHT_PAREN))
+    {
+        return AST_error(AST_parser.current->line, "Expected ')' after function arguments.");
+    }
+
+    if (!AST_match(TOKEN_RIGHT_ARROW))
+    {
+        return AST_error(AST_parser.current->line, "Expected '->' and return type after function arguments.");
+    }
+    tll_value_type return_type;
+
+    if (!parse_variable_type(&return_type))
+    {
+        return AST_error(AST_parser.current->line, "Invalid returning type for function declaration.");
+    }
+
+    if (!AST_match(TOKEN_LEFT_BRACE))
+    {
+        return AST_error(AST_parser.current->line, "Expected '{' after function declaration.");
+    }
+    tll_AST* code_block = AST_block();
+
+    tll_AST* node = alloc_node();
+
+    node->line = line;
+    node->type = AST_FUNC_DECLARATION;
+    node->as.function_declaration.name = func_name;
+    node->as.function_declaration.code_block = code_block;
+    node->as.function_declaration.return_type = return_type;
+    node->as.function_declaration.parameters_types = parameters_types;
+    node->as.function_declaration.parameters_names = parameters_names;
+    node->as.function_declaration.parameters_capacity = capacity;
+    node->as.function_declaration.arity = arity;
+
+    return node;
 }
 
 static tll_AST* AST_while_loop(void)
