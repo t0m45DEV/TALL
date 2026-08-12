@@ -125,7 +125,21 @@ void print_type(tll_value value)
         }
         case VAL_OBJ:
         {
-            printf("string");
+            tll_obj* object = AS_C_OBJ(value);
+
+            switch (object->type)
+            {
+                case OBJ_STRING:
+                {
+                    printf("string");
+                    break;
+                }
+                case OBJ_FUNCTION:
+                {
+                    printf("func");
+                    break;
+                }
+            }
             break;
         }
     }
