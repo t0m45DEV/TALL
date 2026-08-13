@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #define MAX_LOCAL_COUNT 256
 
@@ -768,6 +769,18 @@ static void compile_AST_node(tll_AST* node)
             if (current_compiler->scope_depth > 0)
             {
                 compiler_error("Functions can only be defined globally.", node->line);
+                break;
+            }
+            if (strncmp(node->as.function_declaration.name->chars, "main", 4) == 0)
+            {
+                if (node->as.function_declaration.arity > 0 || node->as.function_declaration.return_type != VAL_INT)
+                {
+                    compiler_error("The 'main' function must have type 'func (null) -> int'.", node->line);
+                    break;
+                }
+                begin_scope();
+                compile_AST_node(node->as.function_declaration.code_block);
+                end_scope();
                 break;
             }
             tll_compiler compiler;

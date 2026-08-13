@@ -8,7 +8,6 @@
 
 #include <stdatomic.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define EMPTY_NODE ((tll_AST) {AST_UNARY, -1, {.unary.op=0, .unary.operand=0}})
 
@@ -56,11 +55,6 @@ static tll_AST* AST_program(void);
  * Parse the current tokens as an statement.
  */
 static tll_AST* AST_statement(void);
-
-/**
- * Parse the current tokens as the 'main' function declaration.
- */
-static tll_AST* AST_main_function(void);
 
 /**
  * Parse the current tokens as a function declaration.
@@ -406,40 +400,6 @@ static tll_AST* AST_statement(void)
     return AST_expression_statement();
 }
 
-static tll_AST* AST_main_function(void)
-{
-    if (!AST_match(TOKEN_LEFT_PAREN))
-    {
-        return AST_error(AST_parser.current->line, "Expected '(' after main function declaration name.");
-    }
-
-    if (!AST_match(TOKEN_NIL))
-    {
-        return AST_error(AST_parser.current->line, "Expected 'null' between the parenthesis for the main function declaration.");
-    }
-
-    if (!AST_match(TOKEN_RIGHT_PAREN))
-    {
-        return AST_error(AST_parser.current->line, "Expected ')' after main function arguments declaration.");
-    }
-
-    if (!AST_match(TOKEN_RIGHT_ARROW))
-    {
-        return AST_error(AST_parser.current->line, "Expected '->' after main function name and arguments.");
-    }
-
-    if (!AST_match(TOKEN_INT_TYPE))
-    {
-        return AST_error(AST_parser.current->line, "Expected 'int' as the returning type for the main function.");
-    }
-
-    if (!AST_match(TOKEN_LEFT_BRACE))
-    {
-        return AST_error(AST_parser.current->line, "Expected '{' for function body after declaration.");
-    }
-    return AST_block();
-}
-
 static tll_AST* AST_function_declaration(void)
 {
     int line = AST_parser.previous->line;
@@ -449,11 +409,6 @@ static tll_AST* AST_function_declaration(void)
         return AST_error(AST_parser.current->line, "Expected a function name after 'func'.");
     }
     tll_string* func_name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
-
-    if (strncmp(func_name->chars, "main", 4) == 0)
-    {
-        return AST_main_function();
-    }
 
     if (!AST_match(TOKEN_LEFT_PAREN))
     {
