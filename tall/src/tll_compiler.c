@@ -144,6 +144,11 @@ static void variable_assignment(const tll_string* var_name, int line);
 static void named_variable(const tll_string* var_name, int line);
 
 /**
+ * Checks if the given AST is on the right scope depth (for example, you can't write an if statement on the global scope).
+ */
+static inline bool is_on_invalid_scope(tll_AST* node);
+
+/**
  * Starts a new scope for local variables and code.
  */
 static void begin_scope(void);
@@ -448,6 +453,15 @@ static void named_variable(const tll_string* var_name, int line)
     }
 }
 
+static inline bool is_on_invalid_scope(tll_AST* node)
+{
+    return (current_compiler->scope_depth == 0 &&
+            node->type != AST_PROGRAM &&
+            node->type != AST_VAR_DECLARATION &&
+            node->type != AST_CONST_DECLARATION &&
+            node->type != AST_FUNC_DECLARATION);
+}
+
 static void begin_scope(void)
 {
     current_compiler->scope_depth++;
@@ -466,6 +480,12 @@ static void end_scope(void)
 
 static void compile_AST_node(tll_AST* node)
 {
+    if (is_on_invalid_scope(node))
+    {
+        printf("%i\n", node->type);
+        compiler_error("Code blocks can only be inside functions.", node->line);
+    }
+
     switch (node->type)
     {
         case AST_ERROR:
