@@ -779,6 +779,7 @@ static void compile_AST_node(tll_AST* node)
             tll_function* function = end_compiler();
             function->name = node->as.function_declaration.name;
             emit_constant(AS_TLL_OBJ(function), node->line);
+            define_global_variable(make_constant(AS_TLL_OBJ(function->name), node->line), node->line, true);
             break;
         }
         default:
