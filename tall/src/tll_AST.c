@@ -436,7 +436,6 @@ static tll_AST* AST_function_declaration(void)
                 parameters_types = GROW_ARRAY(tll_value_type, parameters_types, old_capacity, capacity);
                 parameters_names = GROW_ARRAY(tll_string*, parameters_names, old_capacity, capacity);
             }
-            arity++;
 
             if (!AST_match(TOKEN_IDENTIFIER))
             {
@@ -461,6 +460,8 @@ static tll_AST* AST_function_declaration(void)
                 return AST_error(AST_parser.previous->line, "Function parameter can't be of type 'null'.");
             }
             parameters_types[arity] = var_type;
+
+            arity++;
         }
         while (AST_match(TOKEN_COMMA));
     }
