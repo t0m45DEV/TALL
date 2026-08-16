@@ -789,8 +789,7 @@ static void compile_AST_node(tll_AST* node)
 
             for (int i = 0; i < node->as.function_declaration.arity; i++)
             {
-                // Every parameter has an initial value of null, on each call these null's are replaced with the argument passed.
-                emit_byte(OP_NULL, node->line);
+                // Every parameter is already on the stack by the caller.
                 define_local_variable(node->as.function_declaration.parameters_names[i], node->line, false);
             }
             compile_AST_node(node->as.function_declaration.code_block);
