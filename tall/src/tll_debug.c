@@ -168,6 +168,10 @@ int disassemble_instruction(tll_code_chunk* code_chunk, int offset)
         {
             return jump_instruction("OP_JMP_IF_TRUE", code_chunk, offset);
         }
+        case OP_CALL:
+        {
+            return jump_instruction("OP_CALL", code_chunk, offset);
+        }
         case OP_RETURN:
         {
             return simple_instruction("OP_RETURN", offset);

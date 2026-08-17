@@ -532,11 +532,56 @@ static tll_interpret_result run_VM_code(void)
                 }
                 break;
             }
+            case OP_CALL:
+            {
+                uint16_t arg_count = read_short(frame);
+                tll_value func = peek(arg_count);
+
+                if (func.type == VAL_OBJ && func.as.obj->type == OBJ_FUNCTION)
+                {
+                    tll_function* callable = AS_TLL_FUNCTION(func);
+
+                    if (callable->arity != arg_count)
+                    {
+                        runtime_error("Wrong argument count for a function call, expected %i but %i were given.", callable->arity, arg_count);
+                        return TLL_INTERPRET_RUNTIME_ERROR;
+                    }
+                    else
+                    {
+                        tll_call_frame* callee_frame = &VM.frames[VM.frame_count++];
+
+                        callee_frame->function = callable;
+                        callee_frame->ip = callable->code_chunk.code;
+                        callee_frame->slots = VM.stack_top - arg_count - 1;
+
+                        frame = &VM.frames[VM.frame_count - 1];
+                    }
+                }
+                else
+                {
+                    runtime_error("Tried to call a non callable object.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                break;
+            }
             case OP_RETURN:
             {
-                print_value(pop());
-                printf("\n");
-                return TLL_INTERPRET_OK;
+                tll_value result = pop();
+
+                VM.frame_count--;
+
+                if (VM.frame_count == 0)
+                {
+                    // We pop the top-level <script> value at the start of the stack.
+                    pop();
+                    return TLL_INTERPRET_OK;
+                }
+                VM.stack_top = frame->slots;
+
+                push(result);
+
+                frame = &VM.frames[VM.frame_count - 1];
+                break;
             }
             default:
             {

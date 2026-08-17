@@ -1,1 +1,7 @@
-return !true;
+
+func main(null) -> int
+{
+    var b : bool = !true;
+    return 0;
+}
+

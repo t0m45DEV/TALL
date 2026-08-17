@@ -1,14 +1,18 @@
-const limit : int = 10;
-var n : int = 0;
 
-for (var i : int = 0; i < limit; i++)
+func main(null) -> int
 {
-    if (i != 5)
-    {
-        n += i;
-    }
-}
-n = n + 5;
+    const limit : int = 10;
+    var n : int = 0;
 
-return n;
+    for (var i : int = 0; i < limit; i++)
+    {
+        if (i != 5)
+        {
+            n += i;
+        }
+    }
+    n = n + 5;
+
+    return n;
+}
 

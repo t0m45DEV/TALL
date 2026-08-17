@@ -1,3 +1,8 @@
-var concat : string = "he" + "llo, " + "wo" + "rld";
-var target : string = "hello, world";
-return concat == target;
+
+func main(null) -> int
+{
+    var concat : string = "he" + "llo, " + "wo" + "rld";
+    var target : string = "hello, world";
+    return concat == target;
+}
+

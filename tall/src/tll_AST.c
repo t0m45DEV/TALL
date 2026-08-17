@@ -57,6 +57,11 @@ static tll_AST* AST_program(void);
 static tll_AST* AST_statement(void);
 
 /**
+ * Parse the current tokens as a function call, including it's arguments.
+ */
+static tll_AST* AST_function_call(bool check_semicolon);
+
+/**
  * Parse the current tokens as a function declaration.
  */
 static tll_AST* AST_function_declaration(void);
@@ -298,6 +303,18 @@ static void free_AST_recursive(tll_AST* tree)
             free_AST_recursive(tree->as.function_declaration.code_block);
             break;
         }
+        case AST_FUNC_CALL:
+        {
+            if (tree->as.function_call.arguments_count > 0)
+            {
+                for (int i = 0; i < tree->as.function_call.arguments_count; i++)
+                {
+                    free_AST_recursive(tree->as.function_call.arguments[i]);
+                }
+                FREE_ARRAY(tll_AST*, tree->as.function_call.arguments, tree->as.function_call.arguments_capacity);
+            }
+            break;
+        }
     }
 }
 
@@ -395,9 +412,65 @@ static tll_AST* AST_statement(void)
     }
     else if (AST_match(TOKEN_IDENTIFIER))
     {
+        if (AST_check(TOKEN_LEFT_PAREN))
+        {
+            return AST_function_call(true);
+        }
         return AST_variable_assignment(true);
     }
     return AST_expression_statement();
+}
+
+static tll_AST* AST_function_call(bool check_semicolon)
+{
+    int line = AST_parser.previous->line;
+    tll_string* func_name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
+
+    if (!AST_match(TOKEN_LEFT_PAREN))
+    {
+        return AST_error(AST_parser.current->line, "Expected '(' after function name.");
+    }
+    tll_AST** arguments = NULL;
+    int argument_count = 0;
+    int argument_capacity = 0;
+
+    do
+    {
+        if (argument_count + 1 > argument_capacity)
+        {
+            int old_capacity = argument_capacity;
+            argument_capacity = GROW_CAPACITY(argument_capacity);
+
+            arguments = GROW_ARRAY(tll_AST*, arguments, old_capacity, argument_capacity);
+        }
+        arguments[argument_count] = AST_expression();
+
+        argument_count++;
+    }
+    while (AST_match(TOKEN_COMMA));
+
+    if (!AST_match(TOKEN_RIGHT_PAREN))
+    {
+        return AST_error(AST_parser.current->line, "Expected ')' after function arguments.");
+    }
+
+    if (check_semicolon)
+    {
+        if (!AST_match(TOKEN_SEMICOLON))
+        {
+            return AST_error(AST_parser.current->line, "Expected ';' after function call.");
+        }
+    }
+    tll_AST* node = alloc_node();
+
+    node->line = line;
+    node->type = AST_FUNC_CALL;
+    node->as.function_call.name = func_name;
+    node->as.function_call.arguments_count = argument_count;
+    node->as.function_call.arguments_capacity = argument_capacity;
+    node->as.function_call.arguments = arguments;
+
+    return node;
 }
 
 static tll_AST* AST_function_declaration(void)
@@ -1164,6 +1237,10 @@ static tll_AST* AST_primary(void)
     // Identifier
     if (AST_match(TOKEN_IDENTIFIER))
     {
+        if (AST_check(TOKEN_LEFT_PAREN))
+        {
+            return AST_function_call(false);
+        }
         tll_AST* node = alloc_node();
         node->type = AST_VAR_NAME;
         node->line = AST_parser.previous->line;

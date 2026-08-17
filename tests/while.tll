@@ -1,19 +1,22 @@
-const limit : int = 10;
-var n : int = 0;
 
+func main(null) -> int
 {
-    var i : int = 0;
+    const limit : int = 10;
+    var n : int = 0;
 
-    while (i < limit)
     {
-        if (i != 5)
-        {
-            n += i;
-        }
-        i++;
-    }
-    n = n + 5;
-}
+        var i : int = 0;
 
-return n;
+        while (i < limit)
+        {
+            if (i != 5)
+            {
+                n += i;
+            }
+            i++;
+        }
+        n = n + 5;
+    }
+    return n;
+}
 

@@ -188,6 +188,19 @@ const tll_AST* get_error(const tll_AST* AST)
             res = get_error(AST->as.function_declaration.code_block);
             break;
         }
+        case AST_FUNC_CALL:
+        {
+            for (int i = 0; i < AST->as.function_call.arguments_count; i++)
+            {
+                res = get_error(AST->as.function_call.arguments[i]);
+
+                if (res != NULL)
+                {
+                    break;
+                }
+            }
+            break;
+        }
     }
     return res;
 }
@@ -388,6 +401,23 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             print_type_from_type(AST->as.function_declaration.return_type);
             printf(">\n");
             print_AST_recursive(AST->as.function_declaration.code_block, child_prefix, true);
+            break;
+        }
+        case AST_FUNC_CALL:
+        {
+            printf("CALL ");
+            print_value(AS_TLL_OBJ(AST->as.function_call.name));
+            printf("\n");
+
+            if (AST->as.function_call.arguments_count > 0)
+            {
+                for (int i = 0; i < AST->as.function_call.arguments_count - 1; i++)
+                {
+                    print_AST_recursive(AST->as.function_call.arguments[i], child_prefix, false);
+                    printf(", ");
+                }
+                print_AST_recursive(AST->as.function_call.arguments[AST->as.function_call.arguments_count - 1], child_prefix, true);
+            }
             break;
         }
         default:

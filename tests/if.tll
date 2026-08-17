@@ -1,18 +1,23 @@
-var a : int = 2;
-var b : int = 3;
 
-var message : string = "before if";
+func main(null) -> int
+{
+    var a : int = 2;
+    var b : int = 3;
 
-if (true and a == b)
-{
-    message = "true branch!";
+    var message : string = "before if";
+
+    if (true and a == b)
+    {
+        message = "true branch!";
+    }
+    else if (a > b)
+    {
+        message = "else if branch!";
+    }
+    else
+    {
+        message = "false branch!";
+    }
+    return message;
 }
-else if (a > b)
-{
-    message = "else if branch!";
-}
-else
-{
-    message = "false branch!";
-}
-return message;
+

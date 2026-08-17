@@ -1,2 +1,7 @@
-var res : int = (-1 + 2) * 3 - -4 == (9 + 5) / 2;
-return res;
+
+func main(null) -> int
+{
+    var res : int = (-1 + 2) * 3 - -4 == (9 + 5) / 2;
+    return res;
+}
+

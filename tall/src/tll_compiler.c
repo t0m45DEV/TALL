@@ -483,7 +483,6 @@ static void compile_AST_node(tll_AST* node)
 {
     if (is_on_invalid_scope(node))
     {
-        printf("%i\n", node->type);
         compiler_error("Code blocks can only be inside functions.", node->line);
     }
 
@@ -800,6 +799,19 @@ static void compile_AST_node(tll_AST* node)
             function->arity = node->as.function_declaration.arity;
             emit_constant(AS_TLL_OBJ(function), node->line);
             define_global_variable(make_constant(AS_TLL_OBJ(function->name), node->line), node->line, true);
+            break;
+        }
+        case AST_FUNC_CALL:
+        {
+            emit_byte(OP_GET_GLOBAL, node->line);
+            emit_short(make_constant(AS_TLL_OBJ(node->as.function_call.name), node->line), node->line);
+
+            for (int i = 0; i < node->as.function_call.arguments_count; i++)
+            {
+                compile_AST_node(node->as.function_call.arguments[i]);
+            }
+            emit_byte(OP_CALL, node->line);
+            emit_short(node->as.function_call.arguments_count, node->line);
             break;
         }
         default:

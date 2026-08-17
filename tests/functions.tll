@@ -1,0 +1,17 @@
+
+func my_function(name : string) -> string
+{
+    return "Hello, " + name + "!";
+}
+
+func main(null) -> int
+{
+    var n : int = 0;
+
+    for (var i : int = 0; i < 10; i++)
+    {
+        n = n + i;
+    }
+    return my_function("Tom");
+}
+
