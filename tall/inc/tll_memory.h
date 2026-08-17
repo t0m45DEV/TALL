@@ -11,7 +11,7 @@
 /**
  * Allocates a new block of memory for pointer given the current and the desired capacity.
  */
-#define GROW_ARRAY(type, pointer, old_capacity, new_capacity) ((type*) reallocate(pointer, sizeof(type) * old_capacity, sizeof(type) * new_capacity))
+#define GROW_ARRAY(type, pointer, old_capacity, new_capacity) ((type*) reallocate(pointer, sizeof(type) * (old_capacity), sizeof(type) * (new_capacity)))
 
 /**
  * Frees the memory of size old_capacity being used by the given pointer.
@@ -21,7 +21,7 @@
 /**
  * Returns a type pointer to a memory chunk of size count.
  */
-#define ALLOCATE_ARRAY(type, count) ((type*) reallocate(NULL, 0, sizeof(type) * count))
+#define ALLOCATE_ARRAY(type, count) ((type*) reallocate(NULL, 0, sizeof(type) * (count)))
 
 /**
  * Returns a type pointer to a memory location big enough to locate one instance of the given type.
