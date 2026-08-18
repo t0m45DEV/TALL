@@ -59,7 +59,7 @@ static tll_AST* AST_statement(void);
 /**
  * Parse the current tokens as a function call, including it's arguments.
  */
-static tll_AST* AST_function_call(bool check_semicolon);
+static tll_AST* AST_function_call(void);
 
 /**
  * Parse the current tokens as a function declaration.
@@ -414,14 +414,15 @@ static tll_AST* AST_statement(void)
     {
         if (AST_check(TOKEN_LEFT_PAREN))
         {
-            return AST_function_call(true);
+            // A function call ignoring the result.
+            return AST_expression_statement();
         }
         return AST_variable_assignment(true);
     }
     return AST_expression_statement();
 }
 
-static tll_AST* AST_function_call(bool check_semicolon)
+static tll_AST* AST_function_call(void)
 {
     int line = AST_parser.previous->line;
     tll_string* func_name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
@@ -452,14 +453,6 @@ static tll_AST* AST_function_call(bool check_semicolon)
     if (!AST_match(TOKEN_RIGHT_PAREN))
     {
         return AST_error(AST_parser.current->line, "Expected ')' after function arguments.");
-    }
-
-    if (check_semicolon)
-    {
-        if (!AST_match(TOKEN_SEMICOLON))
-        {
-            return AST_error(AST_parser.current->line, "Expected ';' after function call.");
-        }
     }
     tll_AST* node = alloc_node();
 
@@ -986,7 +979,16 @@ static tll_AST* AST_expression_statement(void)
 {
     int line = AST_parser.previous->line;
 
-    tll_AST* expr = AST_expression();
+    tll_AST* expr = NULL;
+
+    if (AST_parser.previous->type == TOKEN_IDENTIFIER && AST_check(TOKEN_LEFT_PAREN))
+    {
+        expr = AST_function_call();
+    }
+    else
+    {
+        expr = AST_expression();
+    }
 
     if (!AST_match(TOKEN_SEMICOLON))
     {
@@ -1239,7 +1241,7 @@ static tll_AST* AST_primary(void)
     {
         if (AST_check(TOKEN_LEFT_PAREN))
         {
-            return AST_function_call(false);
+            return AST_function_call();
         }
         tll_AST* node = alloc_node();
         node->type = AST_VAR_NAME;
