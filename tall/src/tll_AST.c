@@ -435,20 +435,23 @@ static tll_AST* AST_function_call(void)
     int argument_count = 0;
     int argument_capacity = 0;
 
-    do
+    if (!AST_check(TOKEN_RIGHT_PAREN))
     {
-        if (argument_count + 1 > argument_capacity)
+        do
         {
-            int old_capacity = argument_capacity;
-            argument_capacity = GROW_CAPACITY(argument_capacity);
+            if (argument_count + 1 > argument_capacity)
+            {
+                int old_capacity = argument_capacity;
+                argument_capacity = GROW_CAPACITY(argument_capacity);
 
-            arguments = GROW_ARRAY(tll_AST*, arguments, old_capacity, argument_capacity);
+                arguments = GROW_ARRAY(tll_AST*, arguments, old_capacity, argument_capacity);
+            }
+            arguments[argument_count] = AST_expression();
+
+            argument_count++;
         }
-        arguments[argument_count] = AST_expression();
-
-        argument_count++;
+        while (AST_match(TOKEN_COMMA));
     }
-    while (AST_match(TOKEN_COMMA));
 
     if (!AST_match(TOKEN_RIGHT_PAREN))
     {
