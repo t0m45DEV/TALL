@@ -3,6 +3,7 @@
 
 #include "tll_code_chunk.h"
 #include "tll_dictionary.h"
+#include "tll_object.h"
 #include "tll_value.h"
 
 /**
@@ -61,5 +62,10 @@ void push(tll_value value);
  * Returns the current value at the top of the TALL VM stack, and delets it.
  */
 tll_value pop(void);
+
+/**
+ * Adds the given function with the given parameters types to the TLL VM global variables table.
+ */
+void define_native_function(const char* name, int name_len, native_function function, int arg_count, const tll_value parameters[]);
 
 #endif

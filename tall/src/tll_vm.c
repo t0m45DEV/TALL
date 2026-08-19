@@ -127,6 +127,15 @@ tll_value pop(void)
     return *VM.stack_top;
 }
 
+void define_native_function(const char* name, int name_len, native_function function, int arg_count, const tll_value parameters[])
+{
+    push(AS_TLL_OBJ(copy_string(name, name_len)));
+    push(AS_TLL_OBJ(new_native_function(function, arg_count, parameters)));
+    set_to_dictionary(&VM.global_consts, AS_TLL_STRING(VM.stack[0]), VM.stack[1]);
+    pop();
+    pop();
+}
+
 static tll_interpret_result run_VM_code(void)
 {
     tll_call_frame* frame = &VM.frames[VM.frame_count - 1];
