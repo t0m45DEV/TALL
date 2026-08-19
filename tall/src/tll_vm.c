@@ -569,6 +569,7 @@ static tll_interpret_result run_VM_code(void)
                 tll_value result = pop();
 
                 VM.frame_count--;
+                VM.stack_top = frame->slots;
 
                 if (VM.frame_count == 0)
                 {
@@ -576,11 +577,11 @@ static tll_interpret_result run_VM_code(void)
                     pop();
                     return TLL_INTERPRET_OK;
                 }
-                VM.stack_top = frame->slots;
-
-                push(result);
-
-                frame = &VM.frames[VM.frame_count - 1];
+                else
+                {
+                    push(result);
+                    frame = &VM.frames[VM.frame_count - 1];
+                }
                 break;
             }
             default:
