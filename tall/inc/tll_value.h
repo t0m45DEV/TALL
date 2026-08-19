@@ -25,6 +25,7 @@
 typedef struct tll_obj tll_obj;
 typedef struct tll_string tll_string;
 typedef struct tll_function tll_function;
+typedef struct tll_native_function tll_native_function;
 
 /**
  * The posible types for the data on TALL.
@@ -78,6 +79,11 @@ void write_value_array(tll_value_array* value_array, tll_value value);
  * Returns true if the two given values are equal.
  */
 bool are_equals(const tll_value value1, const tll_value value2);
+
+/**
+ * Returns true if the two given values have the same type.
+ */
+bool same_type(const tll_value value1, const tll_value value2);
 
 /**
  * Prints out to the standard output the given value.

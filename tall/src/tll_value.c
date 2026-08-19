@@ -60,6 +60,17 @@ bool are_equals(const tll_value value1, const tll_value value2)
     return false; // Unreachable.
 }
 
+bool same_type(const tll_value value1, const tll_value value2)
+{
+    return ((IS_NULL(value1) && IS_NULL(value2)) ||
+            (IS_BOOL(value2) && IS_BOOL(value2)) ||
+            (IS_INT(value1) && IS_INT(value2)) ||
+            (IS_FLOAT(value1) && IS_FLOAT(value2)) ||
+            (IS_STRING(value1) && IS_STRING(value2)) ||
+            (IS_FUNCTION(value1) && IS_FUNCTION(value2)) ||
+            (IS_NATIVE(value1) && IS_NATIVE(value2)));
+}
+
 void print_value(tll_value value)
 {
     switch (value.type)
@@ -137,6 +148,11 @@ void print_type(tll_value value)
                 case OBJ_FUNCTION:
                 {
                     printf("func");
+                    break;
+                }
+                case OBJ_NATIVE:
+                {
+                    printf("native");
                     break;
                 }
             }
