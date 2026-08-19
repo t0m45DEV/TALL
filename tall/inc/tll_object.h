@@ -43,7 +43,7 @@ struct tll_function {
     tll_string* name;
 };
 
-typedef tll_value (*native_function)(int arg_count, tll_value* args);
+typedef tll_value (*native_function)(int arg_count, const tll_value* args);
 
 struct tll_native_function {
     tll_obj obj;

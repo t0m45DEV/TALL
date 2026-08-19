@@ -8,14 +8,14 @@
 /**
  * Returns the time passed since the program started.
  */
-static tll_value native_clock(int arg_count, tll_value* args);
+static tll_value native_clock(int arg_count, const tll_value* args);
 
 void load_tll_std_lib(void)
 {
     define_native_function("clock", 5, native_clock, 0, NULL);
 }
 
-static tll_value native_clock(int arg_count, tll_value* args)
+static tll_value native_clock(int arg_count, const tll_value* args)
 {
     if (arg_count != 0 && args != NULL)
     {
