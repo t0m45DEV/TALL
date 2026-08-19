@@ -563,6 +563,12 @@ static tll_interpret_result run_VM_code(void)
                             }
                             else
                             {
+                                if (VM.frame_count + 1 > VM.frame_capacity)
+                                {
+                                    int old_capacity = VM.frame_capacity;
+                                    VM.frame_capacity = GROW_CAPACITY(VM.frame_capacity);
+                                    VM.frames = GROW_ARRAY(tll_call_frame, VM.frames, old_capacity, VM.frame_capacity);
+                                }
                                 tll_call_frame* callee_frame = &VM.frames[VM.frame_count++];
 
                                 callee_frame->function = callable;
