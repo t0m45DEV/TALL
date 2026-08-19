@@ -537,29 +537,55 @@ static tll_interpret_result run_VM_code(void)
                 uint16_t arg_count = read_short(frame);
                 tll_value func = peek(arg_count);
 
-                if (func.type == VAL_OBJ && func.as.obj->type == OBJ_FUNCTION)
+                if (func.type == VAL_OBJ)
                 {
-                    tll_function* callable = AS_TLL_FUNCTION(func);
-
-                    if (callable->arity != arg_count)
+                    switch (func.as.obj->type)
                     {
-                        runtime_error("Wrong argument count for a function call, expected %i but %i were given.", callable->arity, arg_count);
-                        return TLL_INTERPRET_RUNTIME_ERROR;
-                    }
-                    else
-                    {
-                        tll_call_frame* callee_frame = &VM.frames[VM.frame_count++];
+                        case OBJ_FUNCTION:
+                        {
+                            tll_function* callable = AS_TLL_FUNCTION(func);
 
-                        callee_frame->function = callable;
-                        callee_frame->ip = callable->code_chunk.code;
-                        callee_frame->slots = VM.stack_top - arg_count - 1;
+                            if (callable->arity != arg_count)
+                            {
+                                runtime_error("Wrong argument count for a function call, expected %i but %i were given.", callable->arity, arg_count);
+                                return TLL_INTERPRET_RUNTIME_ERROR;
+                            }
+                            else
+                            {
+                                tll_call_frame* callee_frame = &VM.frames[VM.frame_count++];
 
-                        frame = &VM.frames[VM.frame_count - 1];
+                                callee_frame->function = callable;
+                                callee_frame->ip = callable->code_chunk.code;
+                                callee_frame->slots = VM.stack_top - arg_count - 1;
+
+                                frame = &VM.frames[VM.frame_count - 1];
+                            }
+                            break;
+                        }
+                        case OBJ_NATIVE:
+                        {
+                            tll_native_function* native = AS_TLL_NATIVE(func);
+
+                            if (!check_types(native, arg_count, VM.stack_top - arg_count))
+                            {
+                                runtime_error("Wrong argument type for a native function.");
+                                return TLL_INTERPRET_RUNTIME_ERROR;
+                            }
+                            tll_value result = native->function(arg_count, VM.stack_top - arg_count);
+                            VM.stack_top -= arg_count + 1;
+                            push(result);
+                            break;
+                        }
+                        default:
+                        {
+                            runtime_error("Only functions can be called.");
+                            return TLL_INTERPRET_RUNTIME_ERROR;
+                        }
                     }
                 }
                 else
                 {
-                    runtime_error("Tried to call a non callable object.");
+                    runtime_error("Tried to call a non callable data type.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
                 break;
