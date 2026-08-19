@@ -73,6 +73,44 @@ tll_function* new_function(void)
     return function;
 }
 
+tll_native_function* new_native_function(native_function function, int parameter_count, const tll_value parameters[])
+{
+    tll_native_function* native = ALLOCATE_OBJ(tll_native_function, OBJ_NATIVE);
+    native->function = function;
+    native->parameter_count = parameter_count;
+
+    if (parameter_count > 0)
+    {
+        native->parameters = ALLOCATE_ARRAY(tll_value, parameter_count);
+    }
+    else
+    {
+        native->parameters = NULL;
+    }
+
+    for (int i = 0; i < parameter_count; i++)
+    {
+        native->parameters[i] = parameters[i];
+    }
+    return native;
+}
+
+bool check_types(const tll_native_function* native, int arg_count, const tll_value* args)
+{
+    if (native->parameter_count != arg_count)
+    {
+        return false;
+    }
+    for (int i = 0; i < arg_count; i++)
+    {
+        if (!same_type(native->parameters[i], args[i]))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 void free_object(tll_obj* object)
 {
     switch (object->type)
@@ -92,6 +130,14 @@ void free_object(tll_obj* object)
             FREE_POINTER(tll_function, function);
             break;
         }
+        case OBJ_NATIVE:
+        {
+            tll_native_function* native = (tll_native_function*) object;
+
+            FREE_ARRAY(tll_value, native->parameters, native->parameter_count);
+            FREE_POINTER(tll_native_function, object);
+            break;
+        }
     }
 }
 
@@ -107,6 +153,11 @@ void print_object(tll_value value)
         case OBJ_FUNCTION:
         {
             print_function(*AS_TLL_FUNCTION(value));
+            break;
+        }
+        case OBJ_NATIVE:
+        {
+            printf("<native func>");
             break;
         }
     }

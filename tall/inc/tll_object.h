@@ -9,15 +9,19 @@
 
 #define IS_STRING(value)   (is_obj_type((value), OBJ_STRING))
 #define IS_FUNCTION(value) (is_obj_type((value), OBJ_FUNCTION))
+#define IS_NATIVE(value)   (is_obj_type((value), OBJ_NATIVE))
 
 #define AS_TLL_STRING(value)  ((tll_string*) AS_C_OBJ(value))
 #define AS_C_STRING(value) (((tll_string*) AS_C_OBJ(value))->chars)
 
 #define AS_TLL_FUNCTION(value) ((tll_function*) AS_C_OBJ(value))
 
+#define AS_TLL_NATIVE(value) ((tll_native_function*) AS_C_OBJ(value))
+
 typedef enum {
     OBJ_STRING,
     OBJ_FUNCTION,
+    OBJ_NATIVE,
 } tll_obj_type;
 
 struct tll_obj {
@@ -39,6 +43,15 @@ struct tll_function {
     tll_string* name;
 };
 
+typedef tll_value (*native_function)(int arg_count, tll_value* args);
+
+struct tll_native_function {
+    tll_obj obj;
+    native_function function;
+    int parameter_count;
+    tll_value* parameters;
+};
+
 static inline bool is_obj_type(tll_value value, tll_obj_type type)
 {
     return IS_OBJ(value) && (OBJ_TYPE(value) == type);
@@ -58,6 +71,16 @@ tll_string* copy_string(const char* chars, int length);
  * Creates a TLL function object.
  */
 tll_function* new_function(void);
+
+/**
+ * Creates a TLL native function object.
+ */
+tll_native_function* new_native_function(native_function function, int parameter_count, const tll_value parameters[]);
+
+/**
+ * Checks the given values types with the parameters types for the given native function.
+ */
+bool check_types(const tll_native_function* native, int arg_count, const tll_value* args);
 
 /**
  * Frees the memory used by the given object.
