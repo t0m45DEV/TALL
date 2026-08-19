@@ -10,6 +10,7 @@
 #include "tll_compiler.h"
 #include "tll_flags.h"
 
+#include <stddef.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -115,9 +116,22 @@ void push(tll_value value)
     {
         int top_offset = VM.stack_top - VM.stack;
         int old_capacity = VM.stack_capacity;
+        tll_value* old_stack = VM.stack;
+
         VM.stack_capacity = GROW_CAPACITY(old_capacity);
         VM.stack = GROW_ARRAY(tll_value, VM.stack, old_capacity, VM.stack_capacity);
         VM.stack_top = VM.stack + top_offset;
+
+        // If a new block of memory has been allocated, we need to fix slots.
+        if (VM.stack != old_stack)
+        {
+            ptrdiff_t delta = VM.stack - old_stack;
+
+            for (int i = 0; i < VM.frame_count; i++)
+            {
+                VM.frames[i].slots += delta;
+            }
+        }
     }
     *VM.stack_top = value;
     VM.stack_top++;
