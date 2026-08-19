@@ -3,6 +3,7 @@
 #include "tll_code_chunk.h"
 #include "tll_debug.h"
 #include "tll_dictionary.h"
+#include "tll_standard_library.h"
 #include "tll_value.h"
 #include "tll_object.h"
 #include "tll_memory.h"
@@ -66,6 +67,7 @@ void init_VM(void)
 {
     init_dictionary(&VM.global_vars);
     init_dictionary(&VM.global_consts);
+    load_tll_std_lib();
     init_object_pool();
     reset_stack();
 }
