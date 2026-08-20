@@ -58,6 +58,11 @@ static inline bool is_obj_type(tll_value value, tll_obj_type type)
 }
 
 /**
+ * A type-only string value, used purely as a type tag when needed.
+ */
+extern const tll_string TLL_TYPE_STRING;
+
+/**
  * Returns a TLL string object using directly the given character pointer of size length.
  */
 tll_string* take_string(char* chars, int length);

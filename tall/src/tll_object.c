@@ -10,6 +10,12 @@
 
 #define ALLOCATE_OBJ(type, object_type) ((type*) allocate_object(sizeof(type), object_type))
 
+const tll_string TLL_TYPE_STRING = {
+    .obj = {.type = OBJ_STRING},
+    .length = 0,
+    .chars = ""
+};
+
 /**
  * A linked list object collection to track the objects being allocated at the heap.
  */
