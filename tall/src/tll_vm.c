@@ -68,9 +68,9 @@ void init_VM(void)
 {
     init_dictionary(&VM.global_vars);
     init_dictionary(&VM.global_consts);
-    load_tll_std_lib();
     init_object_pool();
     reset_stack();
+    load_tll_std_lib();
 }
 
 void free_VM(void)
