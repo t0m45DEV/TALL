@@ -630,8 +630,6 @@ static tll_interpret_result run_VM_code(void)
 
                 if (VM.frame_count == 0)
                 {
-                    // We pop the top-level <script> value at the start of the stack.
-                    pop();
                     return TLL_INTERPRET_OK;
                 }
                 else
