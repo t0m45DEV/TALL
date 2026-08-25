@@ -154,11 +154,13 @@ void define_native_function(const char* name, int name_len, native_function func
 
 static tll_interpret_result run_VM_code(void)
 {
+    const bool is_trace = is_trace_flag();
+
     tll_call_frame* frame = &VM.frames[VM.frame_count - 1];
 
     while (true)
     {
-        if (is_trace_flag())
+        if (is_trace)
         {
             printf("          ");
             for (tll_value* slot = VM.stack; slot < VM.stack_top; slot++)
