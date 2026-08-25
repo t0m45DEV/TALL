@@ -5,6 +5,8 @@
 #include "tll_value.h"
 #include "tll_code_chunk.h"
 
+#include <stdint.h>
+
 #define OBJ_TYPE(value) (AS_C_OBJ(value)->type)
 
 #define IS_STRING(value)   (is_obj_type((value), OBJ_STRING))
@@ -32,6 +34,7 @@ struct tll_string {
     tll_obj obj;
     int length;
     char* chars;
+    uint32_t hash;
 };
 
 struct tll_function {
@@ -71,6 +74,11 @@ tll_string* take_string(char* chars, int length);
  * Creates a TLL string object based on the given array of characters with size length.
  */
 tll_string* copy_string(const char* chars, int length);
+
+/**
+ * Returns the hash to the given key.
+ */
+uint32_t get_hash(const char* key, int length);
 
 /**
  * Creates a TLL function object.

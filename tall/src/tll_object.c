@@ -1,7 +1,6 @@
 #include "tll_object.h"
 
 #include "tll_code_chunk.h"
-#include "tll_dictionary.h"
 #include "tll_memory.h"
 #include "tll_value.h"
 
@@ -13,7 +12,8 @@
 const tll_string TLL_TYPE_STRING = {
     .obj = {.type = OBJ_STRING},
     .length = 0,
-    .chars = ""
+    .chars = "",
+    .hash = 2166136261u,
 };
 
 /**
@@ -64,6 +64,18 @@ tll_string* copy_string(const char* chars, int length)
     heap_chars[length] = '\0';
 
     return allocate_string(heap_chars, length);
+}
+
+uint32_t get_hash(const char* key, int length)
+{
+    uint32_t hash = 2166136261u;
+
+    for (int i = 0; i < length; i++)
+    {
+        hash = hash ^ (uint8_t) key[i];
+        hash = hash * 16777619;
+    }
+    return hash;
 }
 
 tll_function* new_function(void)
@@ -209,6 +221,7 @@ static tll_string* allocate_string(char* chars, int length)
     tll_string* string = ALLOCATE_OBJ(tll_string, OBJ_STRING);
     string->length = length;
     string->chars = chars;
+    string->hash = get_hash(chars, length);
 
     return string;
 }

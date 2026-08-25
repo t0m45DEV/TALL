@@ -13,11 +13,6 @@
 #define DICT_TOMBSTONE  ((tll_dict_entry) {.key = NULL, .value = AS_TLL_BOOL(true)})
 
 /**
- * Returns the hash for the given key.
- */
-static uint32_t get_hash(const char* key, int length);
-
-/**
  * Returns the entry inside the entries array with the same key as the given one.
  *
  * Returns NULL if not found.
@@ -151,7 +146,7 @@ tll_string* dictionary_find_string(tll_dictionary* dictionary, const char* chars
 
         if (!is_tombstone_entry(entry))
         {
-            uint32_t entry_hash = get_hash(entry->key->chars, entry->key->length);
+            uint32_t entry_hash = entry->key->hash;
 
             if (entry->key->length == length && entry_hash == chars_hash && memcmp(entry->key->chars, chars, length) == 0)
             {
@@ -164,21 +159,9 @@ tll_string* dictionary_find_string(tll_dictionary* dictionary, const char* chars
     return found;
 }
 
-static uint32_t get_hash(const char* key, int length)
-{
-    uint32_t hash = 2166136261u;
-
-    for (int i = 0; i < length; i++)
-    {
-        hash = hash ^ (uint8_t) key[i];
-        hash = hash * 16777619;
-    }
-    return hash;
-}
-
 static tll_dict_entry* find_entry(tll_dict_entry* entries, int capacity, tll_string* key)
 {
-    uint32_t index = get_hash(key->chars, key->length) % capacity;
+    uint32_t index = key->hash % capacity;
     tll_dict_entry* entry = NULL;
     tll_dict_entry* tombstone = NULL;
 
