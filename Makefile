@@ -14,7 +14,7 @@ OUTPUT = $(OUTPUT_DIR)/$(PROGRAM)
 
 CC = gcc
 CCFLAGS = -Wall -Werror -Wextra -Wshadow -I$(INC_DIR)
-CFLAGS = -fanalyzer $(CCFLAGS)
+CFLAGS = -O2 -fanalyzer $(CCFLAGS)
 
 DEBUGGER = gdb
 
