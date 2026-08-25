@@ -14,7 +14,7 @@ func fibonacci(n : int) -> int
 func main(null) -> int
 {
     var start : float = clock();
-    fibonacci(3);
+    fibonacci(35);
     print(clock() - start);
     return 0;
 }
