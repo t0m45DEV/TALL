@@ -40,10 +40,11 @@ struct tll_string {
 struct tll_function {
     tll_obj obj;
     int arity;
-    tll_value_type* arguments_types;
-    tll_value_type return_type;
+    int arguments_capacity;
+    tll_value* arguments_types;
+    tll_value return_type;
     tll_code_chunk code_chunk;
-    tll_string* name;
+    const tll_string* name;
 };
 
 typedef tll_value (*native_function)(int arg_count, const tll_value* args);
@@ -64,6 +65,11 @@ static inline bool is_obj_type(tll_value value, tll_obj_type type)
  * A type-only string value, used purely as a type tag when needed.
  */
 extern const tll_string TLL_TYPE_STRING;
+
+/**
+ * A type-only function value, used purely as a type tag when needed.
+ */
+extern tll_function TLL_EMPTY_FUNCTION;
 
 /**
  * Returns a TLL string object using directly the given character pointer of size length.

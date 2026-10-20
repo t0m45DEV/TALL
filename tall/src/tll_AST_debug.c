@@ -17,11 +17,6 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
  */
 static void print_AST_operation(tll_token_type operation);
 
-/**
- * Prints out the given TLL value type.
- */
-static void print_type_from_type(tll_value_type type);
-
 void print_AST(const tll_AST* AST, const char* name)
 {
     printf("=== %s ===\n", name);
@@ -295,7 +290,7 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             printf("CONST_DECLARATION (");
             print_value(AS_TLL_OBJ(AST->as.var_declaration.name));
             printf(" ");
-            print_type_from_type(AST->as.var_declaration.type);
+            print_type(AST->as.var_declaration.type);
             printf(")\n");
             print_AST_recursive(AST->as.var_declaration.expression, child_prefix, true);
             break;
@@ -305,7 +300,7 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             printf("VAR_DECLARATION (");
             print_value(AS_TLL_OBJ(AST->as.var_declaration.name));
             printf(" ");
-            print_type_from_type(AST->as.var_declaration.type);
+            print_type(AST->as.var_declaration.type);
             printf(")\n");
             print_AST_recursive(AST->as.var_declaration.expression, child_prefix, true);
             break;
@@ -392,13 +387,13 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
             {
                 for (int i = 0; i < AST->as.function_declaration.arity - 1; i++)
                 {
-                    print_type_from_type(AST->as.function_declaration.parameters_types[i]);
+                    print_type(AST->as.function_declaration.parameters_types[i]);
                     printf(", ");
                 }
-                print_type_from_type(AST->as.function_declaration.parameters_types[AST->as.function_declaration.arity - 1]);
+                print_type(AST->as.function_declaration.parameters_types[AST->as.function_declaration.arity - 1]);
             }
             printf(") -> ");
-            print_type_from_type(AST->as.function_declaration.return_type);
+            print_type(*AST->as.function_declaration.return_type);
             printf(">\n");
             print_AST_recursive(AST->as.function_declaration.code_block, child_prefix, true);
             break;
@@ -502,19 +497,6 @@ static void print_AST_operation(tll_token_type operation)
             printf("?");
             break;
         }
-    }
-}
-
-static void print_type_from_type(tll_value_type type)
-{
-    if (type == VAL_OBJ)
-    {
-        // TODO: Better object printing
-        printf("string");
-    }
-    else
-    {
-        print_type((tll_value) {type, {}});
     }
 }
 

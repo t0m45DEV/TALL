@@ -70,7 +70,7 @@ typedef struct tll_AST {
 
         struct {
             tll_string* name;
-            tll_value_type type;
+            tll_value type;
             struct tll_AST* expression;
         } var_declaration;
 
@@ -113,9 +113,9 @@ typedef struct tll_AST {
         struct {
             tll_string* name;
             struct tll_AST* code_block;
-            tll_value_type return_type;
+            tll_value* return_type;
             tll_string** parameters_names;
-            tll_value_type* parameters_types;
+            tll_value* parameters_types;
             int arity;
             int parameters_capacity;
         } function_declaration;

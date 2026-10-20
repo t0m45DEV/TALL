@@ -62,13 +62,47 @@ bool are_equals(const tll_value value1, const tll_value value2)
 
 bool same_type(const tll_value value1, const tll_value value2)
 {
+    if (IS_FUNCTION(value1) && IS_FUNCTION(value2))
+    {
+        if (same_type(AS_TLL_FUNCTION(value1)->return_type, AS_TLL_FUNCTION(value2)->return_type))
+        {
+            return false;
+        }
+        if (AS_TLL_FUNCTION(value1)->arity != AS_TLL_FUNCTION(value2)->arity)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < AS_TLL_FUNCTION(value1)->arity; i++)
+        {
+            if (!same_type(AS_TLL_FUNCTION(value1)->arguments_types[i],AS_TLL_FUNCTION(value2)->arguments_types[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    else if (IS_NATIVE(value1) && IS_NATIVE(value2))
+    {
+        if (AS_TLL_NATIVE(value1)->parameter_count != AS_TLL_NATIVE(value2)->parameter_count)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < AS_TLL_NATIVE(value1)->parameter_count; i++)
+        {
+            if (!same_type(AS_TLL_NATIVE(value1)->parameters[i], AS_TLL_NATIVE(value2)->parameters[i]))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
     return ((IS_NULL(value1) && IS_NULL(value2)) ||
-            (IS_BOOL(value2) && IS_BOOL(value2)) ||
+            (IS_BOOL(value1) && IS_BOOL(value2)) ||
             (IS_INT(value1) && IS_INT(value2)) ||
             (IS_FLOAT(value1) && IS_FLOAT(value2)) ||
-            (IS_STRING(value1) && IS_STRING(value2)) ||
-            (IS_FUNCTION(value1) && IS_FUNCTION(value2)) ||
-            (IS_NATIVE(value1) && IS_NATIVE(value2)));
+            (IS_STRING(value1) && IS_STRING(value2)));
 }
 
 void print_value(tll_value value)

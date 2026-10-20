@@ -16,6 +16,14 @@ const tll_string TLL_TYPE_STRING = {
     .hash = 2166136261u,
 };
 
+tll_function TLL_EMPTY_FUNCTION = {
+    .obj = {.type = OBJ_FUNCTION},
+    .arity = 0,
+    .arguments_types = NULL,
+    .return_type = AS_TLL_NULL,
+    .name = &TLL_TYPE_STRING,
+};
+
 /**
  * A linked list object collection to track the objects being allocated at the heap.
  */
@@ -85,7 +93,7 @@ tll_function* new_function(void)
     function->arity = 0;
     function->arguments_types = NULL;
     function->name = NULL;
-    function->return_type = VAL_NULL;
+    function->return_type = AS_TLL_NULL;
     init_code_chunk(&function->code_chunk);
 
     return function;
@@ -144,7 +152,7 @@ void free_object(tll_obj* object)
             tll_function* function = (tll_function*) object;
 
             free_code_chunk(&function->code_chunk);
-            FREE_ARRAY(tll_value_type, function->arguments_types, function->arity);
+            FREE_ARRAY(tll_value, function->arguments_types, function->arguments_capacity);
             FREE_POINTER(tll_function, function);
             break;
         }

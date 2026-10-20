@@ -89,7 +89,7 @@ static tll_AST* AST_block(void);
 /**
  * Parse the current tokens as a type for a variable, returns true if the parsing was alrighty.
  */
-static bool parse_variable_type(tll_value_type* type);
+static bool parse_variable_type(tll_value* type);
 
 /**
  * Parse the current tokens as a variable declaration.
@@ -300,6 +300,7 @@ static void free_AST_recursive(tll_AST* tree)
                 FREE_ARRAY(tll_value_type, tree->as.function_declaration.parameters_types, tree->as.function_declaration.parameters_capacity);
                 FREE_ARRAY(tll_string*, tree->as.function_declaration.parameters_names, tree->as.function_declaration.parameters_capacity);
             }
+            FREE_POINTER(tll_value, tree->as.function_declaration.return_type);
             free_AST_recursive(tree->as.function_declaration.code_block);
             break;
         }
@@ -485,7 +486,7 @@ static tll_AST* AST_function_declaration(void)
     }
     int arity = 0;
     int capacity = 0;
-    tll_value_type* parameters_types = NULL;
+    tll_value* parameters_types = NULL;
     tll_string** parameters_names = NULL;
 
     if (AST_match(TOKEN_NIL))
@@ -502,7 +503,7 @@ static tll_AST* AST_function_declaration(void)
                 int old_capacity = capacity;
                 capacity = GROW_CAPACITY(capacity);
 
-                parameters_types = GROW_ARRAY(tll_value_type, parameters_types, old_capacity, capacity);
+                parameters_types = GROW_ARRAY(tll_value, parameters_types, old_capacity, capacity);
                 parameters_names = GROW_ARRAY(tll_string*, parameters_names, old_capacity, capacity);
             }
 
@@ -518,13 +519,13 @@ static tll_AST* AST_function_declaration(void)
             }
             parameters_names[arity] = var_name;
 
-            tll_value_type var_type;
+            tll_value var_type = AS_TLL_NULL;
 
             if (!parse_variable_type(&var_type))
             {
                 return AST_error(AST_parser.previous->line, "Function parameter must have a valid type.");
             }
-            if (var_type == VAL_NULL)
+            if (same_type(var_type, AS_TLL_NULL))
             {
                 return AST_error(AST_parser.previous->line, "Function parameter can't be of type 'null'.");
             }
@@ -544,9 +545,9 @@ static tll_AST* AST_function_declaration(void)
     {
         return AST_error(AST_parser.current->line, "Expected '->' and return type after function arguments.");
     }
-    tll_value_type return_type;
+    tll_value* return_type = ALLOCATE_POINTER(tll_value);
 
-    if (!parse_variable_type(&return_type))
+    if (!parse_variable_type(return_type))
     {
         return AST_error(AST_parser.current->line, "Invalid returning type for function declaration.");
     }
@@ -747,27 +748,89 @@ static tll_AST* AST_block(void)
     return node;
 }
 
-static bool parse_variable_type(tll_value_type* type)
+static bool parse_variable_type(tll_value* type)
 {
     if (AST_match(TOKEN_NIL))
     {
-        *type = VAL_NULL;
+        *type = AS_TLL_NULL;
     }
     else if (AST_match(TOKEN_BOOL_TYPE))
     {
-        *type = VAL_BOOL;
+        *type = AS_TLL_BOOL(true);
     }
     else if (AST_match(TOKEN_INT_TYPE))
     {
-        *type = VAL_INT;
+        *type = AS_TLL_INT(0);
     }
     else if (AST_match(TOKEN_FLOAT_TYPE))
     {
-        *type = VAL_FLOAT;
+        *type = AS_TLL_FLOAT(0);
     }
     else if (AST_match((TOKEN_STRING_TYPE)))
     {
-        *type = VAL_OBJ;
+        *type = AS_TLL_OBJ(&TLL_TYPE_STRING);
+    }
+    else if (AST_match(TOKEN_FUNC))
+    {
+        if (!AST_match(TOKEN_LEFT_PAREN))
+        {
+            type = NULL;
+            return false;
+        }
+        *type = AS_TLL_OBJ(&TLL_EMPTY_FUNCTION);
+
+        tll_function* func = AS_TLL_FUNCTION(*type);
+
+        func->arity = 0;
+        func->arguments_capacity = 0;
+
+        if (AST_match(TOKEN_NIL))
+        {
+            func->arguments_types = NULL;
+        }
+        else
+        {
+            do
+            {
+                if (func->arity + 1 > func->arguments_capacity)
+                {
+                    int old_capacity = func->arguments_capacity;
+                    func->arguments_capacity = GROW_CAPACITY(func->arguments_capacity);
+
+                    func->arguments_types = GROW_ARRAY(tll_value, func->arguments_types, old_capacity, func->arguments_capacity);
+                }
+                tll_value new_type = AS_TLL_NULL;
+
+                if (!parse_variable_type(&new_type))
+                {
+                    FREE_ARRAY(tll_value, func->arguments_types, func->arguments_capacity);
+                    type = NULL;
+                    return false;
+                }
+                func->arguments_types[func->arity] = new_type;
+                func->arity++;
+            }
+            while (AST_match(TOKEN_COMMA));
+
+            if (!AST_match(TOKEN_RIGHT_PAREN))
+            {
+                type = NULL;
+                return false;
+            }
+            if (!AST_match(TOKEN_RIGHT_ARROW))
+            {
+                type = NULL;
+                return false;
+            }
+            tll_value return_type = AS_TLL_NULL;
+
+            if (!parse_variable_type(&return_type))
+            {
+                type = NULL;
+                return false;
+            }
+            func->return_type = return_type;
+        }
     }
     else
     {
@@ -791,7 +854,7 @@ static tll_AST* AST_variable_declaration(bool is_const)
     {
         return AST_error(line, "Expected ':' after variable name.");
     }
-    tll_value_type var_type;
+    tll_value var_type;
 
     if (!parse_variable_type(&var_type))
     {

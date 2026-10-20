@@ -772,7 +772,7 @@ static void compile_AST_node(tll_AST* node)
             }
             if (strncmp(node->as.function_declaration.name->chars, "main", 4) == 0)
             {
-                if (node->as.function_declaration.arity > 0 || node->as.function_declaration.return_type != VAL_INT)
+                if (node->as.function_declaration.arity > 0 || !same_type(*node->as.function_declaration.return_type, AS_TLL_INT(0)))
                 {
                     compiler_error("The 'main' function must have type 'func (null) -> int'.", node->line);
                     break;
