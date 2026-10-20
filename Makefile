@@ -14,7 +14,7 @@ OUTPUT = $(OUTPUT_DIR)/$(PROGRAM)
 
 CC = gcc
 CCFLAGS = -Wall -Werror -Wextra -Wshadow -I$(INC_DIR)
-CFLAGS = -O2 -fanalyzer $(CCFLAGS)
+CFLAGS = -fanalyzer $(CCFLAGS)
 
 DEBUGGER = gdb
 
@@ -35,7 +35,7 @@ TESTS = $(shell find $(TESTS_DIR)/ -name "*.tll")
 
 $(OUTPUT) : $(SRC_FILES)
 	mkdir -p $(OUTPUT_DIR)
-	$(CC) $^ $(CFLAGS) -o $@
+	$(CC) $^ $(CFLAGS) -O2 -o $@
 
 debug : $(SRC_FILES)
 	mkdir -p $(OUTPUT_DIR)
