@@ -196,6 +196,26 @@ const tll_AST* get_error(const tll_AST* AST)
             }
             break;
         }
+        case AST_METHOD_CALL:
+        {
+            res = get_error(AST->as.method_call.receiver);
+
+            if (res != NULL)
+            {
+                break;
+            }
+
+            for (int i = 0; i < AST->as.method_call.arguments_count; i++)
+            {
+                res = get_error(AST->as.method_call.arguments[i]);
+
+                if (res != NULL)
+                {
+                    break;
+                }
+            }
+            break;
+        }
     }
     return res;
 }
@@ -412,6 +432,32 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
                     printf(", ");
                 }
                 print_AST_recursive(AST->as.function_call.arguments[AST->as.function_call.arguments_count - 1], child_prefix, true);
+            }
+            break;
+        }
+        case AST_METHOD_CALL:
+        {
+            printf("INVOKE ");
+            print_value(AS_TLL_OBJ(AST->as.method_call.name));
+            printf("\n");
+
+            if (AST->as.method_call.arguments_count == 0)
+            {
+                print_AST_recursive(AST->as.method_call.receiver, child_prefix, true);
+            }
+            else
+            {
+                print_AST_recursive(AST->as.method_call.receiver, child_prefix, false);
+            }
+
+            if (AST->as.method_call.arguments_count > 0)
+            {
+                for (int i = 0; i < AST->as.method_call.arguments_count - 1; i++)
+                {
+                    print_AST_recursive(AST->as.method_call.arguments[i], child_prefix, false);
+                    printf(", ");
+                }
+                print_AST_recursive(AST->as.method_call.arguments[AST->as.method_call.arguments_count - 1], child_prefix, true);
             }
             break;
         }

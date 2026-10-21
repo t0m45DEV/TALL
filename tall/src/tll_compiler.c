@@ -814,6 +814,19 @@ static void compile_AST_node(tll_AST* node)
             emit_short(node->as.function_call.arguments_count, node->line);
             break;
         }
+        case AST_METHOD_CALL:
+        {
+            compile_AST_node(node->as.method_call.receiver);
+
+            for (int i = 0; i < node->as.method_call.arguments_count; i++)
+            {
+                compile_AST_node(node->as.method_call.arguments[i]);
+            }
+            emit_byte(OP_INVOKE, node->line);
+            emit_short(make_constant(AS_TLL_OBJ(node->as.method_call.name), node->line), node->line);
+            emit_byte(node->as.method_call.arguments_count, node->line);
+            break;
+        }
         default:
         {
             compiler_error("Unkown expression or statement.", node->line);

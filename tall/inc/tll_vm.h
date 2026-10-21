@@ -6,6 +6,8 @@
 #include "tll_object.h"
 #include "tll_value.h"
 
+#define TYPE_TABLE_COUNT 4
+
 /**
  * The generic VM call frame for a function.
  */
@@ -27,6 +29,7 @@ typedef struct {
     tll_value* stack_top;
     tll_dictionary global_vars;
     tll_dictionary global_consts;
+    tll_dictionary type_methods[TYPE_TABLE_COUNT];
 } tll_vm;
 
 /**
@@ -67,5 +70,10 @@ tll_value pop(void);
  * Adds the given function with the given parameters types to the TLL VM global variables table.
  */
 void define_native_function(const char* name, int name_len, native_function function, int arg_count, const tll_value parameters[]);
+
+/**
+ * Adds the given function with the given parameters types to the TLL VM global methods table according to the given table index.
+ */
+void define_native_method(int type_table, const char* name, int name_len, native_function function, int arg_count, const tll_value params[]);
 
 #endif

@@ -37,6 +37,7 @@ typedef enum {
     OP_JMP_IF_TRUE,
     OP_CALL,
     OP_RETURN,
+    OP_INVOKE,
 } tll_opcode;
 
 /**

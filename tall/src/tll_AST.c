@@ -162,6 +162,12 @@ static tll_AST* AST_factor(void);
 static tll_AST* AST_unary(void);
 
 /**
+ * Parse the current token as a postfix.
+ */
+static tll_AST* AST_postfix(void);
+
+
+/**
  * Parse the current token as a value.
  */
 static tll_AST* AST_primary(void);
@@ -316,6 +322,20 @@ static void free_AST_recursive(tll_AST* tree)
             }
             break;
         }
+        case AST_METHOD_CALL:
+        {
+            free_AST_recursive(tree->as.method_call.receiver);
+
+            if (tree->as.method_call.arguments_count > 0)
+            {
+                for (int i = 0; i < tree->as.method_call.arguments_count; i++)
+                {
+                    free_AST_recursive(tree->as.method_call.arguments[i]);
+                }
+                FREE_ARRAY(tll_AST*, tree->as.method_call.arguments, tree->as.method_call.arguments_capacity);
+            }
+            break;
+        }
     }
 }
 
@@ -417,6 +437,10 @@ static tll_AST* AST_statement(void)
         {
             // A function call ignoring the result.
             return AST_expression_statement();
+        }
+        else if (AST_check(TOKEN_DOT))
+        {
+
         }
         return AST_variable_assignment(true);
     }
@@ -1242,7 +1266,65 @@ static tll_AST* AST_unary(void)
 
         return node;
     }
-    return AST_primary();
+    return AST_postfix();
+}
+
+static tll_AST* AST_postfix(void)
+{
+    tll_AST* expr = AST_primary();
+
+    while (AST_match(TOKEN_DOT))
+    {
+        int line = AST_parser.previous->line;
+
+        if (!AST_match(TOKEN_IDENTIFIER))
+        {
+            return AST_error(line, "Expected a method name after '.'.");
+        }
+        tll_string* name = copy_string(AST_parser.previous->start, AST_parser.previous->length);
+
+        if (!AST_match(TOKEN_LEFT_PAREN))
+        {
+            return AST_error(line, "Expected '(' after method name.");
+        }
+        tll_AST** arguments = NULL;
+        int count = 0;
+        int capacity = 0;
+
+        if (!AST_check(TOKEN_RIGHT_PAREN))
+        {
+            do
+            {
+                if (count + 1 > capacity)
+                {
+                    int old_capacity = capacity;
+                    capacity = GROW_CAPACITY(capacity);
+                    arguments = GROW_ARRAY(tll_AST*, arguments, old_capacity, capacity);
+                }
+                arguments[count] = AST_expression();
+                count++;
+            }
+            while (AST_match(TOKEN_COMMA));
+        }
+
+        if (!AST_match(TOKEN_RIGHT_PAREN))
+        {
+            return AST_error(line, "Expected ')' after method arguments.");
+        }
+        tll_AST* node = alloc_node();
+
+        node->type = AST_METHOD_CALL;
+        node->line = line;
+
+        node->as.method_call.receiver = expr;
+        node->as.method_call.name = name;
+        node->as.method_call.arguments = arguments;
+        node->as.method_call.arguments_count = count;
+        node->as.method_call.arguments_capacity = capacity;
+
+        expr = node;
+    }
+    return expr;
 }
 
 static tll_AST* AST_primary(void)

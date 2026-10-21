@@ -33,6 +33,11 @@ static int local_variable_instruction(const char* op_name, tll_code_chunk* code_
  */
 static int jump_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset);
 
+/**
+ * Print the bytecode at the given offset in the given code_chunk as an invoke instruction.
+ */
+static int invoke_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset);
+
 void disassemble_code_chunk(tll_code_chunk* code_chunk, const char* chunk_name)
 {
     printf("=== %s ===\n", chunk_name);
@@ -176,6 +181,10 @@ int disassemble_instruction(tll_code_chunk* code_chunk, int offset)
         {
             return simple_instruction("OP_RETURN", offset);
         }
+        case OP_INVOKE:
+        {
+            return invoke_instruction("OP_INVOKE", code_chunk, offset);
+        }
         default:
         {
             printf("Unkown opcode %d\n", instruction);
@@ -248,5 +257,20 @@ static int jump_instruction(const char* op_name, tll_code_chunk* code_chunk, int
 
     printf("%-20s %4d\n", op_name, jump);
     return offset + 3;
+}
+
+static int invoke_instruction(const char* op_name, tll_code_chunk* code_chunk, int offset)
+{
+    uint8_t index_upper = code_chunk->code[offset + 1];
+    uint8_t index_lower = code_chunk->code[offset + 2];
+    uint8_t arg_count = code_chunk->code[offset + 3];
+
+    uint8_t index = (index_upper << 8) | index_lower;
+
+    printf("%-20s %4d 'method ", op_name, index);
+    print_value(code_chunk->constants.values[index]);
+    printf("' (%d args)\n", arg_count);
+
+    return offset + 4;
 }
 

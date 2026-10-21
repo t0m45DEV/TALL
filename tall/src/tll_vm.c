@@ -55,6 +55,11 @@ static inline tll_value peek(int distance);
 static void concatenate(void);
 
 /**
+ * Returns the index for the VM type method table for the given value, returns -1 if there is no table for that type.
+ */
+static inline int type_table_index(tll_value value);
+
+/**
  * Given a message, it prints out an error with the location of the detected bug.
  */
 static void runtime_error(const char* format, ...);
@@ -68,6 +73,11 @@ void init_VM(void)
 {
     init_dictionary(&VM.global_vars);
     init_dictionary(&VM.global_consts);
+
+    for (int i = 0; i < TYPE_TABLE_COUNT; i++)
+    {
+        init_dictionary(&VM.type_methods[i]);
+    }
     init_object_pool();
     reset_stack();
     load_tll_std_lib();
@@ -77,6 +87,11 @@ void free_VM(void)
 {
     free_dictionary(&VM.global_vars);
     free_dictionary(&VM.global_consts);
+
+    for (int i = 0; i < TYPE_TABLE_COUNT; i++)
+    {
+        free_dictionary(&VM.type_methods[i]);
+    }
     free_object_pool();
     reset_stack();
 }
@@ -148,6 +163,15 @@ void define_native_function(const char* name, int name_len, native_function func
     push(AS_TLL_OBJ(copy_string(name, name_len)));
     push(AS_TLL_OBJ(new_native_function(function, arg_count, parameters)));
     set_to_dictionary(&VM.global_consts, AS_TLL_STRING(VM.stack[0]), VM.stack[1]);
+    pop();
+    pop();
+}
+
+void define_native_method(int type_table, const char* name, int name_len, native_function function, int arg_count, const tll_value params[])
+{
+    push(AS_TLL_OBJ(copy_string(name, name_len)));
+    push(AS_TLL_OBJ(new_native_function(function, arg_count, params)));
+    set_to_dictionary(&VM.type_methods[type_table], AS_TLL_STRING(VM.stack[0]), VM.stack[1]);
     pop();
     pop();
 }
@@ -641,6 +665,37 @@ static tll_interpret_result run_VM_code(void)
                 }
                 break;
             }
+            case OP_INVOKE:
+            {
+                tll_string* name = read_string(frame);
+                uint8_t arg_count = read_byte(frame);
+                tll_value receiver = peek(arg_count);
+
+                int table = type_table_index(receiver);
+
+                tll_value method;
+
+                if (table == -1 || !get_from_dictionary(&VM.type_methods[table], name, &method))
+                {
+                    runtime_error("This type has no method '%s'.", name->chars);
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                tll_native_function* native = AS_TLL_NATIVE(method);
+
+                // The -1 is to include the receiver in the argument list.
+                tll_value* base = VM.stack_top - arg_count - 1;
+
+                if (!check_types(native, arg_count + 1, base))
+                {
+                    runtime_error("Wrong argument types for method '%s'.", name->chars);
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                tll_value result = native->function(arg_count + 1, base);
+
+                VM.stack_top -= arg_count + 1;
+                push(result);
+                break;
+            }
             default:
             {
                 runtime_error("Unkown instruction with op code %i at line %i.", instruction, frame->ip);
@@ -690,6 +745,17 @@ static void concatenate(void)
 
     tll_string* result = take_string(chars, length);
     push(AS_TLL_OBJ(result));
+}
+
+static inline int type_table_index(tll_value value)
+{
+    int ret = -1;
+
+    if (!IS_OBJ(value))
+    {
+        ret = value.type;
+    }
+    return ret;
 }
 
 static void runtime_error(const char* format, ...)
