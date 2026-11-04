@@ -19,6 +19,11 @@ static tll_value native_clock(int arg_count, const tll_value* args);
 static tll_value native_print(int arg_count, const tll_value* args);
 
 /**
+ * Prints out to standard output the given formated string.
+ */
+static tll_value native_printf(int arg_count, const tll_value* args);
+
+/**
  * Halts the program waiting for user input in the form of a string of the given size.
  */
 static tll_value native_input(int arg_count, const tll_value* args);
@@ -52,6 +57,7 @@ void load_tll_std_lib(void)
 {
     define_native_function("clock", 5, native_clock, 0, NULL);
     define_native_function("print", 5, native_print, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
+    define_native_function("printf", 6, native_printf, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
     define_native_function("input", 5, native_input, 1, (const tll_value[1]) {AS_TLL_INT(0)});
 
     define_native_method(VAL_NULL, "to_str", 6, native_null_to_str, 1, (const tll_value[1]) {AS_TLL_NULL});
@@ -79,6 +85,48 @@ static tll_value native_print(int arg_count, const tll_value* args)
     }
     print_value(*args);
     printf("\n");
+    return AS_TLL_NULL;
+}
+
+static tll_value native_printf(int arg_count, const tll_value* args)
+{
+    if (arg_count != 1)
+    {
+        // Unreachable.
+    }
+    tll_string* input = AS_TLL_STRING(*args);
+
+    char formated[input->length + 1];
+
+    int i = 0;
+
+    for (int j = 0; j < input->length; j++)
+    {
+        if (input->chars[j] == '\\' && j + 1 < input->length)
+        {
+            switch (input->chars[j + 1])
+            {
+                case 'n':
+                {
+                    formated[i] = '\n';
+                    i++;
+                    break;
+                }
+                default:
+                {
+                    // Runtime error.
+                    break;
+                }
+            }
+            j++;
+        }
+        else
+        {
+            formated[i] = input->chars[j];
+            i++;
+        }
+    }
+    printf("%.*s", i, formated);
     return AS_TLL_NULL;
 }
 
