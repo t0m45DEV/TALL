@@ -751,7 +751,11 @@ static inline int type_table_index(tll_value value)
 {
     int ret = -1;
 
-    if (!IS_OBJ(value))
+    if (IS_OBJ(value) && IS_STRING(value))
+    {
+        ret = VAL_OBJ;
+    }
+    else if (!IS_OBJ(value))
     {
         ret = value.type;
     }

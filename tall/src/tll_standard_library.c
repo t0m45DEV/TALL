@@ -4,6 +4,7 @@
 #include "tll_object.h"
 #include "tll_vm.h"
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -37,6 +38,11 @@ static tll_value native_int_to_str(int arg_count, const tll_value* args);
  */
 static tll_value native_float_to_str(int arg_count, const tll_value* args);
 
+/**
+ * Returns the given string value as an int value.
+ */
+static tll_value native_str_to_int(int arg_count, const tll_value* args);
+
 void load_tll_std_lib(void)
 {
     define_native_function("clock", 5, native_clock, 0, NULL);
@@ -46,6 +52,8 @@ void load_tll_std_lib(void)
     define_native_method(VAL_BOOL, "to_str", 6, native_bool_to_str, 1, (const tll_value[1]) {AS_TLL_BOOL(true)});
     define_native_method(VAL_INT, "to_str", 6, native_int_to_str, 1, (const tll_value[1]) {AS_TLL_INT(0)});
     define_native_method(VAL_FLOAT, "to_str", 6, native_float_to_str, 1, (const tll_value[1]) {AS_TLL_FLOAT(0.0)});
+
+    define_native_method(VAL_OBJ, "to_int", 6, native_str_to_int, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
 }
 
 static tll_value native_clock(int arg_count, const tll_value* args)
@@ -117,5 +125,14 @@ static tll_value native_float_to_str(int arg_count, const tll_value* args)
     int len = snprintf(buffer, sizeof(buffer), "%g", AS_C_FLOAT(args[0]));
 
     return AS_TLL_OBJ(copy_string(buffer, len));
+}
+
+static tll_value native_str_to_int(int arg_count, const tll_value* args)
+{
+    if (arg_count != 1)
+    {
+        // Unreachable.
+    }
+    return AS_TLL_INT(atoi(AS_TLL_STRING(*args)->chars));
 }
 

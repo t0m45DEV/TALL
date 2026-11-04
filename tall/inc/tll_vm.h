@@ -6,7 +6,7 @@
 #include "tll_object.h"
 #include "tll_value.h"
 
-#define TYPE_TABLE_COUNT 4
+#define TYPE_TABLE_COUNT 5
 
 /**
  * The generic VM call frame for a function.
