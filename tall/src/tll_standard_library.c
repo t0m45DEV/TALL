@@ -19,6 +19,11 @@ static tll_value native_clock(int arg_count, const tll_value* args);
 static tll_value native_print(int arg_count, const tll_value* args);
 
 /**
+ * Halts the program waiting for user input in the form of a string of the given size.
+ */
+static tll_value native_input(int arg_count, const tll_value* args);
+
+/**
  * Returns the given null value as a string value.
  */
 static tll_value native_null_to_str(int arg_count, const tll_value* args);
@@ -47,6 +52,7 @@ void load_tll_std_lib(void)
 {
     define_native_function("clock", 5, native_clock, 0, NULL);
     define_native_function("print", 5, native_print, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
+    define_native_function("input", 5, native_input, 1, (const tll_value[1]) {AS_TLL_INT(0)});
 
     define_native_method(VAL_NULL, "to_str", 6, native_null_to_str, 1, (const tll_value[1]) {AS_TLL_NULL});
     define_native_method(VAL_BOOL, "to_str", 6, native_bool_to_str, 1, (const tll_value[1]) {AS_TLL_BOOL(true)});
@@ -74,6 +80,26 @@ static tll_value native_print(int arg_count, const tll_value* args)
     print_value(*args);
     printf("\n");
     return AS_TLL_NULL;
+}
+
+static tll_value native_input(int arg_count, const tll_value* args)
+{
+    if (arg_count != 1)
+    {
+        // Unreachable.
+    }
+    int char_count = AS_C_INT(*args) + 1;
+    char str[char_count];
+
+    char* check = fgets(str, char_count, stdin);
+
+    if (check != str)
+    {
+        // Runtime error.
+    }
+    tll_value ret = AS_TLL_OBJ(copy_string(str, char_count));
+
+    return ret;
 }
 
 static tll_value native_null_to_str(int arg_count, const tll_value* args)
