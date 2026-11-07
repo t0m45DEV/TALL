@@ -57,19 +57,37 @@ static tll_value native_float_to_str(int arg_count, const tll_value* args);
  */
 static tll_value native_str_to_int(int arg_count, const tll_value* args);
 
+/**
+ * Returns the size of the string who called.
+ */
+static tll_value native_str_length(int arg_count, const tll_value* args);
+
 void load_tll_std_lib(void)
 {
+    // === FUNCTIONS ===
+
+    // === Tests & Performance ===
     define_native_function("clock", 5, native_clock, 0, NULL);
+
+    // === Input / Output ===
     define_native_function("print", 5, native_print, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
     define_native_function("printf", 6, native_printf, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
     define_native_function("input", 5, native_input, 1, (const tll_value[1]) {AS_TLL_INT(0)});
 
+    // === METHODS ===
+
+    // === Conversions ===
+    // --- To Strings ---
     define_native_method(VAL_NULL, "to_str", 6, native_null_to_str, 1, (const tll_value[1]) {AS_TLL_NULL});
     define_native_method(VAL_BOOL, "to_str", 6, native_bool_to_str, 1, (const tll_value[1]) {AS_TLL_BOOL(true)});
     define_native_method(VAL_INT, "to_str", 6, native_int_to_str, 1, (const tll_value[1]) {AS_TLL_INT(0)});
     define_native_method(VAL_FLOAT, "to_str", 6, native_float_to_str, 1, (const tll_value[1]) {AS_TLL_FLOAT(0.0)});
 
+    // --- To Ints ---
     define_native_method(VAL_OBJ, "to_int", 6, native_str_to_int, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
+
+    // --- Strings methods ---
+    define_native_method(VAL_OBJ, "length", 6, native_str_length, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
 }
 
 static tll_value native_clock(int arg_count, const tll_value* args)
@@ -257,5 +275,15 @@ static tll_value native_str_to_int(int arg_count, const tll_value* args)
         // Unreachable.
     }
     return AS_TLL_INT(atoi(AS_TLL_STRING(*args)->chars));
+}
+
+static tll_value native_str_length(int arg_count, const tll_value* args)
+{
+    if (arg_count != 1)
+    {
+        // Unreachable.
+    }
+    return AS_TLL_INT(AS_TLL_STRING(*args)->length);
+
 }
 
