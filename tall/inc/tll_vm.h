@@ -30,6 +30,8 @@ typedef struct {
     tll_dictionary global_vars;
     tll_dictionary global_consts;
     tll_dictionary type_methods[TYPE_TABLE_COUNT];
+    bool native_failed;
+    char native_error_message[256];
 } tll_vm;
 
 /**
@@ -75,5 +77,12 @@ void define_native_function(const char* name, int name_len, native_function func
  * Adds the given function with the given parameters types to the TLL VM global methods table according to the given table index.
  */
 void define_native_method(int type_table, const char* name, int name_len, native_function function, int arg_count, const tll_value params[]);
+
+/**
+ * Called when an error has ocurred from the standard library and it must be catched by the VM.
+ *
+ * The given message will be the one printed on the stdout.
+ */
+void catch_native_error(const char* message, ...) __attribute__((format(printf, 1, 2)));
 
 #endif

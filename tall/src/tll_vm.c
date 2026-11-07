@@ -62,7 +62,7 @@ static inline int type_table_index(tll_value value);
 /**
  * Given a message, it prints out an error with the location of the detected bug.
  */
-static void runtime_error(const char* format, ...);
+static void runtime_error(const char* format, ...) __attribute__((format(printf, 1, 2)));
 
 /**
  * Deletes all the contents of the current stack, make it blank.
@@ -81,6 +81,7 @@ void init_VM(void)
     init_object_pool();
     reset_stack();
     load_tll_std_lib();
+    VM.native_failed = false;
 }
 
 void free_VM(void)
@@ -174,6 +175,16 @@ void define_native_method(int type_table, const char* name, int name_len, native
     set_to_dictionary(&VM.type_methods[type_table], AS_TLL_STRING(VM.stack[0]), VM.stack[1]);
     pop();
     pop();
+}
+
+void catch_native_error(const char* message, ...)
+{
+    VM.native_failed = true;
+
+    va_list args;
+    va_start(args, message);
+    vsnprintf(VM.native_error_message, sizeof(VM.native_error_message), message, args);
+    va_end(args);
 }
 
 static tll_interpret_result run_VM_code(void)
@@ -629,6 +640,12 @@ static tll_interpret_result run_VM_code(void)
                                 return TLL_INTERPRET_RUNTIME_ERROR;
                             }
                             tll_value result = native->function(arg_count, VM.stack_top - arg_count);
+
+                            if (VM.native_failed)
+                            {
+                                runtime_error("%s", VM.native_error_message);
+                                return TLL_INTERPRET_RUNTIME_ERROR;
+                            }
                             VM.stack_top -= arg_count + 1;
                             push(result);
                             break;
@@ -692,13 +709,18 @@ static tll_interpret_result run_VM_code(void)
                 }
                 tll_value result = native->function(arg_count + 1, base);
 
+                if (VM.native_failed)
+                {
+                    runtime_error("%s", VM.native_error_message);
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
                 VM.stack_top -= arg_count + 1;
                 push(result);
                 break;
             }
             default:
             {
-                runtime_error("Unkown instruction with op code %i at line %i.", instruction, frame->ip);
+                runtime_error("Unkown instruction with op code %i at line %p.", instruction, frame->ip);
                 return TLL_INTERPRET_RUNTIME_ERROR;
             }
         }
