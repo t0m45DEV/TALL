@@ -113,6 +113,11 @@ static tll_token number(void);
 static tll_token string(void);
 
 /**
+ * Returns true if the current character being read is '\', and the one next to that is a valid escape sequence.
+ */
+static bool is_escape_sequence(void);
+
+/**
  * Returns the current lexeme in the form of a TALL token with type identifier or TALL keyword.
  */
 static tll_token identifier(void);
@@ -581,6 +586,18 @@ static tll_token string(void)
 {
     while (peek() != '"' && !is_at_end())
     {
+        if (is_escape_sequence())
+        {
+            // Jump over the '\' and the next character.
+            advance();
+            advance();
+            continue;
+        }
+        if (peek() == '\\')
+        {
+            return error_token("Wrong escape sequence for string.");
+        }
+
         if (peek() == '\n')
         {
             scanner.line++;
@@ -593,6 +610,28 @@ static tll_token string(void)
     advance();
     return make_token(TOKEN_STRING);
 }
+
+static bool is_escape_sequence(void)
+{
+    bool ret = false;
+
+    if (peek() == '\\')
+    {
+        switch (peek_next())
+        {
+            case '\\':
+            case '\"':
+            case 'n':
+            case 't':
+            {
+                ret = true;
+                break;
+            }
+        }
+    }
+    return ret;
+}
+
 
 static tll_token identifier(void)
 {
