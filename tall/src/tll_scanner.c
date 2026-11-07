@@ -613,25 +613,8 @@ static tll_token string(void)
 
 static bool is_escape_sequence(void)
 {
-    bool ret = false;
-
-    if (peek() == '\\')
-    {
-        switch (peek_next())
-        {
-            case '\\':
-            case '\"':
-            case 'n':
-            case 't':
-            {
-                ret = true;
-                break;
-            }
-        }
-    }
-    return ret;
+    return (peek() == '\\' && peek_next() != '\0');
 }
-
 
 static tll_token identifier(void)
 {
