@@ -106,9 +106,27 @@ static tll_value native_printf(int arg_count, const tll_value* args)
         {
             switch (input->chars[j + 1])
             {
+                case '\\':
+                {
+                    formated[i] = '\\';
+                    i++;
+                    break;
+                }
+                case '\"':
+                {
+                    formated[i] = '\"';
+                    i++;
+                    break;
+                }
                 case 'n':
                 {
                     formated[i] = '\n';
+                    i++;
+                    break;
+                }
+                case 't':
+                {
+                    formated[i] = '\t';
                     i++;
                     break;
                 }
