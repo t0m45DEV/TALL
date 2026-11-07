@@ -137,6 +137,8 @@ static tll_value native_printf(int arg_count, const tll_value* args)
                 default:
                 {
                     // Runtime error.
+                    catch_native_error("There is no escape sequence for the symbol \\%c.", input->chars[j + 1]);
+                    return AS_TLL_NULL;
                     break;
                 }
             }
@@ -163,6 +165,7 @@ static tll_value native_input(int arg_count, const tll_value* args)
     if (char_count <= 0)
     {
         // Runtime error.
+        catch_native_error("Can't create an string with negative length.");
         return AS_TLL_OBJ(copy_string("", 0));
     }
     char str[char_count];
@@ -171,6 +174,7 @@ static tll_value native_input(int arg_count, const tll_value* args)
     if (fgets(str, char_count, stdin) == NULL)
     {
         // Runtime error.
+        catch_native_error("There was an error reading from input.");
         return AS_TLL_OBJ(copy_string("", 0));
     }
     size_t len = strnlen(str, (size_t) char_count);
@@ -183,7 +187,6 @@ static tll_value native_input(int arg_count, const tll_value* args)
     {
         // The line was longer than the buffer.
         // We need to discard the leftover content for next input() calls.
-
         char c;
 
         while ((c = getchar()) != '\n' && c != EOF)
