@@ -4,8 +4,10 @@
 #include "tll_object.h"
 #include "tll_vm.h"
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 
 /**
@@ -25,6 +27,8 @@ static tll_value native_printf(int arg_count, const tll_value* args);
 
 /**
  * Halts the program waiting for user input in the form of a string of the given size.
+ *
+ * Any remaining characters on that line are discarded.
  */
 static tll_value native_input(int arg_count, const tll_value* args);
 
@@ -155,15 +159,39 @@ static tll_value native_input(int arg_count, const tll_value* args)
         // Unreachable.
     }
     int char_count = AS_C_INT(*args) + 1;
-    char str[char_count];
 
-    char* check = fgets(str, char_count, stdin);
-
-    if (check != str)
+    if (char_count <= 0)
     {
         // Runtime error.
+        return AS_TLL_OBJ(copy_string("", 0));
     }
-    tll_value ret = AS_TLL_OBJ(copy_string(str, char_count));
+    char str[char_count];
+    str[0] = '\0';
+
+    if (fgets(str, char_count, stdin) == NULL)
+    {
+        // Runtime error.
+        return AS_TLL_OBJ(copy_string("", 0));
+    }
+    size_t len = strnlen(str, (size_t) char_count);
+
+    if (len > 0  && str[len - 1] == '\n')
+    {
+        len = len - 1;
+    }
+    else
+    {
+        // The line was longer than the buffer.
+        // We need to discard the leftover content for next input() calls.
+
+        char c;
+
+        while ((c = getchar()) != '\n' && c != EOF)
+        {
+            // Discard.
+        }
+    }
+    tll_value ret = AS_TLL_OBJ(copy_string(str, len));
 
     return ret;
 }
