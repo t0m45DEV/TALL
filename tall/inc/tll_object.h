@@ -5,6 +5,7 @@
 #include "tll_value.h"
 #include "tll_code_chunk.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #define OBJ_TYPE(value) (AS_C_OBJ(value)->type)
@@ -39,8 +40,8 @@ struct tll_string {
 
 struct tll_function {
     tll_obj obj;
-    int arity;
-    int arguments_capacity;
+    size_t arity;
+    size_t arguments_capacity;
     tll_value* arguments_types;
     tll_value return_type;
     tll_code_chunk code_chunk;

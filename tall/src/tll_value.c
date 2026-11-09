@@ -3,6 +3,7 @@
 #include "tll_memory.h"
 #include "tll_object.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -73,7 +74,7 @@ bool same_type(const tll_value value1, const tll_value value2)
             return false;
         }
 
-        for (int i = 0; i < AS_TLL_FUNCTION(value1)->arity; i++)
+        for (size_t i = 0; i < AS_TLL_FUNCTION(value1)->arity; i++)
         {
             if (!same_type(AS_TLL_FUNCTION(value1)->arguments_types[i],AS_TLL_FUNCTION(value2)->arguments_types[i]))
             {
@@ -185,7 +186,7 @@ void print_type(tll_value value)
 
                     if (AS_TLL_FUNCTION(value)->arity > 0)
                     {
-                        for (int i = 0; i < AS_TLL_FUNCTION(value)->arity - 1; i++)
+                        for (size_t i = 0; i < AS_TLL_FUNCTION(value)->arity - 1; i++)
                         {
                             print_value(AS_TLL_FUNCTION(value)->arguments_types[i]);
                             printf(", ");

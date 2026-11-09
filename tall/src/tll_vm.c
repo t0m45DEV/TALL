@@ -619,7 +619,7 @@ static tll_interpret_result run_VM_code(void)
 
                             if (callable->arity != arg_count)
                             {
-                                runtime_error("Wrong argument count for a function call, expected %i but %i were given.", callable->arity, arg_count);
+                                runtime_error("Wrong argument count for a function call, expected %zu but %i were given.", callable->arity, arg_count);
                                 return TLL_INTERPRET_RUNTIME_ERROR;
                             }
                             else
