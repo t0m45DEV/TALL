@@ -4,6 +4,7 @@
 #include "tll_memory.h"
 #include "tll_value.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -14,14 +15,6 @@ const tll_string TLL_TYPE_STRING = {
     .length = 0,
     .chars = "",
     .hash = 2166136261u,
-};
-
-tll_function TLL_EMPTY_FUNCTION = {
-    .obj = {.type = OBJ_FUNCTION},
-    .arity = 0,
-    .arguments_types = NULL,
-    .return_type = AS_TLL_NULL,
-    .name = &TLL_TYPE_STRING,
 };
 
 /**

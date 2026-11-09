@@ -800,7 +800,7 @@ static bool parse_variable_type(tll_value* type)
             type = NULL;
             return false;
         }
-        *type = AS_TLL_OBJ(&TLL_EMPTY_FUNCTION);
+        *type = AS_TLL_OBJ(new_function());
 
         tll_function* func = AS_TLL_FUNCTION(*type);
 
