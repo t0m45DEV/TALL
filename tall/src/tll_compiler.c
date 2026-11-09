@@ -574,6 +574,11 @@ static void compile_AST_node(tll_AST* node)
                     emit_byte(OP_DIVIDE, node->line);
                     break;
                 }
+                case TOKEN_PERCENTAGE:
+                {
+                    emit_byte(OP_REMAINDER, node->line);
+                    break;
+                }
                 case TOKEN_EQUAL_EQUAL:
                 {
                     emit_byte(OP_EQUAL, node->line);

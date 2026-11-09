@@ -537,6 +537,16 @@ static tll_interpret_result run_VM_code(void)
                 }
                 break;
             }
+            case OP_REMAINDER:
+            {
+                if (!IS_INT(peek(0)) || !IS_INT(peek(1)))
+                {
+                    runtime_error("Both operands for remainder operation must be of type 'int'.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
+                push(AS_TLL_INT(AS_C_INT(pop()) % AS_C_INT(pop())));
+                break;
+            }
             case OP_NOT:
             {
                 if (!IS_BOOL(peek(0)))

@@ -152,7 +152,7 @@ static tll_AST* AST_comparison(void);
 static tll_AST* AST_term(void);
 
 /**
- * Parse the current token as either a multiplication or a division.
+ * Parse the current token as either a multiplication, a division or a remainder.
  */
 static tll_AST* AST_factor(void);
 
@@ -165,7 +165,6 @@ static tll_AST* AST_unary(void);
  * Parse the current token as a postfix.
  */
 static tll_AST* AST_postfix(void);
-
 
 /**
  * Parse the current token as a value.
@@ -1226,7 +1225,7 @@ static tll_AST* AST_factor(void)
 {
     tll_AST* left = AST_unary();
 
-    while (AST_check(TOKEN_STAR) || AST_check(TOKEN_SLASH))
+    while (AST_check(TOKEN_STAR) || AST_check(TOKEN_SLASH) || AST_check(TOKEN_PERCENTAGE))
     {
         AST_advance();
 

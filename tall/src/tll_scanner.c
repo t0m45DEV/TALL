@@ -284,6 +284,10 @@ static tll_token scan_token(void)
         {
             return make_token(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
         }
+        case '%':
+        {
+            return make_token(TOKEN_PERCENTAGE);
+        }
         case '"':
         {
             return string();

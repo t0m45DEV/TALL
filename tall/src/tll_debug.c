@@ -149,6 +149,10 @@ int disassemble_instruction(tll_code_chunk* code_chunk, int offset)
         {
             return simple_instruction("OP_DIVIDE", offset);
         }
+        case OP_REMAINDER:
+        {
+            return simple_instruction("OP_REMAINDER", offset);
+        }
         case OP_NOT:
         {
             return simple_instruction("OP_NOT", offset);

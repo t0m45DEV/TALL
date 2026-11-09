@@ -1,0 +1,18 @@
+
+func main(null) -> int
+{
+    print("Say a number...");
+    printf("n : ");
+    var n : int = input(2).to_int();
+
+    if (n % 2 == 0)
+    {
+        print("The number is even.");
+    }
+    else
+    {
+        print("The number is odd.");
+    }
+    return 0;
+}
+
