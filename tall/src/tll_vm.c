@@ -544,7 +544,10 @@ static tll_interpret_result run_VM_code(void)
                     runtime_error("Both operands for remainder operation must be of type 'int'.");
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
-                push(AS_TLL_INT(AS_C_INT(pop()) % AS_C_INT(pop())));
+                tll_value b = pop();
+                tll_value a = pop();
+
+                push(AS_TLL_INT(AS_C_INT(a) % AS_C_INT(b)));
                 break;
             }
             case OP_NOT:
