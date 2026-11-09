@@ -181,7 +181,19 @@ void print_type(tll_value value)
                 }
                 case OBJ_FUNCTION:
                 {
-                    printf("func");
+                    printf("func(");
+
+                    if (AS_TLL_FUNCTION(value)->arity > 0)
+                    {
+                        for (int i = 0; i < AS_TLL_FUNCTION(value)->arity - 1; i++)
+                        {
+                            print_value(AS_TLL_FUNCTION(value)->arguments_types[i]);
+                            printf(", ");
+                        }
+                        print_value(AS_TLL_FUNCTION(value)->arguments_types[AS_TLL_FUNCTION(value)->arity - 1]);
+                    }
+                    printf(") -> ");
+                    print_value(AS_TLL_FUNCTION(value)->return_type);
                     break;
                 }
                 case OBJ_NATIVE:
