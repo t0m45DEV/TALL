@@ -834,26 +834,26 @@ static bool parse_variable_type(tll_value* type)
                 func->arity++;
             }
             while (AST_match(TOKEN_COMMA));
-
-            if (!AST_match(TOKEN_RIGHT_PAREN))
-            {
-                type = NULL;
-                return false;
-            }
-            if (!AST_match(TOKEN_RIGHT_ARROW))
-            {
-                type = NULL;
-                return false;
-            }
-            tll_value return_type = AS_TLL_NULL;
-
-            if (!parse_variable_type(&return_type))
-            {
-                type = NULL;
-                return false;
-            }
-            func->return_type = return_type;
         }
+
+        if (!AST_match(TOKEN_RIGHT_PAREN))
+        {
+            type = NULL;
+            return false;
+        }
+        if (!AST_match(TOKEN_RIGHT_ARROW))
+        {
+            type = NULL;
+            return false;
+        }
+        tll_value return_type = AS_TLL_NULL;
+
+        if (!parse_variable_type(&return_type))
+        {
+            type = NULL;
+            return false;
+        }
+        func->return_type = return_type;
     }
     else
     {
