@@ -193,6 +193,10 @@ void print_type(tll_value value)
                         }
                         print_value(AS_TLL_FUNCTION(value)->arguments_types[AS_TLL_FUNCTION(value)->arity - 1]);
                     }
+                    else
+                    {
+                        print_value(AS_TLL_NULL);
+                    }
                     printf(") -> ");
                     print_value(AS_TLL_FUNCTION(value)->return_type);
                     break;
