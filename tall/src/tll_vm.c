@@ -733,7 +733,7 @@ static tll_interpret_result run_VM_code(void)
             }
             default:
             {
-                runtime_error("Unkown instruction with op code %i at line %p.", instruction, frame->ip);
+                runtime_error("Unknown instruction with op code %i at bytecode offset %td.", instruction, frame->ip - frame->function->code_chunk.code - 1);
                 return TLL_INTERPRET_RUNTIME_ERROR;
             }
         }
