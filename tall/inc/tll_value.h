@@ -23,6 +23,7 @@
 #define IS_NUMBER(value) ((value).type == VAL_INT || (value).type == VAL_FLOAT)
 
 typedef struct tll_obj tll_obj;
+typedef struct tll_array tll_array;
 typedef struct tll_string tll_string;
 typedef struct tll_function tll_function;
 typedef struct tll_native_function tll_native_function;

@@ -3,11 +3,13 @@
 
 #include "tll_value.h"
 #include "tll_scanner.h"
+#include <stddef.h>
 #include <stdint.h>
 
 typedef enum {
     AST_ERROR,             // Error node for bad parsing.
     AST_LITERAL,           // A literal value.
+    AST_ARRAY,             // A literal array, like '[1, 2, 3]'.
     AST_UNARY,             // Unary operations, like '!' or '-'.
     AST_BINARY,            // Binary operations, like equalities, comparations and arithmetic stuff.
     AST_GROUPING,          // An expression between parenthesis.
@@ -38,6 +40,12 @@ typedef struct tll_AST {
         struct {
             tll_value value;
         } literal;
+
+        struct {
+            size_t capacity;
+            size_t count;
+            struct tll_AST** elements;
+        } array;
 
         struct {
             uint8_t op;

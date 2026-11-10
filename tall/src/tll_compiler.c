@@ -9,6 +9,7 @@
 #include "tll_debug.h"
 #include "tll_flags.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -495,6 +496,22 @@ static void compile_AST_node(tll_AST* node)
         case AST_LITERAL:
         {
             emit_constant(node->as.literal.value, node->line);
+            break;
+        }
+        case AST_ARRAY:
+        {
+            if (node->as.array.count > UINT16_MAX)
+            {
+                compiler_error("Too many elements in an array literal.", node->line);
+                break;
+            }
+
+            for (size_t i = 0; i < node->as.array.count; i++)
+            {
+                compile_AST_node(node->as.array.elements[i]);
+            }
+            emit_byte(OP_DEF_ARRAY, node->line);
+            emit_short((uint16_t) node->as.array.count, node->line);
             break;
         }
         case AST_UNARY:

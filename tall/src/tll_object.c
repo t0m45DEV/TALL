@@ -49,6 +49,11 @@ static tll_string* allocate_string(char* chars, int length);
 static inline void print_string(const tll_string string);
 
 /**
+ * Print the given TLL array to standar output.
+ */
+static void print_array(const tll_array array);
+
+/**
  * Print the given TLL function to standar output.
  */
 static void print_function(const tll_function function);
@@ -77,6 +82,18 @@ uint32_t get_hash(const char* key, int length)
         hash = hash * 16777619;
     }
     return hash;
+}
+
+tll_array* new_array(void)
+{
+    tll_array* array = ALLOCATE_OBJ(tll_array, OBJ_ARRAY);
+
+    array->count = 0;
+    array->capacity = 0;
+    array->elements = NULL;
+    array->elements_type = AS_TLL_NULL;
+
+    return array;
 }
 
 tll_function* new_function(void)
@@ -140,6 +157,14 @@ void free_object(tll_obj* object)
             FREE_POINTER(tll_string, (tll_string*) object);
             break;
         }
+        case OBJ_ARRAY:
+        {
+            tll_array* arr = (tll_array*) object;
+
+            FREE_ARRAY(tll_value, arr->elements, arr->capacity);
+            FREE_POINTER(tll_array, arr);
+            break;
+        }
         case OBJ_FUNCTION:
         {
             tll_function* function = (tll_function*) object;
@@ -167,6 +192,11 @@ void print_object(tll_value value)
         case OBJ_STRING:
         {
             print_string(*AS_TLL_STRING(value));
+            break;
+        }
+        case OBJ_ARRAY:
+        {
+            print_array(*AS_TLL_ARRAY(value));
             break;
         }
         case OBJ_FUNCTION:
@@ -230,6 +260,22 @@ static tll_string* allocate_string(char* chars, int length)
 static inline void print_string(const tll_string string)
 {
     printf("%.*s", string.length, string.chars);
+}
+
+static void print_array(const tll_array array)
+{
+    printf("[");
+
+    if (array.count > 0)
+    {
+        for (size_t i = 0; i < array.count - 1; i++)
+        {
+            print_value(array.elements[i]);
+            printf(", ");
+        }
+        print_value(array.elements[array.count - 1]);
+    }
+    printf("]");
 }
 
 static void print_function(const tll_function function)

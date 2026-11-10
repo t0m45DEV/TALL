@@ -7,6 +7,7 @@
 #include "tll_object.h"
 
 #include <stdatomic.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 #define EMPTY_NODE ((tll_AST) {AST_UNARY, -1, {.unary.op=0, .unary.operand=0}})
@@ -206,6 +207,15 @@ static void free_AST_recursive(tll_AST* tree)
         case AST_LITERAL:
         {
             return;
+        }
+        case AST_ARRAY:
+        {
+            for (size_t i = 0; i < tree->as.array.count; i++)
+            {
+                free_AST_recursive(tree->as.array.elements[i]);
+            }
+            FREE_ARRAY(tll_AST*, tree->as.array.elements, tree->as.array.capacity);
+            break;
         }
         case AST_UNARY:
         {
@@ -793,6 +803,29 @@ static bool parse_variable_type(tll_value* type)
     {
         *type = AS_TLL_OBJ(&TLL_TYPE_STRING);
     }
+    else if (AST_match(TOKEN_ARRAY_TYPE))
+    {
+        if (!AST_match(TOKEN_LEFT_BRACKET))
+        {
+            type = NULL;
+            return false;
+        }
+        tll_value elements_type = AS_TLL_NULL;
+
+        if (!parse_variable_type(&elements_type))
+        {
+            type = NULL;
+            return false;
+        }
+        if (!AST_match(TOKEN_RIGHT_BRACKET))
+        {
+            type = NULL;
+            return false;
+        }
+        *type = AS_TLL_OBJ(new_array());
+
+        AS_TLL_ARRAY(*type)->elements_type = elements_type;
+    }
     else if (AST_match(TOKEN_FUNC))
     {
         if (!AST_match(TOKEN_LEFT_PAREN))
@@ -1352,6 +1385,46 @@ static tll_AST* AST_primary(void)
         node->type = AST_LITERAL;
         node->line = AST_parser.previous->line;
         node->as.literal.value = AS_TLL_OBJ(copy_string(AST_parser.previous->start + 1, AST_parser.previous->length - 2));
+        return node;
+    }
+    if (AST_match(TOKEN_LEFT_BRACKET))
+    {
+        size_t count = 0;
+        size_t capacity = 0;
+
+        tll_AST** elements = NULL;
+
+        // If array has elements.
+        if (!AST_match(TOKEN_RIGHT_BRACKET))
+        {
+            do
+            {
+                if (count + 1 > capacity)
+                {
+                    size_t old_capacity = capacity;
+                    capacity = GROW_CAPACITY(capacity);
+
+                    elements = GROW_ARRAY(tll_AST*, elements, old_capacity, capacity);
+                }
+                elements[count] = AST_expression();
+                count++;
+            }
+            while (AST_match(TOKEN_COMMA));
+
+            if (!AST_match(TOKEN_RIGHT_BRACKET))
+            {
+                return AST_error(AST_parser.previous->line, "Array definition must end with ']'.");
+            }
+        }
+        tll_AST* node = alloc_node();
+
+        node->type = AST_ARRAY;
+        node->line = AST_parser.previous->line;
+
+        node->as.array.count = count;
+        node->as.array.capacity = capacity;
+        node->as.array.elements = elements;
+
         return node;
     }
 

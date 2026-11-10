@@ -39,6 +39,7 @@ typedef enum {
     OP_CALL,
     OP_RETURN,
     OP_INVOKE,
+    OP_DEF_ARRAY,
 } tll_opcode;
 
 /**

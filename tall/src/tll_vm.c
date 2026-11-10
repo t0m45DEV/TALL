@@ -731,6 +731,35 @@ static tll_interpret_result run_VM_code(void)
                 push(result);
                 break;
             }
+            case OP_DEF_ARRAY:
+            {
+                uint16_t count = read_short(frame);
+                tll_array* array = new_array();
+
+                if (count > 0)
+                {
+                    tll_value* first = VM.stack_top - count;
+
+                    for (uint16_t i = 1; i < count; i++)
+                    {
+                        if (!same_type(first[0], first[i]))
+                        {
+                            runtime_error("All the elements of an array must have the same type.");
+                            return TLL_INTERPRET_RUNTIME_ERROR;
+                        }
+                    }
+                    array->elements = ALLOCATE_ARRAY(tll_value, count);
+                    array->capacity = count;
+                    array->count = count;
+                    array->elements_type = first[0];
+
+                    memcpy(array->elements, first, sizeof(tll_value) * count);
+
+                    VM.stack_top -= count;
+                }
+                push(AS_TLL_OBJ(array));
+                break;
+            }
             default:
             {
                 runtime_error("Unknown instruction with op code %i at bytecode offset %td.", instruction, frame->ip - frame->function->code_chunk.code - 1);

@@ -99,6 +99,10 @@ bool same_type(const tll_value value1, const tll_value value2)
         }
         return true;
     }
+    else if (IS_ARRAY(value1) && IS_ARRAY(value2))
+    {
+        return same_type(AS_TLL_ARRAY(value1)->elements_type, AS_TLL_ARRAY(value2)->elements_type);
+    }
     return ((IS_NULL(value1) && IS_NULL(value2)) ||
             (IS_BOOL(value1) && IS_BOOL(value2)) ||
             (IS_INT(value1) && IS_INT(value2)) ||
@@ -178,6 +182,13 @@ void print_type(tll_value value)
                 case OBJ_STRING:
                 {
                     printf("string");
+                    break;
+                }
+                case OBJ_ARRAY:
+                {
+                    printf("array[");
+                    print_type(AS_TLL_ARRAY(value)->elements_type);
+                    printf("]");
                     break;
                 }
                 case OBJ_FUNCTION:

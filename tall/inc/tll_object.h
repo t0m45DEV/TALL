@@ -10,9 +10,12 @@
 
 #define OBJ_TYPE(value) (AS_C_OBJ(value)->type)
 
+#define IS_ARRAY(value)    (is_obj_type((value), OBJ_ARRAY))
 #define IS_STRING(value)   (is_obj_type((value), OBJ_STRING))
 #define IS_FUNCTION(value) (is_obj_type((value), OBJ_FUNCTION))
 #define IS_NATIVE(value)   (is_obj_type((value), OBJ_NATIVE))
+
+#define AS_TLL_ARRAY(value) ((tll_array*) AS_C_OBJ(value))
 
 #define AS_TLL_STRING(value)  ((tll_string*) AS_C_OBJ(value))
 #define AS_C_STRING(value) (((tll_string*) AS_C_OBJ(value))->chars)
@@ -23,6 +26,7 @@
 
 typedef enum {
     OBJ_STRING,
+    OBJ_ARRAY,
     OBJ_FUNCTION,
     OBJ_NATIVE,
 } tll_obj_type;
@@ -36,6 +40,14 @@ struct tll_string {
     int length;
     char* chars;
     uint32_t hash;
+};
+
+struct tll_array {
+    tll_obj obj;
+    tll_value elements_type;
+    size_t capacity;
+    size_t count;
+    tll_value* elements;
 };
 
 struct tll_function {
@@ -81,6 +93,11 @@ tll_string* copy_string(const char* chars, int length);
  * Returns the hash to the given key.
  */
 uint32_t get_hash(const char* key, int length);
+
+/**
+ * Creates an empty TLL array object.
+ */
+tll_array* new_array(void);
 
 /**
  * Creates a TLL function object.

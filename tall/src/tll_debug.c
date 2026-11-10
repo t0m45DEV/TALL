@@ -189,6 +189,10 @@ int disassemble_instruction(tll_code_chunk* code_chunk, int offset)
         {
             return invoke_instruction("OP_INVOKE", code_chunk, offset);
         }
+        case OP_DEF_ARRAY:
+        {
+            return jump_instruction("OP_DEF_ARRAY", code_chunk, offset);
+        }
         default:
         {
             printf("Unkown opcode %d\n", instruction);

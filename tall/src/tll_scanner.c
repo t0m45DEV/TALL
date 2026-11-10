@@ -409,7 +409,21 @@ static tll_token_type identifier_type(void)
     {
         case 'a':
         {
-            return check_keyword(1, 2, "nd", TOKEN_AND);
+            if (scanner.current - scanner.start > 1)
+            {
+                switch (scanner.start[1])
+                {
+                    case 'n':
+                    {
+                        return check_keyword(2, 1, "d", TOKEN_AND);
+                    }
+                    case 'r':
+                    {
+                        return check_keyword(2, 3, "ray", TOKEN_ARRAY_TYPE);
+                    }
+                }
+            }
+            break;
         }
         case 'b':
         {

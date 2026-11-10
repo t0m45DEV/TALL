@@ -3,6 +3,7 @@
 #include "tll_object.h"
 #include "tll_value.h"
 
+#include <stddef.h>
 #include <stdio.h>
 
 /**
@@ -42,6 +43,20 @@ const tll_AST* get_error(const tll_AST* AST)
         }
         case AST_LITERAL:
         {
+            break;
+        }
+        case AST_ARRAY:
+        {
+            for (size_t i = 0; i < AST->as.array.count; i++)
+            {
+                temp = get_error(AST->as.array.elements[i]);
+
+                if (temp != NULL)
+                {
+                    res = temp;
+                    break;
+                }
+            }
             break;
         }
         case AST_UNARY:
@@ -261,6 +276,20 @@ static void print_AST_recursive(const tll_AST* AST, const char* prefix, bool is_
                 print_value(AST->as.literal.value);
             }
             printf(")\n");
+            break;
+        }
+        case AST_ARRAY:
+        {
+            printf("ARRAY [%zu]\n", AST->as.array.count);
+
+            if (AST->as.array.count > 0)
+            {
+                for (size_t i = 0; i < AST->as.array.count - 1; i++)
+                {
+                    print_AST_recursive(AST->as.array.elements[i], child_prefix, false);
+                }
+                print_AST_recursive(AST->as.array.elements[AST->as.array.count - 1], child_prefix, true);
+            }
             break;
         }
         case AST_UNARY:
