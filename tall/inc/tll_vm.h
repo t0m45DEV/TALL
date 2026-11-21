@@ -6,7 +6,15 @@
 #include "tll_object.h"
 #include "tll_value.h"
 
-#define TYPE_TABLE_COUNT 5
+enum {
+    IDX_VAL_NULL,
+    IDX_VAL_BOOL,
+    IDX_VAL_INT,
+    IDX_VAL_FLOAT,
+    IDX_VAL_STRING,
+    IDX_VAL_ARRAY,
+    TYPE_TABLE_COUNT
+};
 
 /**
  * The generic VM call frame for a function.

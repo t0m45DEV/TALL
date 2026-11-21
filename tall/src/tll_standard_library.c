@@ -78,16 +78,16 @@ void load_tll_std_lib(void)
 
     // === Conversions ===
     // --- To Strings ---
-    define_native_method(VAL_NULL, "to_str", 6, native_null_to_str, 1, (const tll_value[1]) {AS_TLL_NULL});
-    define_native_method(VAL_BOOL, "to_str", 6, native_bool_to_str, 1, (const tll_value[1]) {AS_TLL_BOOL(true)});
-    define_native_method(VAL_INT, "to_str", 6, native_int_to_str, 1, (const tll_value[1]) {AS_TLL_INT(0)});
-    define_native_method(VAL_FLOAT, "to_str", 6, native_float_to_str, 1, (const tll_value[1]) {AS_TLL_FLOAT(0.0)});
+    define_native_method(IDX_VAL_NULL, "to_str", 6, native_null_to_str, 1, (const tll_value[1]) {AS_TLL_NULL});
+    define_native_method(IDX_VAL_BOOL, "to_str", 6, native_bool_to_str, 1, (const tll_value[1]) {AS_TLL_BOOL(true)});
+    define_native_method(IDX_VAL_INT, "to_str", 6, native_int_to_str, 1, (const tll_value[1]) {AS_TLL_INT(0)});
+    define_native_method(IDX_VAL_FLOAT, "to_str", 6, native_float_to_str, 1, (const tll_value[1]) {AS_TLL_FLOAT(0.0)});
 
     // --- To Ints ---
-    define_native_method(VAL_OBJ, "to_int", 6, native_str_to_int, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
+    define_native_method(IDX_VAL_STRING, "to_int", 6, native_str_to_int, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
 
     // --- Strings methods ---
-    define_native_method(VAL_OBJ, "length", 6, native_str_length, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
+    define_native_method(IDX_VAL_STRING, "length", 6, native_str_length, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
 }
 
 static tll_value native_clock(int arg_count, const tll_value* args)
