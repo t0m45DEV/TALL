@@ -73,7 +73,7 @@ typedef struct tll_AST {
 
         struct {
             tll_string* name;
-            tll_value_type type;
+            tll_value type;
             struct tll_AST* expression;
         } const_declaration;
 
