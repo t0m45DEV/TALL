@@ -740,6 +740,7 @@ static tll_interpret_result run_VM_code(void)
 
                 if (VM.native_failed)
                 {
+                    VM.native_failed = false;
                     runtime_error("%s", VM.native_error_message);
                     return TLL_INTERPRET_RUNTIME_ERROR;
                 }
