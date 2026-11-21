@@ -65,7 +65,7 @@ bool same_type(const tll_value value1, const tll_value value2)
 {
     if (IS_FUNCTION(value1) && IS_FUNCTION(value2))
     {
-        if (same_type(AS_TLL_FUNCTION(value1)->return_type, AS_TLL_FUNCTION(value2)->return_type))
+        if (!same_type(AS_TLL_FUNCTION(value1)->return_type, AS_TLL_FUNCTION(value2)->return_type))
         {
             return false;
         }
