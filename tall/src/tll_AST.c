@@ -449,7 +449,8 @@ static tll_AST* AST_statement(void)
         }
         else if (AST_check(TOKEN_DOT))
         {
-
+            // A method call ignoring the result.
+            return AST_postfix();
         }
         return AST_variable_assignment(true);
     }
