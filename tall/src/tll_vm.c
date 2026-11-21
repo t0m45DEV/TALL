@@ -524,10 +524,20 @@ static tll_interpret_result run_VM_code(void)
 
                 if (IS_INT(b) && IS_INT(a))
                 {
+                    if (AS_C_INT(b) == 0)
+                    {
+                        runtime_error("The second operand in a division cannot be zero.");
+                        return TLL_INTERPRET_RUNTIME_ERROR;
+                    }
                     push(AS_TLL_INT((int) (AS_C_INT(a) / AS_C_INT(b))));
                 }
                 else if (IS_FLOAT(b) && IS_FLOAT(a))
                 {
+                    if (AS_C_FLOAT(b) == 0)
+                    {
+                        runtime_error("The second operand in a division cannot be zero.");
+                        return TLL_INTERPRET_RUNTIME_ERROR;
+                    }
                     push(AS_TLL_FLOAT(AS_C_FLOAT(a) / AS_C_FLOAT(b)));
                 }
                 else
@@ -547,6 +557,11 @@ static tll_interpret_result run_VM_code(void)
                 tll_value b = pop();
                 tll_value a = pop();
 
+                if (AS_C_INT(b) == 0)
+                {
+                    runtime_error("The second operand in a remainder operation cannot be zero.");
+                    return TLL_INTERPRET_RUNTIME_ERROR;
+                }
                 push(AS_TLL_INT(AS_C_INT(a) % AS_C_INT(b)));
                 break;
             }
