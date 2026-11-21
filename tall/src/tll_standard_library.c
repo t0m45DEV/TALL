@@ -205,7 +205,7 @@ static tll_value native_input(int arg_count, const tll_value* args)
     {
         // The line was longer than the buffer.
         // We need to discard the leftover content for next input() calls.
-        char c;
+        int c;
 
         while ((c = getchar()) != '\n' && c != EOF)
         {
