@@ -49,7 +49,7 @@ int read_file(const char* file_path, char* buffer)
     if (file == NULL)
     {
         fprintf(stderr, "Could not open file \"%s\".\n", file_path);
-        return 1;
+        return 0;
     }
     size_t f_size = file_size(file_path);
 
@@ -59,7 +59,7 @@ int read_file(const char* file_path, char* buffer)
     {
         fclose(file);
         fprintf(stderr, "Could not read file \"%s\".\n", file_path);
-        return 1;
+        return 0;
     }
     buffer[bytes_read] = '\0';
 
