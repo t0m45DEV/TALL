@@ -792,7 +792,7 @@ static void compile_AST_node(tll_AST* node)
                 compiler_error("Functions can only be defined globally.", node->line);
                 break;
             }
-            if (strncmp(node->as.function_declaration.name->chars, "main", 4) == 0)
+            if ((node->as.function_declaration.name->length == 4) && strncmp(node->as.function_declaration.name->chars, "main", 4) == 0)
             {
                 if (node->as.function_declaration.arity > 0 || !same_type(*node->as.function_declaration.return_type, AS_TLL_INT(0)))
                 {
