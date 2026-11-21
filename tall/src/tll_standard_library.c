@@ -11,6 +11,11 @@
 #include <time.h>
 
 /**
+ * Checks if the first parameter is true. If it is a false, then prints out the second parameter and stops the program execution.
+ */
+static tll_value native_assert(int arg_count, const tll_value* args);
+
+/**
  * Returns the time passed since the program started.
  */
 static tll_value native_clock(int arg_count, const tll_value* args);
@@ -67,6 +72,7 @@ void load_tll_std_lib(void)
     // === FUNCTIONS ===
 
     // === Tests & Performance ===
+    define_native_function("assert", 6, native_assert, 2, (const tll_value[2]) {AS_TLL_BOOL(true), AS_TLL_OBJ(&TLL_TYPE_STRING)});
     define_native_function("clock", 5, native_clock, 0, NULL);
 
     // === Input / Output ===
@@ -88,6 +94,24 @@ void load_tll_std_lib(void)
 
     // --- Strings methods ---
     define_native_method(IDX_VAL_STRING, "length", 6, native_str_length, 1, (const tll_value[1]) {AS_TLL_OBJ(&TLL_TYPE_STRING)});
+}
+
+static tll_value native_assert(int arg_count, const tll_value* args)
+{
+    if (arg_count != 2 && args != NULL)
+    {
+        // Unreachable.
+    }
+    bool condition = AS_C_BOOL(args[0]);
+
+    if (!condition)
+    {
+        print_value(args[1]); // Print out the user message.
+        catch_native_error("An assert has failed.");
+        return AS_TLL_NULL;
+    }
+    // Nothing happens, return and continue execution.
+    return AS_TLL_NULL;
 }
 
 static tll_value native_clock(int arg_count, const tll_value* args)
