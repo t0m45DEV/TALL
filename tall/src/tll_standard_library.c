@@ -106,8 +106,7 @@ static tll_value native_assert(int arg_count, const tll_value* args)
 
     if (!condition)
     {
-        print_value(args[1]); // Print out the user message.
-        catch_native_error("An assert has failed.");
+        catch_native_error("Assertion failed: %s.", AS_C_STRING(args[1]));
         return AS_TLL_NULL;
     }
     // Nothing happens, return and continue execution.
