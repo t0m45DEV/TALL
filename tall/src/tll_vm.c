@@ -832,13 +832,35 @@ static inline int type_table_index(tll_value value)
 {
     int ret = -1;
 
-    if (IS_OBJ(value) && IS_STRING(value))
+    if (IS_OBJ(value))
     {
-        ret = VAL_OBJ;
+        if (IS_STRING(value))
+        {
+            ret = IDX_VAL_STRING;
+        }
+        else if (IS_ARRAY(value))
+        {
+            ret = IDX_VAL_ARRAY;
+        }
     }
     else if (!IS_OBJ(value))
     {
-        ret = value.type;
+        if (IS_NULL(value))
+        {
+            ret = IDX_VAL_NULL;
+        }
+        else if (IS_BOOL(value))
+        {
+            ret = IDX_VAL_BOOL;
+        }
+        else if (IS_INT(value))
+        {
+            ret = IDX_VAL_INT;
+        }
+        else if (IS_FLOAT(value))
+        {
+            ret = IDX_VAL_FLOAT;
+        }
     }
     return ret;
 }
